@@ -1,7 +1,12 @@
 import asyncio
 import logging
+import os
+from dotenv import load_dotenv
 from common.client import A2AClient
 from common.a2a.protocol import AgentCard, AgentSkill
+
+# Load environment variables
+load_dotenv()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -9,11 +14,14 @@ logger = logging.getLogger(__name__)
 
 async def main():
     """Run the demo client"""
+    # Get agent URL from environment variable with default fallback
+    agent_url = os.getenv("AGENT_URL", "http://localhost:8000")
+    
     # Create agent card (or you could fetch it from the agent)
     agent_card = AgentCard(
         name="SOFIA Arithmetic Agent",
         description="A simple agent that can perform basic arithmetic operations",
-        url="http://localhost:8000",
+        url=agent_url,
         version="0.1.0",
         skills=[
             AgentSkill(

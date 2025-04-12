@@ -1,9 +1,14 @@
 import re
 import logging
 import json
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
+
+# Load environment variables
+load_dotenv()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -103,4 +108,7 @@ def parse_arithmetic_expression(content: str) -> tuple[str, List[float]]:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("tool:app", host="0.0.0.0", port=5001, reload=True) 
+    # Get host and port from environment variables with default fallbacks
+    host = os.getenv("ARITHMETIC_TOOL_HOST", "0.0.0.0")
+    port = int(os.getenv("ARITHMETIC_TOOL_PORT", "5001"))
+    uvicorn.run("tool:app", host=host, port=port, reload=True) 

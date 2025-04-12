@@ -1,6 +1,11 @@
 import httpx
 import logging
+import os
+from dotenv import load_dotenv
 from typing import Dict, Any
+
+# Load environment variables
+load_dotenv()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -9,10 +14,10 @@ logger = logging.getLogger(__name__)
 class ArithmeticToolClient:
     """Client for the arithmetic tool service"""
     
-    def __init__(self, base_url: str = "http://localhost:5001"):
+    def __init__(self, base_url: str = None):
         """Initialize the client with the service URL"""
-        self.base_url = base_url
-        self.operate_url = f"{base_url}/operate"
+        self.base_url = base_url or os.getenv("ARITHMETIC_TOOL_URL", "http://localhost:5001")
+        self.operate_url = f"{self.base_url}/operate"
     
     async def calculate(self, expression: str) -> Dict[str, Any]:
         """Send a calculation request to the arithmetic tool service"""
