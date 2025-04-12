@@ -16,6 +16,7 @@ from common.a2a.protocol import (
     Message,
 )
 from common.server import A2AServer, TaskManager
+from mcp_tools.arithmetic_tool.src.mcp_client import ArithmeticToolClient
 
 # Load environment variables
 load_dotenv()
@@ -48,8 +49,11 @@ agent_card = AgentCard(
     ],
 )
 
+# Create an instance of the ArithmeticToolClient
+arithmetic_client = ArithmeticToolClient()
+
 @tool
-def calculate(expression: str):
+async def calculate(expression: str):
     """Use this to calculate arithmetic expressions.
     
     Args:
@@ -59,20 +63,11 @@ def calculate(expression: str):
         The result of the calculation or an error message.
     """
     try:
-        # Simple arithmetic evaluation with basic security checks
-        # In a real implementation, you'd want a more secure approach
-        if any(keyword in expression for keyword in ['import', 'eval', 'exec', 'open', '__']):
-            return {"error": "Invalid expression: contains forbidden keywords"}
-        
-        # Safe evaluation of arithmetic expression
-        # Remove any non-arithmetic characters
-        clean_expr = ''.join(c for c in expression if c.isdigit() or c in '+-*/().% ')
-        result = eval(clean_expr)
-        return {
-            "expression": clean_expr,
-            "result": result
-        }
+        # Use the ArithmeticToolClient to calculate the expression
+        result = await arithmetic_client.calculate(expression)
+        return result
     except Exception as e:
+        logger.error(f"Error calculating expression: {e}")
         return {"error": f"Failed to calculate: {str(e)}"}
 
 class ArithmeticAgent:
@@ -109,9 +104,9 @@ class ArithmeticAgent:
             return_intermediate_steps=True
         )
 
-    def invoke(self, query: str, sessionId: str) -> Dict[str, Any]:
+    async def invoke(self, query: str, sessionId: str) -> Dict[str, Any]:
         messages = [HumanMessage(content=query)]
-        result = self.executor.invoke({"messages": messages})
+        result = await self.executor.ainvoke({"messages": messages})
         return self._format_response(result)
 
     async def stream(self, query: str, sessionId: str) -> AsyncIterable[Dict[str, Any]]:
@@ -180,7 +175,7 @@ async def process_message(message: Message) -> str:
         session_id = f"session_{hash(text_content)}"
         
         # Use the arithmetic agent to process the request
-        response = arithmetic_agent.invoke(text_content, session_id)
+        response = await arithmetic_agent.invoke(text_content, session_id)
         
         return response["content"]
 
