@@ -41,13 +41,13 @@ The demo supports natural language arithmetic queries like:
    ARITHMETIC_TOOL_URL=http://localhost:5001
 
    # API Keys
-   GOOGLE_API_KEY=your-google-api-key
+   OPENAI_API_KEY=your_openai_api_key_here
 
    # Model Configuration
-   LLM_MODEL=gemini-2.0-flash
+   LLM_MODEL=gpt-3.5-turbo
    ```
    
-   Be sure to replace `your-google-api-key` with your actual Google API key.
+   Be sure to replace `your_openai_api_key_here` with your actual OpenAI API key.
 
 ## Running the Agent
 
@@ -71,7 +71,7 @@ Send requests to the agent with arithmetic queries like:
 
 This agent uses:
 - LangGraph for agent orchestration
-- Google's Gemini model for language processing
+- OpenAI models for language processing
 - A2A protocol for communication
 - Environment variables for configuration
 
