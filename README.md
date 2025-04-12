@@ -26,10 +26,54 @@ The demo supports natural language arithmetic queries like:
 
 ## Setup
 
-1. Clone the repository
-2. Copy `.env.example` to `.env` and fill in your API keys
-3. Ensure you have Docker and Docker Compose installed.
-4. Build and run the services: `docker compose up --build`
+1. Clone this repository
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Configure your environment variables by editing the `.env` file:
+   ```
+   # Server Configuration
+   A2A_SERVER_HOST=0.0.0.0
+   A2A_SERVER_PORT=8000
+
+   # External Services
+   ARITHMETIC_TOOL_URL=http://localhost:5001
+
+   # API Keys
+   GOOGLE_API_KEY=your-google-api-key
+
+   # Model Configuration
+   LLM_MODEL=gemini-2.0-flash
+   ```
+   
+   Be sure to replace `your-google-api-key` with your actual Google API key.
+
+## Running the Agent
+
+Start the agent with:
+
+```
+python agent/src/main.py
+```
+
+The agent will start on the configured port (default: 8000).
+
+## Usage
+
+Send requests to the agent with arithmetic queries like:
+- "What is 5 + 3?"
+- "Calculate 10 * 7"
+- "Divide 100 by 2"
+- "What is the sum of 4, 8, and 12?"
+
+## Architecture
+
+This agent uses:
+- LangGraph for agent orchestration
+- Google's Gemini model for language processing
+- A2A protocol for communication
+- Environment variables for configuration
 
 ## Components
 
