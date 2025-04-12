@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  arithmetic-tool:
+    build:
+      context: .
+      dockerfile: ./mcp_tools/arithmetic_tool/Dockerfile
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./mcp_tools:/app/mcp_tools
+      - ./common:/app/common
+    environment:
+      - PYTHONPATH=/app
+    networks:
+      - sofia-network
+
+  agent:
+    build:
+      context: .
+      dockerfile: ./agent/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./agent:/app/agent
+      - ./common:/app/common
+      - ./mcp_tools:/app/mcp_tools
+    environment:
+      - PYTHONPATH=/app
+    depends_on:
+      - arithmetic-tool
+    networks:
+      - sofia-network
+
+  client:
+    build:
+      context: .
+      dockerfile: ./clients/Dockerfile
+    volumes:
+      - ./clients:/app/clients
+      - ./common:/app/common
+    environment:
+      - PYTHONPATH=/app
+    depends_on:
+      - agent
+    networks:
+      - sofia-network
+    stdin_open: true
+    tty: true
+
+networks:
+  sofia-network:
+    driver: bridge 
