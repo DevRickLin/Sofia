@@ -49,15 +49,30 @@ The demo supports natural language arithmetic queries like:
    
    Be sure to replace `your_openai_api_key_here` with your actual OpenAI API key.
 
-## Running the Agent
+## Running the Project
 
-Start the agent with:
+You can run S.O.F.I.A. in two ways:
 
-```
-python agent/src/main.py
-```
+1. Using the startup script:
+   ```bash
+   python start.py
+   ```
 
-The agent will start on the configured port (default: 8000).
+   Options:
+   ```
+   --no-client    Don't start the client
+   --debug        Enable debug logging
+   ```
+
+   This script will start all necessary components:
+   - Arithmetic Tool
+   - Agent
+   - Client (unless --no-client is specified)
+
+2. Using Docker:
+   ```bash
+   docker compose up --build
+   ```
 
 ## Usage
 
@@ -147,24 +162,6 @@ sofia/
 │   └── src/
 │       ├── client.py       # Simple client implementation using a2a protocol
 ```
-
-## Running the Project
-
-1. Using Docker:
-   ```bash
-   docker compose up --build
-   ```
-
-2. Using the startup script:
-   ```bash
-   ./start.py
-   ```
-
-   Options:
-   ```
-   --no-client    Don't start the client
-   --debug        Enable debug logging
-   ```
 
 ## Testing the Agent
 
