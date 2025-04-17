@@ -24,6 +24,33 @@ The demo supports natural language arithmetic queries like:
 - "Divide 100 by 2"
 - "What is the sum of 4, 8, and 12?"
 
+## Article Quality Assessment
+
+The system also includes an article quality assessment tool that evaluates text content using advanced LLM prompting. This feature:
+
+1. Uses sophisticated prompts to analyze articles on 12 different dimensions:
+   - 文本连贯性 (Text coherence)
+   - 论点完整性 (Argument completeness)
+   - 语言质量 (Language quality)
+   - 信息密度 (Information density)
+   - 结构合理性 (Structural reasonability)
+   - 术语使用 (Terminology usage)
+   - 内容独特性 (Content uniqueness)
+   - 深度分析 (Depth of analysis)
+   - 内部一致性 (Internal consistency)
+   - 推理质量 (Reasoning quality)
+   - 上下文理解 (Contextual understanding)
+   - 文本复杂度平衡 (Text complexity balance)
+
+2. Provides comprehensive evaluation including:
+   - Detailed scores for each dimension
+   - Analysis of the article's strengths and weaknesses
+   - General evaluation of the content quality
+
+3. Environment Requirements:
+   - The feature requires an OpenAI API key to be set in your environment
+   - Uses the LLM model specified in your .env file (defaults to gpt-3.5-turbo)
+
 ## Setup
 
 1. Clone this repository
