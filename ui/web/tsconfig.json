@@ -3,6 +3,7 @@
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
+    "types": ["d3", "d3-array", "d3-delaunay", "d3-dsv", "d3-fetch", "d3-geo"],
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
