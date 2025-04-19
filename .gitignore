@@ -38,4 +38,7 @@ logs/
 *.log
 
 # Docker
-.DS_Store 
+.DS_Store
+
+# Node.js
+node_modules/ 
