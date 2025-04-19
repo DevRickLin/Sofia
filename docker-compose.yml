@@ -1,61 +1,108 @@
-version: '3'
+version: '3.8'
 
 services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - sofia-network
+
+  gateway-service:
+    build: ./services/gateway-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/gateway-service:/app
+      - ./services/agent-service/mcp_tools:/app/mcp_tools
+      - ./services/agent-service/common:/app/common
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AGENT_HOST=agent-service
+      - AGENT_PORT=8001
+      - TOOL_HOST=tool-execution-service
+      - TOOL_PORT=8002
+    depends_on:
+      - redis
+      - agent-service
+      - tool-execution-service
+    networks:
+      - sofia-network
+
+  agent-service:
+    build:
+      context: ./services/agent-service
+      dockerfile: ./agent/Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./services/agent-service/agent:/app/agent
+      - ./services/agent-service/common:/app/common
+      - ./services/agent-service/mcp_tools:/app/mcp_tools
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+      - arithmetic-tool
+    networks:
+      - sofia-network
+
+  tool-execution-service:
+    build: ./services/tool-execution-service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./services/tool-execution-service:/app
+      - ./services/agent-service/clients:/app/clients
+      - ./services/agent-service/common:/app/common
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - sofia-network
+
   arithmetic-tool:
     build:
-      context: ./backend
+      context: ./services/agent-service
       dockerfile: ./mcp_tools/arithmetic_tool/Dockerfile
     ports:
       - "5001:5001"
     volumes:
-      - ./backend/mcp_tools:/app/mcp_tools
-      - ./backend/common:/app/common
+      - ./services/agent-service/mcp_tools:/app/mcp_tools
+      - ./services/agent-service/common:/app/common
     environment:
       - PYTHONPATH=/app
-    networks:
-      - sofia-network
-
-  agent:
-    build:
-      context: ./backend
-      dockerfile: ./agent/Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend/agent:/app/agent
-      - ./backend/common:/app/common
-      - ./backend/mcp_tools:/app/mcp_tools
-    environment:
-      - PYTHONPATH=/app
-    depends_on:
-      - arithmetic-tool
     networks:
       - sofia-network
 
   client:
     build:
-      context: ./backend
+      context: ./services/agent-service
       dockerfile: ./clients/Dockerfile
     volumes:
-      - ./backend/clients:/app/clients
-      - ./backend/common:/app/common
+      - ./services/agent-service/clients:/app/clients
+      - ./services/agent-service/common:/app/common
     environment:
       - PYTHONPATH=/app
     depends_on:
-      - agent
+      - agent-service
     networks:
       - sofia-network
     stdin_open: true
     tty: true
 
-  frontend:
+  web-ui:
     build:
-      context: ./frontend
+      context: ./ui/web
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app
+      - ./ui/web:/app
       - /app/node_modules
       - /app/.next
     environment:
@@ -64,7 +111,8 @@ services:
     networks:
       - sofia-network
     depends_on:
-      - agent
+      - agent-service
+      - gateway-service
     stdin_open: true
     tty: true
 
