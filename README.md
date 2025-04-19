@@ -202,3 +202,51 @@ The agent will automatically run through a set of test queries when started:
 After running the test queries, you can interact with the agent by typing in the console.
 
 To exit the client, type "exit", "quit", or "q".
+
+## Contributing Guidelines
+
+We welcome contributions to S.O.F.I.A.! To ensure a smooth development process, please follow these guidelines:
+
+### Commit Messages
+
+We use the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for our commit messages. This allows for automated changelog generation and helps keep the commit history clean and understandable.
+
+Each commit message should consist of a header, a body, and a footer.
+
+- **Header**: The header has a special format that includes a **type**, an optional **scope**, and a **description**:
+  ```
+  <type>[optional scope]: <description>
+  ```
+  - **Types**: `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`.
+  - **Scope**: Optional, specifies the part of the codebase affected (e.g., `agent`, `ui`, `docker`).
+  - **Description**: Concise description of the change in the imperative, present tense ("change" not "changed" nor "changes").
+
+- **Body**: Optional, provides additional context about the code changes. Use the imperative, present tense.
+
+- **Footer**: Optional, used for referencing issue tracker IDs (e.g., `Fixes #123`) or noting breaking changes (`BREAKING CHANGE:`).
+
+**Example:**
+```
+feat(agent): add support for streaming responses
+
+Implement Server-Sent Events (SSE) in the agent service to allow for real-time streaming of responses to the client.
+
+Refs #456
+```
+
+### Branching Strategy
+
+We follow a simple feature branch workflow:
+
+1.  **`main` Branch**: This branch represents the latest stable release. Direct commits to `main` are restricted.
+2.  **Feature Branches**: Create a new branch for each new feature or bug fix.
+    - Name your branch descriptively using the format: `<type>/<short-description>` (e.g., `feat/add-auth-service`, `fix/resolve-arithmetic-bug`).
+    - Branch off from the `main` branch.
+3.  **Pull Requests (PRs)**: Once your feature or fix is complete:
+    - Push your feature branch to the remote repository.
+    - Create a Pull Request targeting the `main` branch.
+    - Ensure your PR includes a clear description of the changes.
+    - Address any feedback or requested changes from reviewers.
+4.  **Merging**: Once the PR is approved and passes checks, it will be merged into `main`. Delete your feature branch after merging.
+
+Thank you for contributing!
