@@ -3,13 +3,13 @@ version: '3'
 services:
   arithmetic-tool:
     build:
-      context: .
+      context: ./backend
       dockerfile: ./mcp_tools/arithmetic_tool/Dockerfile
     ports:
       - "5001:5001"
     volumes:
-      - ./mcp_tools:/app/mcp_tools
-      - ./common:/app/common
+      - ./backend/mcp_tools:/app/mcp_tools
+      - ./backend/common:/app/common
     environment:
       - PYTHONPATH=/app
     networks:
@@ -17,14 +17,14 @@ services:
 
   agent:
     build:
-      context: .
+      context: ./backend
       dockerfile: ./agent/Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      - ./agent:/app/agent
-      - ./common:/app/common
-      - ./mcp_tools:/app/mcp_tools
+      - ./backend/agent:/app/agent
+      - ./backend/common:/app/common
+      - ./backend/mcp_tools:/app/mcp_tools
     environment:
       - PYTHONPATH=/app
     depends_on:
@@ -34,17 +34,37 @@ services:
 
   client:
     build:
-      context: .
+      context: ./backend
       dockerfile: ./clients/Dockerfile
     volumes:
-      - ./clients:/app/clients
-      - ./common:/app/common
+      - ./backend/clients:/app/clients
+      - ./backend/common:/app/common
     environment:
       - PYTHONPATH=/app
     depends_on:
       - agent
     networks:
       - sofia-network
+    stdin_open: true
+    tty: true
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+    networks:
+      - sofia-network
+    depends_on:
+      - agent
     stdin_open: true
     tty: true
 
