@@ -54,18 +54,29 @@ The system also includes an article quality assessment tool that evaluates text 
 ## Setup
 
 1. Clone this repository
-2. Install dependencies:
-   ```
+2. **Navigate to Service/UI Directories:** Dependencies are managed within each service/UI directory.
+   ```bash
+   cd services/agent-service
    pip install -r requirements.txt
+   cd ../../ui/web
+   npm install
+   cd ../.. # Return to root
    ```
-3. Configure your environment variables by editing the `.env` file:
+3. **Configure Environment Variables:** Copy `.env.example` within `services/agent-service` to `.env` and configure it:
+   ```bash
+   cp services/agent-service/.env.example services/agent-service/.env
+   # Now edit services/agent-service/.env
    ```
-   # Server Configuration
-   A2A_SERVER_HOST=0.0.0.0
-   A2A_SERVER_PORT=8000
+   Example structure within `services/agent-service/.env`:
+   ```dotenv
+   # Agent Service Configuration (Example - Adjust as needed)
+   # A2A_SERVER_HOST=0.0.0.0 # Often managed by Docker/runtime
+   # A2A_SERVER_PORT=8001    # Port exposed by agent-service
 
-   # External Services
-   ARITHMETIC_TOOL_URL=http://localhost:5001
+   # External Services (within Docker network)
+   ARITHMETIC_TOOL_URL=http://arithmetic-tool:5001 # Example service name and port
+   REDIS_HOST=redis
+   REDIS_PORT=6379
 
    # API Keys
    OPENAI_API_KEY=your_openai_api_key_here
@@ -73,37 +84,25 @@ The system also includes an article quality assessment tool that evaluates text 
    # Model Configuration
    LLM_MODEL=gpt-3.5-turbo
    ```
-   
-   Be sure to replace `your_openai_api_key_here` with your actual OpenAI API key.
+   *   Ensure ports and service names match your `docker-compose.yml` configuration (e.g., `agent-service` runs on `8001`, `arithmetic-tool` on `5001`).
+   *   Replace `your_openai_api_key_here` with your actual OpenAI API key.
 
 ## Running the Project
 
-You can run S.O.F.I.A. in two ways:
+You can run S.O.F.I.A. using Docker Compose (Recommended):
 
-1. Using the startup script:
-   ```bash
-   python start.py
-   ```
+```bash
+docker compose up --build
+```
+This command will build and start all the services defined in `docker-compose.yml` (Redis, Agent Service, Arithmetic Tool, Web UI, etc.).
 
-   Options:
-   ```
-   --no-client    Don't start the client
-   --debug        Enable debug logging
-   ```
-
-   This script will start all necessary components:
-   - Arithmetic Tool
-   - Agent
-   - Client (unless --no-client is specified)
-
-2. Using Docker:
-   ```bash
-   docker compose up --build
-   ```
+*(Note: The previous `start.py` script is now located within `services/agent-service` and might require adjustments to run standalone outside of Docker.)*
 
 ## Usage
 
-Send requests to the agent with arithmetic queries like:
+Interact with the system via the Web UI (typically running on `http://localhost:3000`) or potentially through direct API calls if the gateway service is configured.
+
+Example arithmetic queries for the agent:
 - "What is 5 + 3?"
 - "Calculate 10 * 7"
 - "Divide 100 by 2"
@@ -119,11 +118,13 @@ This agent uses:
 
 ## Components
 
-The system consists of the following main parts:
-- **Agent**: A LangGraph-based intelligent agent.
-- **MCP Tools**: A collection of tools following the Model Context Protocol, located in the `mcp_tools` directory.
-- **A2A Protocol**: Implementation of Google's Agent2Agent protocol for enabling communication between different agents.
-- **Client**: A simple client that communicates with the agent using the a2a protocol.
+The system consists of the following main parts within their respective directories:
+
+- **Agent Service (`services/agent-service/agent`)**: A LangGraph-based intelligent agent.
+- **MCP Tools (`services/agent-service/mcp_tools`)**: Contains tools like the Arithmetic Tool.
+- **Common Utilities (`services/agent-service/common`)**: Includes shared code, such as the A2A protocol implementation.
+- **Test Clients (`services/agent-service/clients`)**: Example clients for interacting with services.
+- **Web UI (`ui/web`)**: The frontend application (Next.js based).
 
 ### A2A Protocol
 
@@ -135,75 +136,73 @@ S.O.F.I.A. implements the Agent2Agent (A2A) protocol, an open standard developed
 - **Structured Messaging**: Support for text, files, and structured data exchanges
 - **Push Notifications**: Asynchronous updates through webhook mechanisms
 
-The protocol implementation can be found in `common/a2a/protocol.py`.
+The protocol implementation can be found in `services/agent-service/common/a2a/`.
 
 ### Arithmetic Tool
 
-A simple MCP tool that performs basic arithmetic operations (addition, subtraction, multiplication, division) based on natural language input.
+Located in `services/agent-service/mcp_tools/arithmetic_tool`. A simple MCP tool that performs basic arithmetic operations (addition, subtraction, multiplication, division) based on natural language input.
 
 ### Agent
 
-A simple agent built with LangGraph that can process messages and use the arithmetic tool to perform calculations.
+Located in `services/agent-service/agent`. A simple agent built with LangGraph that can process messages and use the arithmetic tool to perform calculations.
 
 ### Client
 
-A simple client that sends test messages to the agent and displays the responses.
+Example clients are located in `services/agent-service/clients`.
 
 ## Project Structure
 
 ```
 sofia/
-├── .env.example            # Example environment variables
 ├── .gitignore              # Git ignore rules
-├── requirements.txt        # Project dependencies (for local setup/dev)
 ├── README.md               # Project overview and setup
 ├── docker-compose.yml      # Docker Compose orchestration
-├── start.py                # Local development startup script
 │
-├── agent/                  # Agent Service
-│   ├── Dockerfile          # Docker configuration for the agent
-│   ├── requirements.txt    # Agent specific dependencies
-│   └── src/
-│       ├── main.py         # Agent entry point with LangGraph implementation
+├── services/
+│   ├── agent-service/        # Primary backend service
+│   │   ├── .env.example      # Environment variables for agent-service
+│   │   ├── requirements.txt  # Root dependencies for agent-service Python parts
+│   │   ├── start.py          # Local development startup script (might need updates)
+│   │   │
+│   │   ├── agent/            # Core Agent logic
+│   │   │   ├── Dockerfile
+│   │   │   ├── requirements.txt
+│   │   │   └── src/main.py
+│   │   │
+│   │   ├── clients/          # Example clients
+│   │   │   ├── Dockerfile
+│   │   │   ├── requirements.txt
+│   │   │   └── src/client.py
+│   │   │
+│   │   ├── common/           # Shared Python code
+│   │   │   ├── __init__.py
+│   │   │   └── a2a/          # A2A Protocol implementation
+│   │   │       ├── ...
+│   │   │
+│   │   └── mcp_tools/        # MCP Tools
+│   │       └── arithmetic_tool/
+│   │           ├── Dockerfile
+│   │           ├── requirements.txt
+│   │           └── src/
+│   │               ├── tool.py
+│   │               └── mcp_client.py
+│   │
+│   └── (Other potential services like gateway-service, tool-execution-service...) # If added
 │
-├── mcp_tools/              # MCP Tool Services
-│   ├── arithmetic_tool/    # Arithmetic tool service
-│   │   ├── Dockerfile      # Docker configuration for arithmetic tool
-│   │   ├── requirements.txt # Arithmetic tool dependencies
-│   │   └── src/
-│   │       ├── tool.py     # Tool logic and MCP implementation
-│   │       ├── mcp_client.py # Client for the arithmetic tool
-│
-├── common/                 # Common utilities and protocols
-│   ├── a2a/                # A2A protocol implementation
-│   │   ├── protocol.py     # Protocol definitions and utilities
-│   │   ├── server/             # Server implementations
-│   │   │   ├── server.py       # Base server implementation
-│   │   │   ├── task_manager.py # Task manager for handling tasks
-│   └── client/             # Client implementations
-│       └── client.py       # Client implementation
-│
-├── clients/                # Test Clients
-│   ├── Dockerfile          # Docker configuration for clients
-│   ├── requirements.txt    # Client dependencies
-│   └── src/
-│       ├── client.py       # Simple client implementation using a2a protocol
+└── ui/
+    └── web/                  # Frontend Web UI (Next.js)
+        ├── Dockerfile
+        ├── package.json
+        ├── next.config.ts
+        ├── public/
+        └── src/
+            ├── pages/
+            └── styles/
+
 ```
+*(Note: The structure above is simplified. Refer to `docker-compose.yml` for the definitive list of services and their configurations.)*
 
 ## Testing the Agent
-
-The agent will automatically run through a set of test queries when started:
-- "What is 5 + 3?"
-- "Calculate 10 * 7"
-- "Divide 100 by 2"
-- "What is the sum of 4, 8, and 12?"
-- "Tell me a joke" (non-arithmetic query)
-
-After running the test queries, you can interact with the agent by typing in the console.
-
-To exit the client, type "exit", "quit", or "q".
-
-## Contributing Guidelines
 
 We welcome contributions to S.O.F.I.A.! To ensure a smooth development process, please follow these guidelines:
 
