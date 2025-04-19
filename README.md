@@ -202,7 +202,7 @@ sofia/
 ```
 *(Note: The structure above is simplified. Refer to `docker-compose.yml` for the definitive list of services and their configurations.)*
 
-## Testing the Agent
+## Contribution
 
 We welcome contributions to S.O.F.I.A.! To ensure a smooth development process, please follow these guidelines:
 
