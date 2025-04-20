@@ -2,7 +2,7 @@ import logging
 import asyncio
 import os
 from dotenv import load_dotenv
-from typing import Dict, Any, AsyncIterable, List
+from typing import Dict, Any, AsyncIterable, List, Union
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
@@ -10,13 +10,15 @@ from langchain_core.messages import AIMessage, ToolMessage, HumanMessage, BaseMe
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
+import sys
+# 添加对Sofia根目录的引用
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
 from common.a2a.protocol import (
     AgentCard,
     AgentSkill,
     Message,
 )
 from common.server import A2AServer, TaskManager
-from mcp_tools.arithmetic_tool.src.mcp_client import ArithmeticToolClient
 
 # Load environment variables
 load_dotenv()
@@ -30,53 +32,65 @@ memory = MemorySaver()
 
 # Create the agent card
 agent_card = AgentCard(
-    name="SOFIA Arithmetic Agent",
-    description="A smart agent that can perform arithmetic operations using LLM",
+    name="SOFIA Search Agent",
+    description="A smart agent that can perform internet searches to answer questions",
     url=f"http://{os.getenv('A2A_SERVER_HOST', '0.0.0.0')}:{os.getenv('A2A_SERVER_PORT', '8000')}",
-    version="0.2.0",
+    version="0.1.0",
     skills=[
         AgentSkill(
-            id="arithmetic",
-            name="Arithmetic",
-            description="Perform arithmetic operations (add, subtract, multiply, divide)",
+            id="search",
+            name="Search",
+            description="Search the internet for information",
             examples=[
-                "What is 5 + 3?",
-                "Calculate 10 * 7",
-                "Divide 100 by 2",
-                "What is the sum of 4, 8, and 12?",
+                "Who is the president of United States?",
+                "What is the capital of France?",
+                "Find information about climate change",
+                "Search for recent news about AI developments",
             ],
         )
     ],
 )
 
-# Create an instance of the ArithmeticToolClient
-arithmetic_client = ArithmeticToolClient()
-
 @tool
-async def calculate(expression: str):
-    """Use this to calculate arithmetic expressions.
+async def search(query: str):
+    """Use this to search for information on the internet.
     
     Args:
-        expression: The arithmetic expression to calculate.
+        query: The search query.
         
     Returns:
-        The result of the calculation or an error message.
+        The search results.
     """
     try:
-        # Use the ArithmeticToolClient to calculate the expression
-        result = await arithmetic_client.calculate(expression)
-        return result
+        # This is a mock implementation - in a real application, you would 
+        # connect to an actual search API
+        logger.info(f"Searching for: {query}")
+        
+        # Simulate some delay to mimic a real search
+        await asyncio.sleep(1)
+        
+        # Return mock search results based on query keywords
+        if "president" in query.lower() and "united states" in query.lower():
+            return "Joe Biden is the current President of the United States, serving since January 20, 2021."
+        elif "capital" in query.lower() and "france" in query.lower():
+            return "Paris is the capital of France."
+        elif "climate change" in query.lower():
+            return "Climate change refers to long-term shifts in temperatures and weather patterns, mainly caused by human activities, especially the burning of fossil fuels."
+        elif "ai" in query.lower() or "artificial intelligence" in query.lower():
+            return "Recent AI developments include advancements in large language models, multimodal AI systems, and AI regulation frameworks across various countries."
+        else:
+            return f"Search results for: {query}\n- This is a mock search result.\n- In a production environment, this would connect to a real search API.\n- The query would return relevant information from the internet."
     except Exception as e:
-        logger.error(f"Error calculating expression: {e}")
-        return {"error": f"Failed to calculate: {str(e)}"}
+        logger.error(f"Error searching for information: {e}")
+        return {"error": f"Failed to search: {str(e)}"}
 
-class ArithmeticAgent:
+class SearchAgent:
     SYSTEM_INSTRUCTION = (
-        "You are a specialized assistant for arithmetic calculations. "
-        "Your purpose is to help users solve arithmetic problems. "
-        "Use the 'calculate' tool for any calculations. "
-        "If the user asks about anything other than arithmetic calculations, "
-        "politely state that you can only assist with arithmetic queries."
+        "You are a specialized assistant for internet searches. "
+        "Your purpose is to help users find information by searching the internet. "
+        "Use the 'search' tool to look up information. "
+        "Be concise and informative in your responses, focusing on providing the most relevant information. "
+        "If the search doesn't return useful results, suggest refining the search query."
     )
      
     def __init__(self):
@@ -84,7 +98,7 @@ class ArithmeticAgent:
             model=os.getenv("LLM_MODEL", "gpt-3.5-turbo"),
             openai_api_key=os.getenv("OPENAI_API_KEY")
         )
-        self.tools = [calculate]
+        self.tools = [search]
 
         # Create the prompt for the OpenAI tools agent
         prompt = ChatPromptTemplate.from_messages([
@@ -120,7 +134,7 @@ class ArithmeticAgent:
                     yield {
                         "is_task_complete": False,
                         "require_user_input": False,
-                        "content": "Calculating...",
+                        "content": "Searching...",
                     }
         
         # Final result
@@ -132,7 +146,7 @@ class ArithmeticAgent:
             return {
                 "is_task_complete": False,
                 "require_user_input": True,
-                "content": "We are unable to process your request at the moment. Please try again.",
+                "content": "We are unable to process your search request at the moment. Please try again.",
             }
             
         content = result["output"]
@@ -157,11 +171,11 @@ class ArithmeticAgent:
                 "content": content
             }
 
-# Create the arithmetic agent
-arithmetic_agent = ArithmeticAgent()
+# Create the search agent
+search_agent = SearchAgent()
 
-async def process_message(message: Message) -> str:
-    """Process incoming messages using the LangGraph-based arithmetic agent"""
+async def process_message(message: Message) -> Union[str, Dict[str, Any]]:
+    """Process incoming messages using the LangGraph-based search agent"""
     try:
         # Extract text from message parts
         text_content = ""
@@ -174,14 +188,41 @@ async def process_message(message: Message) -> str:
         # Generate a session ID based on message
         session_id = f"session_{hash(text_content)}"
         
-        # Use the arithmetic agent to process the request
-        response = await arithmetic_agent.invoke(text_content, session_id)
+        # Use the search agent to process the request
+        response = await search_agent.invoke(text_content, session_id)
         
-        return response["content"]
+        # The TaskManager expects either a string (to be wrapped in a TextPart)
+        # or a dictionary (to be wrapped in a DataPart)
+        # Return the response directly - don't extract just the content
+        return response
 
     except Exception as e:
         logger.error(f"Error processing message: {e}")
         return f"Sorry, I encountered an error: {str(e)}"
+
+async def stream_message(message: Message) -> AsyncIterable[Union[str, Dict[str, Any]]]:
+    """Stream responses for incoming messages using the LangGraph-based search agent"""
+    try:
+        # Extract text from message parts
+        text_content = ""
+        for part in message.parts:
+            if part.type == "text":
+                text_content += part.text
+
+        logger.info(f"Streaming response for message: {text_content}")
+
+        # Generate a session ID based on message
+        session_id = f"session_{hash(text_content)}"
+        
+        # Use the search agent to stream responses for the request
+        async for response in search_agent.stream(text_content, session_id):
+            # The TaskManager expects either a string (to be wrapped in a TextPart)
+            # or a dictionary (to be wrapped in a DataPart)
+            yield response.get('content', 'Processing...')
+
+    except Exception as e:
+        logger.error(f"Error streaming message: {e}")
+        yield f"Sorry, I encountered an error: {str(e)}"
 
 async def main():
     """Start the agent server"""
@@ -191,6 +232,9 @@ async def main():
     # Register message handler
     task_manager.register_handler(process_message)
     
+    # Register streaming handler
+    task_manager.register_streaming_handler(stream_message)
+    
     # Create and start server
     server = A2AServer(
         host=os.getenv("A2A_SERVER_HOST", "0.0.0.0"),
@@ -199,7 +243,7 @@ async def main():
         task_manager=task_manager,
     )
     
-    logger.info(f"Starting SOFIA Arithmetic Agent on port {os.getenv('A2A_SERVER_PORT', '8000')}")
+    logger.info(f"Starting SOFIA Search Agent on port {os.getenv('A2A_SERVER_PORT', '8000')}")
     # Use the async start method instead of the blocking one
     await server.start_async()
 

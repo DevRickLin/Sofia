@@ -4,7 +4,6 @@ S.O.F.I.A. Local Development Startup Script
 This script starts all the necessary components for the SOFIA project:
 - Arithmetic Tool
 - Agent
-- Client
 """
 
 import argparse
@@ -22,7 +21,6 @@ processes = []
 def parse_args():
     """Parse command line arguments"""
     parser = argparse.ArgumentParser(description="Start SOFIA components")
-    parser.add_argument("--no-client", action="store_true", help="Don't start the client")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     return parser.parse_args()
 
@@ -94,11 +92,15 @@ async def amain():
     """Async main entry point"""
     args = parse_args()
     
+    # Set current directory to the script's directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
     try:
         # Start arithmetic tool
         tool_process = start_process(
-            ["python", "mcp_tools/arithmetic_tool/src/tool.py"],
-            "Arithmetic Tool"
+            ["python", os.path.join(script_dir, "mcp_tools/arithmetic_tool/src/tool.py")],
+            "Arithmetic Tool",
+            cwd=script_dir
         )
         
         # Wait for tool to start
@@ -107,27 +109,18 @@ async def amain():
         
         # Start agent
         agent_process = start_process(
-            ["python", "agent/src/main.py"],
-            "Agent"
+            ["python", os.path.join(script_dir, "agent/src/main.py")],
+            "Agent",
+            cwd=script_dir
         )
         
         # Wait for agent to start
         print("Waiting for agent to start...")
         await asyncio.sleep(2)
         
-        # Start client (unless --no-client flag is set)
-        if not args.no_client:
-            client_process = start_process(
-                ["python", "clients/src/client.py"],
-                "Client"
-            )
-        
         # Start output logging threads (using threads instead of asyncio for this I/O bound task)
         start_output_thread(tool_process, "TOOL")
         start_output_thread(agent_process, "AGENT")
-        
-        if not args.no_client:
-            start_output_thread(client_process, "CLIENT")
         
         # Monitor processes
         await monitor_processes()

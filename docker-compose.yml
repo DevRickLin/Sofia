@@ -55,7 +55,7 @@ services:
       - "8002:8002"
     volumes:
       - ./services/tool-execution-service:/app
-      - ./services/agent-service/clients:/app/clients
+      - ./ui/cli:/app/ui/cli
       - ./services/agent-service/common:/app/common
     environment:
       - REDIS_HOST=redis
@@ -81,10 +81,10 @@ services:
 
   client:
     build:
-      context: ./services/agent-service
-      dockerfile: ./clients/Dockerfile
+      context: .
+      dockerfile: ./ui/cli/Dockerfile
     volumes:
-      - ./services/agent-service/clients:/app/clients
+      - ./ui/cli:/app/ui/cli
       - ./services/agent-service/common:/app/common
     environment:
       - PYTHONPATH=/app

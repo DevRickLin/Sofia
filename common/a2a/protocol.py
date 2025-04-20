@@ -124,6 +124,16 @@ class SendTaskResponse(JSONRPCResponse):
     result: Task | None = None
 
 
+# Streaming classes
+class SendTaskStreamingRequest(JSONRPCRequest):
+    method: Literal["tasks/send/stream"] = "tasks/send/stream"
+    params: TaskSendParams
+
+
+class SendTaskStreamingResponse(JSONRPCResponse):
+    result: TaskStatusUpdateEvent | TaskArtifactUpdateEvent | None = None
+
+
 # Error types
 class JSONParseError(JSONRPCError):
     code: int = -32700
