@@ -54,11 +54,13 @@ The system also includes an article quality assessment tool that evaluates text 
 ## Setup
 
 1. Clone this repository
-2. **Navigate to Service/UI Directories:** Dependencies are managed within each service/UI directory.
+2. **Install Dependencies:** 
    ```bash
-   cd services/agent-service
    pip install -r requirements.txt
-   cd ../../ui/web
+   ```
+   For UI dependencies:
+   ```bash
+   cd ui/web
    npm install
    cd ../.. # Return to root
    ```
@@ -87,6 +89,14 @@ The system also includes an article quality assessment tool that evaluates text 
    *   Ensure ports and service names match your `docker-compose.yml` configuration (e.g., `agent-service` runs on `8001`, `arithmetic-tool` on `5001`).
    *   Replace `your_openai_api_key_here` with your actual OpenAI API key.
 
+## Development Mode
+
+For local debugging and development, you can use the debug server:
+
+```bash
+python debug_server.py
+```
+
 ## Running the Project
 
 You can run S.O.F.I.A. using Docker Compose (Recommended):
@@ -95,8 +105,6 @@ You can run S.O.F.I.A. using Docker Compose (Recommended):
 docker compose up --build
 ```
 This command will build and start all the services defined in `docker-compose.yml` (Redis, Agent Service, Arithmetic Tool, Web UI, etc.).
-
-*(Note: The previous `start.py` script is now located within `services/agent-service` and might require adjustments to run standalone outside of Docker.)*
 
 ## Usage
 
@@ -122,9 +130,10 @@ The system consists of the following main parts within their respective director
 
 - **Agent Service (`services/agent-service/agent`)**: A LangGraph-based intelligent agent.
 - **MCP Tools (`services/agent-service/mcp_tools`)**: Contains tools like the Arithmetic Tool.
-- **Common Utilities (`services/agent-service/common`)**: Includes shared code, such as the A2A protocol implementation.
-- **Test Clients (`services/agent-service/clients`)**: Example clients for interacting with services.
+- **Common Utilities (`common/`)**: Includes shared code, such as the A2A protocol implementation.
+- **CLI Client (`ui/cli`)**: Example command-line client for interacting with services.
 - **Web UI (`ui/web`)**: The frontend application (Next.js based).
+- **Debug Server (`debug_server.py`)**: Local development server for testing.
 
 ### A2A Protocol
 
@@ -136,7 +145,7 @@ S.O.F.I.A. implements the Agent2Agent (A2A) protocol, an open standard developed
 - **Structured Messaging**: Support for text, files, and structured data exchanges
 - **Push Notifications**: Asynchronous updates through webhook mechanisms
 
-The protocol implementation can be found in `services/agent-service/common/a2a/`.
+The protocol implementation can be found in `common/a2a/`.
 
 ### Arithmetic Tool
 
@@ -148,7 +157,7 @@ Located in `services/agent-service/agent`. A simple agent built with LangGraph t
 
 ### Client
 
-Example clients are located in `services/agent-service/clients`.
+Example CLI client is located in `ui/cli`.
 
 ## Project Structure
 
@@ -157,27 +166,25 @@ sofia/
 ├── .gitignore              # Git ignore rules
 ├── README.md               # Project overview and setup
 ├── docker-compose.yml      # Docker Compose orchestration
+├── debug_server.py         # Local development debug server
+├── requirements.txt        # Root dependencies for Python parts
+│
+├── common/                 # Shared Python code (moved to root level)
+│   ├── __init__.py
+│   └── a2a/                # A2A Protocol implementation
+│       ├── ...
 │
 ├── services/
 │   ├── agent-service/        # Primary backend service
 │   │   ├── .env.example      # Environment variables for agent-service
-│   │   ├── requirements.txt  # Root dependencies for agent-service Python parts
-│   │   ├── start.py          # Local development startup script (might need updates)
+│   │   ├── requirements.txt  # Dependencies for agent-service Python parts
+│   │   ├── start.py          # Local development startup script
+│   │   ├── README.md         # Agent service documentation
 │   │   │
 │   │   ├── agent/            # Core Agent logic
 │   │   │   ├── Dockerfile
 │   │   │   ├── requirements.txt
 │   │   │   └── src/main.py
-│   │   │
-│   │   ├── clients/          # Example clients
-│   │   │   ├── Dockerfile
-│   │   │   ├── requirements.txt
-│   │   │   └── src/client.py
-│   │   │
-│   │   ├── common/           # Shared Python code
-│   │   │   ├── __init__.py
-│   │   │   └── a2a/          # A2A Protocol implementation
-│   │   │       ├── ...
 │   │   │
 │   │   └── mcp_tools/        # MCP Tools
 │   │       └── arithmetic_tool/
@@ -186,10 +193,14 @@ sofia/
 │   │           └── src/
 │   │               ├── tool.py
 │   │               └── mcp_client.py
-│   │
-│   └── (Other potential services like gateway-service, tool-execution-service...) # If added
 │
 └── ui/
+    ├── cli/                  # Command-line client (new)
+    │   ├── Dockerfile
+    │   ├── requirements.txt
+    │   ├── start.py
+    │   └── src/client.py
+    │
     └── web/                  # Frontend Web UI (Next.js)
         ├── Dockerfile
         ├── package.json
@@ -247,5 +258,3 @@ We follow a simple feature branch workflow:
     - Ensure your PR includes a clear description of the changes.
     - Address any feedback or requested changes from reviewers.
 4.  **Merging**: Once the PR is approved and passes checks, it will be merged into `main`. Delete your feature branch after merging.
-
-Thank you for contributing!
