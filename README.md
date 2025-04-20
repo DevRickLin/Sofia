@@ -10,20 +10,6 @@ S.O.F.I.A. is a agent system built with the following technologies:
 - [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol) for tool management
 - [Agent2Agent Protocol (A2A)](https://github.com/google/A2A) for agent communication and interoperability
 
-## Demo Implementation: Arithmetic Agent
-
-This repo contains a basic demo implementation of the SOFIA framework focused on arithmetic operations. The demo consists of:
-
-1. **Arithmetic Tool**: A service that performs basic arithmetic operations (addition, subtraction, multiplication, division)
-2. **Demo Agent**: A simple agent that uses the arithmetic tool to process user requests
-3. **Demo Client**: A client that communicates with the agent using the A2A protocol
-
-The demo supports natural language arithmetic queries like:
-- "What is 5 + 3?"
-- "Calculate 10 * 7"
-- "Divide 100 by 2"
-- "What is the sum of 4, 8, and 12?"
-
 ## Article Quality Assessment
 
 The system also includes an article quality assessment tool that evaluates text content using advanced LLM prompting. This feature:
@@ -89,32 +75,40 @@ The system also includes an article quality assessment tool that evaluates text 
    *   Ensure ports and service names match your `docker-compose.yml` configuration (e.g., `agent-service` runs on `8001`, `arithmetic-tool` on `5001`).
    *   Replace `your_openai_api_key_here` with your actual OpenAI API key.
 
-## Development Mode
-
-For local debugging and development, you can use the debug server:
-
-```bash
-python debug_server.py
-```
-
 ## Running the Project
 
-You can run S.O.F.I.A. using Docker Compose (Recommended):
+### Using Docker Compose (Recommended)
+
+You can run S.O.F.I.A. using Docker Compose:
 
 ```bash
 docker compose up --build
 ```
 This command will build and start all the services defined in `docker-compose.yml` (Redis, Agent Service, Arithmetic Tool, Web UI, etc.).
 
-## Usage
+### Running Components Separately
 
-Interact with the system via the Web UI (typically running on `http://localhost:3000`) or potentially through direct API calls if the gateway service is configured.
+#### Start Agent and Arithmetic Tool
 
-Example arithmetic queries for the agent:
-- "What is 5 + 3?"
-- "Calculate 10 * 7"
-- "Divide 100 by 2"
-- "What is the sum of 4, 8, and 12?"
+To start the Agent service and Arithmetic Tool without Docker:
+
+```bash
+cd services/agent-service
+python start.py
+```
+
+This will start both the Agent and the Arithmetic Tool locally. The script monitors both processes and provides real-time logs with [AGENT] and [TOOL] prefixes.
+
+#### Start CLI Client
+
+To start the CLI client for interacting with the Agent:
+
+```bash
+cd ui/cli
+python start.py
+```
+
+The CLI client will connect to the running Agent service and allow you to send messages and receive responses.
 
 ## Architecture
 
