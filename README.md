@@ -3,6 +3,59 @@
 
 > A modular, search-centric AI agent framework designed to integrate structured information flow and intelligent decision-making.
 
+## 搜索功能说明
+
+S.O.F.I.A. 现在包含使用SerpApi进行Google搜索的功能，可以基于用户输入的关键词进行网络搜索，获取实时信息。
+
+### 搜索功能特点
+
+1. 支持Google搜索：通过SerpApi提供的API进行Google搜索，获取实时网络信息
+2. 提取结构化结果：自动提取搜索结果的标题、链接和摘要等信息
+3. 支持知识图谱：提取Google知识图谱中的相关信息
+4. 灵活的参数配置：支持自定义结果数量、搜索位置等参数
+
+### 使用方法
+
+1. 首先需要在 `.env` 文件中配置SerpApi的API密钥：
+   ```
+   SERPAPI_KEY=your_serpapi_key_here
+   ```
+
+2. 在代码中使用搜索功能：
+   ```python
+   from mcp_tools.arithmetic_tool.algorithm.queryTree import Spider
+   
+   # 创建Spider实例
+   spider = Spider()
+   
+   # 进行搜索
+   search_results = spider.google_search("人工智能最新技术")
+   
+   # 提取结构化结果
+   structured_results = spider.extract_search_results(search_results)
+   
+   # 处理搜索结果
+   for result in structured_results:
+       print(f"标题: {result['title']}")
+       print(f"链接: {result['link']}")
+       print(f"摘要: {result['snippet']}")
+       print("---")
+   ```
+
+3. 或者使用`crawl_node`方法直接获取节点信息：
+   ```python
+   node = spider.crawl_node("人工智能最新技术")
+   if node:
+       print(f"URL: {node.node_url}")
+       print(f"摘要: {node.node_abstract}")
+   ```
+
+### 注意事项
+
+- 使用前必须设置有效的SerpApi API密钥
+- SerpApi是一个付费服务，请注意API使用配额
+- 搜索结果可能受到地区和语言设置的影响
+
 ## Overview
 
 S.O.F.I.A. is a agent system built with the following technologies:

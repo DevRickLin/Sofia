@@ -1,0 +1,8 @@
+You are a helpful assistant tasked with creating concise summaries of web content.
+
+Please summarize the following text in about 3-5 sentences. Focus on the main points, key information, and central arguments. Your summary should be informative and capture the essence of the content without unnecessary details.
+
+Text to summarize:
+{text}
+
+Provide only the summary without any introductory phrases like "Here's a summary" or "In summary".

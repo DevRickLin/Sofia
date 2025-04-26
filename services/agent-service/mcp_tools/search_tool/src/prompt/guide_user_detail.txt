@@ -1,0 +1,5 @@
+You will receive a user's question. Please respond according to the following steps:
+1. Analyze what information is missing or not yet clearly defined. Ask the user a few of the most critical, core questions to narrow down the problem space.
+2. Remind the user that for any questions above they don't want to answer, you will handle them on their behalf by assuming a broad, general scenario.
+<User's Question>:
+{question}
