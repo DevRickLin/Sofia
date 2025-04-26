@@ -101,13 +101,14 @@ class SofiaAgent:
         """Convert MCP_SERVERS configuration to command format for MultiMCPTools."""
         commands = []
         try:
-            # This conversion depends on the format of MCP_SERVERS
-            # Adjust this logic based on your actual configuration
-            for server in MCP_SERVERS:
-                # Assuming MCP_SERVERS contains information like host, port, etc.
-                # You might need to adjust this based on your actual configuration
-                if 'command' in server:
-                    commands.append(server['command'])
+
+            logger.info(f"MCP_SERVERS: {MCP_SERVERS}")
+
+            # Iterate over MCP_SERVERS as a dictionary
+            for server_name, server_config in MCP_SERVERS.items():
+                # Check if command exists in the server configuration
+                if 'command' in server_config:
+                    commands.append(server_config['command'] + " " + " ".join(server_config['args']))
                     
             if not commands:
                 logger.warning("No MCP server commands could be derived from MCP_SERVERS")
@@ -159,10 +160,14 @@ class SofiaAgent:
                     enable_agentic_memory=True,  # Enable agentic memory management
                 )
                 return
-                
+
+            logger.info(f"MCP_SERVERS: {self.mcp_server_commands}")
+
             # Initialize MultiMCPTools with the server commands
             self.mcp_tools = MultiMCPTools(self.mcp_server_commands)
             await self.mcp_tools.__aenter__()
+
+            logger.info(f"MCP_TOOLS: {self.mcp_tools}")
             
             # Create Agno agent with MCP tools
             self.agent = Agent(
@@ -395,26 +400,6 @@ class SofiaAgent:
     async def stream(self, query: str, sessionId: str, user_id: str = None) -> AsyncIterable[Dict[str, Any]]:
         if not self.agent:
             await self.initialize()
-            
-        # Use agent.run(stream=True) to get a streaming response
-        for chunk in self.agent.run(query, stream=True, session_id=sessionId):
-            if chunk.tools and len(chunk.tools) > 0:
-                tool = chunk.tools[-1]
-                response_chunk = {
-                    "is_task_complete": False,
-                    "require_user_input": False,
-                    "content": f"Using {tool.get('name', 'unknown')} tool...",
-                }
-                logger.info(f"Tool chunk for session {sessionId}: {response_chunk}")
-                yield response_chunk
-            elif chunk.content:
-                response_chunk = {
-                    "is_task_complete": False,
-                    "require_user_input": False,
-                    "content": chunk.content,
-                }
-                logger.info(f"Content chunk for session {sessionId}: {response_chunk}")
-                yield response_chunk
         
         # Create a user ID if not provided
         if not user_id:
@@ -434,28 +419,28 @@ class SofiaAgent:
                         await self.delete_user_memory(user_id, memory.id)
                     yield self._format_response("I've removed memories about your name as requested.")
                     return
-            
+
+
+            logger.info(f"SofiaAgent stream query:{query}")
             # Use agent.run(stream=True) to get a streaming response
-            for chunk in self.agent.run(
-                query, 
-                stream=True, 
-                session_id=sessionId,
-                user_id=user_id
-            ):
-                if chunk.tool_calls and chunk.tool_calls[-1]:
-                    tool_call = chunk.tool_calls[-1]
-                    content = f"Using {tool_call.name if hasattr(tool_call, 'name') else 'unknown'} tool..."
-                    yield {
-                        "is_task_complete": False,
-                        "require_user_input": False,
-                        "content": content,
+            for chunk in self.agent.run(query, stream=True, session_id=sessionId):
+                # if chunk.tools and len(chunk.tools) > 0:
+                #     tool = chunk.tools[-1]
+                #     response_chunk = {
+                #     "is_task_complete": False,
+                #     "require_user_input": False,
+                #     "content": f"Using {tool.get('name', 'unknown')} tool...",
+                # }
+                #     logger.info(f"Tool chunk for session {sessionId}: {response_chunk}")
+                #     yield response_chunk
+                if chunk.content:
+                    response_chunk = {
+                    "is_task_complete": False,
+                    "require_user_input": False,
+                    "content": chunk.content,
                     }
-                elif chunk.content:
-                    yield {
-                        "is_task_complete": False,
-                        "require_user_input": False,
-                        "content": chunk.content,
-                    }
+                    logger.info(f"Content chunk for session {sessionId}: {response_chunk}")
+                    yield response_chunk
             
             # The final response is already handled in streaming
         except Exception as e:
@@ -547,11 +532,16 @@ async def stream_message(message: Message) -> AsyncIterable[Union[str, Dict[str,
     
     """Stream responses for incoming messages using the Agno-based agent"""
     try:
+
+        logger.info(f"Streaming message: {message.model_dump_json()}")
+
         # Extract text from message parts
         text_content = ""
         for part in message.parts:
             if part.type == "text":
                 text_content += part.text
+            elif part.type == "data":
+                text_content += part.data.get("prompt", "")
 
         logger.info(f"Streaming response for message: {text_content}")
 
@@ -559,7 +549,7 @@ async def stream_message(message: Message) -> AsyncIterable[Union[str, Dict[str,
         session_id = f"session_{hash(text_content)}"
         
         # Extract user ID if available, otherwise create one
-        user_id = message.user_id if hasattr(message, 'user_id') and message.user_id else f"user_{session_id}"
+        # user_id = message.user_id if hasattr(message, 'user_id') and message.user_id else f"user_{session_id}"
         
         # Use the agent to stream responses for the request
         async for response in sofia_agent.stream(text_content, session_id):

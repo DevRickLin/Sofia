@@ -47,7 +47,9 @@ class TaskManager:
             # Extract task parameters
             task_params = request.params
             task_id = task_params.id
-            
+
+            logger.info(f"Task params: {task_params}")
+
             # Create initial task
             task = Task(
                 id=task_id,
@@ -84,7 +86,9 @@ class TaskManager:
             
             logger.info(f"Starting streaming task with ID: {task_id}")
             logger.info(f"Available streaming handlers: {len(self.streaming_handlers)}")
-            
+
+            logger.info(f"Task params: {task_params}")
+
             # Create initial task
             task = Task(
                 id=task_id,
