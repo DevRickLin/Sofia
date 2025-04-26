@@ -130,38 +130,20 @@ The system also includes an article quality assessment tool that evaluates text 
 
 ## Running the Project
 
-### Using Docker Compose (Recommended)
+### Using Unified Startup Script (Recommended)
 
-You can run S.O.F.I.A. using Docker Compose:
-
-```bash
-docker compose up --build
-```
-This command will build and start all the services defined in `docker-compose.yml` (Redis, Agent Service, Arithmetic Tool, Web UI, etc.).
-
-### Running Components Separately
-
-#### Start Agent and Arithmetic Tool
-
-To start the Agent service and Arithmetic Tool without Docker:
+S.O.F.I.A. now includes a unified startup script that can start all required services:
 
 ```bash
-cd services/agent-service
-python start.py
+# Start with CLI UI (default)
+python script/start.py
+
+# Start with Web UI
+python script/start.py --ui web
+
+# Enable debug logging
+python script/start.py --debug
 ```
-
-This will start both the Agent and the Arithmetic Tool locally. The script monitors both processes and provides real-time logs with [AGENT] and [TOOL] prefixes.
-
-#### Start CLI Client
-
-To start the CLI client for interacting with the Agent:
-
-```bash
-cd ui/cli
-python start.py
-```
-
-The CLI client will connect to the running Agent service and allow you to send messages and receive responses.
 
 ## Architecture
 
@@ -212,9 +194,11 @@ Example CLI client is located in `ui/cli`.
 sofia/
 ├── .gitignore              # Git ignore rules
 ├── README.md               # Project overview and setup
-├── docker-compose.yml      # Docker Compose orchestration
 ├── debug_server.py         # Local development debug server
-├── requirements.txt        # Root dependencies for Python parts
+├── requirements.txt        # Root dependencies for all project components
+├── script/                 # Unified startup scripts
+│   ├── README.md           # Script documentation
+│   └── start.py            # Main startup script
 │
 ├── common/                 # Shared Python code (moved to root level)
 │   ├── __init__.py
@@ -224,32 +208,22 @@ sofia/
 ├── services/
 │   ├── agent-service/        # Primary backend service
 │   │   ├── .env.example      # Environment variables for agent-service
-│   │   ├── requirements.txt  # Dependencies for agent-service Python parts
-│   │   ├── start.py          # Local development startup script
 │   │   ├── README.md         # Agent service documentation
 │   │   │
 │   │   ├── agent/            # Core Agent logic
-│   │   │   ├── Dockerfile
-│   │   │   ├── requirements.txt
 │   │   │   └── src/main.py
 │   │   │
 │   │   └── mcp_tools/        # MCP Tools
 │   │       └── arithmetic_tool/
-│   │           ├── Dockerfile
-│   │           ├── requirements.txt
 │   │           └── src/
 │   │               ├── tool.py
 │   │               └── mcp_client.py
 │
 └── ui/
-    ├── cli/                  # Command-line client (new)
-    │   ├── Dockerfile
-    │   ├── requirements.txt
-    │   ├── start.py
+    ├── cli/                  # Command-line client
     │   └── src/client.py
     │
     └── web/                  # Frontend Web UI (Next.js)
-        ├── Dockerfile
         ├── package.json
         ├── next.config.ts
         ├── public/
@@ -258,7 +232,7 @@ sofia/
             └── styles/
 
 ```
-*(Note: The structure above is simplified. Refer to `docker-compose.yml` for the definitive list of services and their configurations.)*
+*(Note: The structure above is simplified.)*
 
 ## Contribution
 

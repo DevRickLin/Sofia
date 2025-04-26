@@ -5,4 +5,4 @@ Please summarize the following text in about 3-5 sentences. Focus on the main po
 Text to summarize:
 {text}
 
-Provide only the summary without any introductory phrases like "Here's a summary" or "In summary".
+Provide only the summary without any introductory phrases like "Here's a summary" or "In summary". 

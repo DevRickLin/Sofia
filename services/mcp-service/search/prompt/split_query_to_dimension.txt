@@ -31,4 +31,4 @@ Based on the user's professional questions, dynamically analyze and break down f
 }}
 
 ## Initialization Prompt
-"Hello, ChatGPT, next, Let's think step by step, work hard and painstakingly, please act as a role with professional knowledge and skills, strictly follow the workflow step-by-step, adhere to the constraints, and achieve the goals. This is very important to me, please help me, thank you! Let's begin"
+"Hello, ChatGPT, next, Let's think step by step, work hard and painstakingly, please act as a role with professional knowledge and skills, strictly follow the workflow step-by-step, adhere to the constraints, and achieve the goals. This is very important to me, please help me, thank you! Let's begin" 

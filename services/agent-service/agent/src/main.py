@@ -5,20 +5,25 @@ from dotenv import load_dotenv
 from typing import Dict, Any, AsyncIterable, List, Union
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
-from langchain_core.tools import tool
 from langchain_core.messages import AIMessage, ToolMessage, HumanMessage, BaseMessage
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
+from langchain_mcp_adapters.client import MultiServerMCPClient
 import sys
+
 # 添加对Sofia根目录的引用
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
+sys.path.append(ROOT_DIR)
+
+# 从项目根目录导入
 from common.a2a.protocol import (
     AgentCard,
     AgentSkill,
     Message,
 )
 from common.server import A2AServer, TaskManager
+from common.mcp_config import MCP_SERVERS
 
 # Load environment variables
 load_dotenv()
@@ -30,67 +35,33 @@ logger = logging.getLogger(__name__)
 # Create memory saver for LangGraph
 memory = MemorySaver()
 
-# Create the agent card
+# Create the agent card - updated for general purpose agent
 agent_card = AgentCard(
-    name="SOFIA Search Agent",
-    description="A smart agent that can perform internet searches to answer questions",
+    name="SOFIA General Agent",
+    description="A versatile agent with various capabilities provided by MCP servers",
     url=f"http://{os.getenv('A2A_SERVER_HOST', '0.0.0.0')}:{os.getenv('A2A_SERVER_PORT', '8000')}",
     version="0.1.0",
     skills=[
         AgentSkill(
-            id="search",
-            name="Search",
-            description="Search the internet for information",
+            id="general",
+            name="General Assistant",
+            description="Handle various tasks through MCP server tools",
             examples=[
-                "Who is the president of United States?",
-                "What is the capital of France?",
-                "Find information about climate change",
-                "Search for recent news about AI developments",
+                "Perform calculations",
+                "Get information from different sources",
+                "Execute specialized tasks",
+                "Use various integrated tools",
             ],
         )
     ],
 )
 
-@tool
-async def search(query: str):
-    """Use this to search for information on the internet.
-    
-    Args:
-        query: The search query.
-        
-    Returns:
-        The search results.
-    """
-    try:
-        # This is a mock implementation - in a real application, you would 
-        # connect to an actual search API
-        logger.info(f"Searching for: {query}")
-        
-        # Simulate some delay to mimic a real search
-        await asyncio.sleep(1)
-        
-        # Return mock search results based on query keywords
-        if "president" in query.lower() and "united states" in query.lower():
-            return "Joe Biden is the current President of the United States, serving since January 20, 2021."
-        elif "capital" in query.lower() and "france" in query.lower():
-            return "Paris is the capital of France."
-        elif "climate change" in query.lower():
-            return "Climate change refers to long-term shifts in temperatures and weather patterns, mainly caused by human activities, especially the burning of fossil fuels."
-        elif "ai" in query.lower() or "artificial intelligence" in query.lower():
-            return "Recent AI developments include advancements in large language models, multimodal AI systems, and AI regulation frameworks across various countries."
-        else:
-            return f"Search results for: {query}\n- This is a mock search result.\n- In a production environment, this would connect to a real search API.\n- The query would return relevant information from the internet."
-    except Exception as e:
-        logger.error(f"Error searching for information: {e}")
-        return {"error": f"Failed to search: {str(e)}"}
-
-class SearchAgent:
+class SofiaAgent:
     SYSTEM_INSTRUCTION = (
-        "You are a specialized assistant for internet searches. "
-        "Your purpose is to help users find information by searching the internet. "
-        "Use the 'search' tool to look up information. "
+        "You are a versatile assistant with access to various tools from MCP servers. "
+        "Use the tools available to you to respond to user queries and perform tasks. "
         "Be concise and informative in your responses, focusing on providing the most relevant information. "
-        "If the search doesn't return useful results, suggest refining the search query."
+        "If you can't complete a request with your available tools, explain what capabilities you'd need."
     )
      
     def __init__(self):
@@ -98,32 +69,83 @@ class SearchAgent:
             model=os.getenv("LLM_MODEL", "gpt-3.5-turbo"),
             openai_api_key=os.getenv("OPENAI_API_KEY")
         )
-        self.tools = [search]
+        # Initialize with empty tools list - all tools will come from MCP servers
+        self.tools = []
+        # Initialize MCP client and executor
+        self.mcp_client = None
+        self.executor = None
 
-        # Create the prompt for the OpenAI tools agent
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", self.SYSTEM_INSTRUCTION),
-            MessagesPlaceholder(variable_name="messages"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
-        
-        # Create the OpenAI tools agent
-        agent = create_openai_tools_agent(self.model, self.tools, prompt)
-        
-        # Create the agent executor
-        self.executor = AgentExecutor(
-            agent=agent,
-            tools=self.tools,
-            verbose=True,
-            return_intermediate_steps=True
-        )
+    async def initialize(self):
+        """Initialize the agent with MCP tools"""
+        try:
+            # Initialize MCP client with server configs from common/mcp_config.py
+            self.mcp_client = MultiServerMCPClient(MCP_SERVERS)
+            await self.mcp_client.__aenter__()
+            
+            # Get MCP tools and add them to the agent's tools
+            self.tools = self.mcp_client.get_tools()
+            logger.info(f"Loaded {len(self.tools)} tools from MCP servers")
+            
+            if not self.tools:
+                logger.warning("No tools were loaded from MCP servers")
+            
+            # Create the prompt for the OpenAI tools agent
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", self.SYSTEM_INSTRUCTION),
+                MessagesPlaceholder(variable_name="messages"),
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
+            ])
+            
+            # Create the OpenAI tools agent
+            agent = create_openai_tools_agent(self.model, self.tools, prompt)
+            
+            # Create the agent executor
+            self.executor = AgentExecutor(
+                agent=agent,
+                tools=self.tools,
+                verbose=True,
+                return_intermediate_steps=True
+            )
+            
+            logger.info("Sofia Agent initialized with MCP tools")
+        except Exception as e:
+            logger.error(f"Error initializing MCP client: {e}")
+            # If MCP initialization fails completely, create a basic executor with no tools
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", "You are a basic assistant without tools. You can only have conversations."),
+                MessagesPlaceholder(variable_name="messages"),
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
+            ])
+            agent = create_openai_tools_agent(self.model, [], prompt)
+            self.executor = AgentExecutor(
+                agent=agent,
+                tools=[],
+                verbose=True,
+                return_intermediate_steps=True
+            )
+            logger.info("Sofia Agent initialized with no tools (MCP failed)")
+
+    async def cleanup(self):
+        """Clean up MCP client resources"""
+        if self.mcp_client:
+            try:
+                await self.mcp_client.__aexit__(None, None, None)
+                logger.info("MCP client cleaned up")
+            except Exception as e:
+                logger.error(f"Error cleaning up MCP client: {e}")
 
     async def invoke(self, query: str, sessionId: str) -> Dict[str, Any]:
+        if not self.executor:
+            await self.initialize()
+            
         messages = [HumanMessage(content=query)]
         result = await self.executor.ainvoke({"messages": messages})
         return self._format_response(result)
 
     async def stream(self, query: str, sessionId: str) -> AsyncIterable[Dict[str, Any]]:
+        if not self.executor:
+            await self.initialize()
+            
         messages = [HumanMessage(content=query)]
         
         # Handle intermediate steps
@@ -131,10 +153,11 @@ class SearchAgent:
             if "intermediate_steps" in chunk and chunk["intermediate_steps"]:
                 step = chunk["intermediate_steps"][-1]
                 if isinstance(step[0], dict) and "tool" in step[0]:
+                    tool_name = step[0].get("tool", "unknown")
                     yield {
                         "is_task_complete": False,
                         "require_user_input": False,
-                        "content": "Searching...",
+                        "content": f"Using {tool_name} tool...",
                     }
         
         # Final result
@@ -146,7 +169,7 @@ class SearchAgent:
             return {
                 "is_task_complete": False,
                 "require_user_input": True,
-                "content": "We are unable to process your search request at the moment. Please try again.",
+                "content": "We are unable to process your request at the moment. Please try again.",
             }
             
         content = result["output"]
@@ -171,11 +194,11 @@ class SearchAgent:
                 "content": content
             }
 
-# Create the search agent
-search_agent = SearchAgent()
+# Create the general-purpose agent
+sofia_agent = SofiaAgent()
 
 async def process_message(message: Message) -> Union[str, Dict[str, Any]]:
-    """Process incoming messages using the LangGraph-based search agent"""
+    """Process incoming messages using the LangGraph-based agent"""
     try:
         # Extract text from message parts
         text_content = ""
@@ -188,8 +211,8 @@ async def process_message(message: Message) -> Union[str, Dict[str, Any]]:
         # Generate a session ID based on message
         session_id = f"session_{hash(text_content)}"
         
-        # Use the search agent to process the request
-        response = await search_agent.invoke(text_content, session_id)
+        # Use the agent to process the request
+        response = await sofia_agent.invoke(text_content, session_id)
         
         # The TaskManager expects either a string (to be wrapped in a TextPart)
         # or a dictionary (to be wrapped in a DataPart)
@@ -201,7 +224,7 @@ async def process_message(message: Message) -> Union[str, Dict[str, Any]]:
         return f"Sorry, I encountered an error: {str(e)}"
 
 async def stream_message(message: Message) -> AsyncIterable[Union[str, Dict[str, Any]]]:
-    """Stream responses for incoming messages using the LangGraph-based search agent"""
+    """Stream responses for incoming messages using the LangGraph-based agent"""
     try:
         # Extract text from message parts
         text_content = ""
@@ -214,8 +237,8 @@ async def stream_message(message: Message) -> AsyncIterable[Union[str, Dict[str,
         # Generate a session ID based on message
         session_id = f"session_{hash(text_content)}"
         
-        # Use the search agent to stream responses for the request
-        async for response in search_agent.stream(text_content, session_id):
+        # Use the agent to stream responses for the request
+        async for response in sofia_agent.stream(text_content, session_id):
             # The TaskManager expects either a string (to be wrapped in a TextPart)
             # or a dictionary (to be wrapped in a DataPart)
             yield response.get('content', 'Processing...')
@@ -226,26 +249,33 @@ async def stream_message(message: Message) -> AsyncIterable[Union[str, Dict[str,
 
 async def main():
     """Start the agent server"""
-    # Create task manager
-    task_manager = TaskManager()
-    
-    # Register message handler
-    task_manager.register_handler(process_message)
-    
-    # Register streaming handler
-    task_manager.register_streaming_handler(stream_message)
-    
-    # Create and start server
-    server = A2AServer(
-        host=os.getenv("A2A_SERVER_HOST", "0.0.0.0"),
-        port=int(os.getenv("A2A_SERVER_PORT", "8000")),
-        agent_card=agent_card,
-        task_manager=task_manager,
-    )
-    
-    logger.info(f"Starting SOFIA Search Agent on port {os.getenv('A2A_SERVER_PORT', '8000')}")
-    # Use the async start method instead of the blocking one
-    await server.start_async()
+    try:
+        # Initialize agent with MCP tools
+        await sofia_agent.initialize()
+        
+        # Create task manager
+        task_manager = TaskManager()
+        
+        # Register message handler
+        task_manager.register_handler(process_message)
+        
+        # Register streaming handler
+        task_manager.register_streaming_handler(stream_message)
+        
+        # Create and start server
+        server = A2AServer(
+            host=os.getenv("A2A_SERVER_HOST", "0.0.0.0"),
+            port=int(os.getenv("A2A_SERVER_PORT", "8000")),
+            agent_card=agent_card,
+            task_manager=task_manager,
+        )
+        
+        logger.info(f"Starting SOFIA General Agent on port {os.getenv('A2A_SERVER_PORT', '8000')}")
+        # Use the async start method instead of the blocking one
+        await server.start_async()
+    finally:
+        # Clean up MCP client when server stops
+        await sofia_agent.cleanup()
 
 if __name__ == "__main__":
     asyncio.run(main()) 

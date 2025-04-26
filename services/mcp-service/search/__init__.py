@@ -1,0 +1,1 @@
+"""Search MCP tool module""" 
