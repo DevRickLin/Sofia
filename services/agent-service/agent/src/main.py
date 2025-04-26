@@ -356,17 +356,9 @@ class SofiaAgent:
         if not self.agent:
             raise Exception("Agent not initialized")
 
-<<<<<<< HEAD
-        # Use agent.run() to get a complete response
-        response: RunResponse = self.agent.run(query, session_id=sessionId)
-        formatted_response = self._format_response(response.content if response else "")
-        logger.info(f"Response for session {sessionId}: {formatted_response}")
-        return formatted_response
-=======
         # Create a user ID if not provided
         if not user_id:
             user_id = f"user_{sessionId}"
->>>>>>> 8ee5987 (add memory)
 
         try:
             # Check if this is a memory management command
@@ -404,17 +396,16 @@ class SofiaAgent:
         if not self.agent:
             await self.initialize()
             
-<<<<<<< HEAD
         # Use agent.run(stream=True) to get a streaming response
         for chunk in self.agent.run(query, stream=True, session_id=sessionId):
-            if chunk.tool_calls and chunk.tool_calls[-1]:
-                tool_call = chunk.tool_calls[-1]
+            if chunk.tools and len(chunk.tools) > 0:
+                tool = chunk.tools[-1]
                 response_chunk = {
                     "is_task_complete": False,
                     "require_user_input": False,
-                    "content": f"Using {tool_call.name if hasattr(tool_call, 'name') else 'unknown'} tool...",
+                    "content": f"Using {tool.get('name', 'unknown')} tool...",
                 }
-                logger.info(f"Tool call chunk for session {sessionId}: {response_chunk}")
+                logger.info(f"Tool chunk for session {sessionId}: {response_chunk}")
                 yield response_chunk
             elif chunk.content:
                 response_chunk = {
@@ -425,12 +416,6 @@ class SofiaAgent:
                 logger.info(f"Content chunk for session {sessionId}: {response_chunk}")
                 yield response_chunk
         
-        # Get the final complete response
-        final_response: RunResponse = self.agent.run(query, session_id=sessionId)
-        formatted_response = self._format_response(final_response.content if final_response else "")
-        logger.info(f"Final streaming response for session {sessionId}: {formatted_response}")
-        yield formatted_response
-=======
         # Create a user ID if not provided
         if not user_id:
             user_id = f"user_{sessionId}"
@@ -480,7 +465,14 @@ class SofiaAgent:
                 "require_user_input": True,
                 "content": f"An error occurred while processing your request: {str(e)}"
             }
->>>>>>> 8ee5987 (add memory)
+        # Send completion message instead of making another API call
+        completion_response = {
+            "is_task_complete": True,
+            "require_user_input": False,
+            "content": "Task completed",
+        }
+        logger.info(f"Final completion response for session {sessionId}: {completion_response}")
+        yield completion_response
         
     def _format_response(self, result: str) -> Dict[str, Any]:
         if not result:
@@ -528,11 +520,12 @@ async def process_message(message: Message) -> Union[str, Dict[str, Any]]:
     try:
         # Extract text from message parts
         text_content = ""
+
+        logger.info(f"Processing message: {message.model_dump_json()}")
+
         for part in message.parts:
             if part.type == "text":
                 text_content += part.text
-
-        logger.info(f"Processing message: {text_content}")
 
         # Generate a session ID based on message
         session_id = f"session_{hash(text_content)}"
@@ -569,11 +562,8 @@ async def stream_message(message: Message) -> AsyncIterable[Union[str, Dict[str,
         user_id = message.user_id if hasattr(message, 'user_id') and message.user_id else f"user_{session_id}"
         
         # Use the agent to stream responses for the request
-        logger.info("--------------------------------")
-        logger.info(f"SofiaAgent stream_message text_content:{text_content}")
-        logger.info("--------------------------------")
-        async for response in sofia_agent.stream(text_content, session_id, user_id):
-            yield response.get('content', 'Processing...')
+        async for response in sofia_agent.stream(text_content, session_id):
+            yield response
 
     except Exception as e:
         logger.error(f"Error streaming message: {e}")

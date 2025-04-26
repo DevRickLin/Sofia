@@ -167,11 +167,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 // Add any other relevant properties that might help the AI understand the context
             };
             
-            const response = await generateChatResponse(client, canvasData, userQuestion, setChatHistory);
-            setChatHistory((prev) => [
-                ...prev,
-                { type: "assistant", content: response, id: `assistant-${Date.now()}` },
-            ]);
+            await generateChatResponse(client, canvasData, userQuestion, setChatHistory);
         } catch (error) {
             console.error("Error:", error);
             setChatHistory((prev) => [

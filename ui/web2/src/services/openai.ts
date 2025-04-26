@@ -36,7 +36,7 @@ User question: ${userQuestion}`;
       for await (const chunk of streamGenerator) {
         // Extract text content based on the type of event
         let textContent = '';
-        
+       
         // Handle TaskStatusUpdateEvent (has status with possibly a message)
         if ('status' in chunk && chunk.status) {
           const message = chunk.status.message;
@@ -48,16 +48,33 @@ User question: ${userQuestion}`;
         }
         // Handle TaskArtifactUpdateEvent (has artifact with parts)
         else if ('artifact' in chunk && chunk.artifact) {
+
+          console.log('chunk.artifact', chunk.artifact);
+
           const parts = chunk.artifact.parts;
           if (parts && parts.length > 0) {
-            // Look for text parts in the artifact
-            const textParts = parts.filter(part => part.type === 'text');
-            textContent = textParts.map(part => (part as { text: string }).text).join('');
+            for (const part of parts) {
+              switch (part.type) {
+                case 'text':
+                  textContent += part.text;
+                  break;
+                case 'data':
+                  if (part.data.is_task_complete) {
+                    continue;
+                  }
+                  textContent += part.data.content;
+                  break;
+                default:
+                  break;
+              }
+            }
           }
         }
         
         fullResponse += textContent;
-        
+       
+        console.log('fullResponse', fullResponse);
+
         // Update the message with the accumulated response
         setChatHistory(prev => {
           const newHistory = [...prev];
