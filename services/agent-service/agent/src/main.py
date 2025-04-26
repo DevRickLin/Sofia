@@ -2,19 +2,18 @@ import logging
 import asyncio
 import os
 from dotenv import load_dotenv
-from typing import Dict, Any, AsyncIterable, List, Union
+from typing import Dict, Any, AsyncIterable, List, Union, Iterator
 from pydantic import BaseModel
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import AIMessage, ToolMessage, HumanMessage, BaseMessage
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langgraph.checkpoint.memory import MemorySaver
-from langchain_mcp_adapters.client import MultiServerMCPClient
 import sys
 
 # 添加对Sofia根目录的引用
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
 sys.path.append(ROOT_DIR)
+
+# Import Agno libraries
+from agno.agent import Agent, RunResponse
+from agno.models.openai import OpenAIChat
+from agno.tools.mcp import MultiMCPTools
 
 # 从项目根目录导入
 from common.a2a.protocol import (
@@ -31,9 +30,6 @@ load_dotenv()
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Create memory saver for LangGraph
-memory = MemorySaver()
 
 # Create the agent card - updated for general purpose agent
 agent_card = AgentCard(
@@ -65,114 +61,121 @@ class SofiaAgent:
     )
      
     def __init__(self):
-        self.model = ChatOpenAI(
-            model=os.getenv("LLM_MODEL", "gpt-3.5-turbo"),
-            openai_api_key=os.getenv("OPENAI_API_KEY")
-        )
-        # Initialize with empty tools list - all tools will come from MCP servers
-        self.tools = []
-        # Initialize MCP client and executor
-        self.mcp_client = None
-        self.executor = None
-
+        self.model_name = os.getenv("LLM_MODEL", "gpt-3.5-turbo")
+        self.api_key = os.getenv("OPENAI_API_KEY")
+        self.agent = None
+        self.mcp_tools = None
+        
+        # Convert MCP_SERVERS to a format usable by MultiMCPTools
+        self.mcp_server_commands = self._convert_mcp_servers_to_commands()
+        
+    def _convert_mcp_servers_to_commands(self):
+        """Convert MCP_SERVERS configuration to command format for MultiMCPTools."""
+        commands = []
+        try:
+            # This conversion depends on the format of MCP_SERVERS
+            # Adjust this logic based on your actual configuration
+            for server in MCP_SERVERS:
+                # Assuming MCP_SERVERS contains information like host, port, etc.
+                # You might need to adjust this based on your actual configuration
+                if 'command' in server:
+                    commands.append(server['command'])
+                    
+            if not commands:
+                logger.warning("No MCP server commands could be derived from MCP_SERVERS")
+                
+            return commands
+        except Exception as e:
+            logger.error(f"Error converting MCP servers to commands: {e}")
+            return []
+        
     async def initialize(self):
         """Initialize the agent with MCP tools"""
         try:
-            # Initialize MCP client with server configs from common/mcp_config.py
-            self.mcp_client = MultiServerMCPClient(MCP_SERVERS)
-            await self.mcp_client.__aenter__()
+            # If no MCP server commands were found, create a basic agent
+            if not self.mcp_server_commands:
+                logger.warning("No MCP servers configured, creating basic agent without tools")
+                self.agent = Agent(
+                    model=OpenAIChat(id=self.model_name, api_key=self.api_key),
+                    description="You are a basic assistant without tools. You can only have conversations."
+                )
+                return
+                
+            # Initialize MultiMCPTools with the server commands
+            self.mcp_tools = MultiMCPTools(self.mcp_server_commands)
+            await self.mcp_tools.__aenter__()
             
-            # Get MCP tools and add them to the agent's tools
-            self.tools = self.mcp_client.get_tools()
-            logger.info(f"Loaded {len(self.tools)} tools from MCP servers")
-            
-            if not self.tools:
-                logger.warning("No tools were loaded from MCP servers")
-            
-            # Create the prompt for the OpenAI tools agent
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", self.SYSTEM_INSTRUCTION),
-                MessagesPlaceholder(variable_name="messages"),
-                MessagesPlaceholder(variable_name="agent_scratchpad"),
-            ])
-            
-            # Create the OpenAI tools agent
-            agent = create_openai_tools_agent(self.model, self.tools, prompt)
-            
-            # Create the agent executor
-            self.executor = AgentExecutor(
-                agent=agent,
-                tools=self.tools,
-                verbose=True,
-                return_intermediate_steps=True
+            # Create Agno agent with MCP tools
+            self.agent = Agent(
+                model=OpenAIChat(id=self.model_name, api_key=self.api_key),
+                description=self.SYSTEM_INSTRUCTION,
+                tools=[self.mcp_tools],
+                show_tool_calls=True
             )
             
-            logger.info("Sofia Agent initialized with MCP tools")
+            logger.info(f"Sofia Agent initialized with MCP tools from {len(self.mcp_server_commands)} servers")
         except Exception as e:
-            logger.error(f"Error initializing MCP client: {e}")
-            # If MCP initialization fails completely, create a basic executor with no tools
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", "You are a basic assistant without tools. You can only have conversations."),
-                MessagesPlaceholder(variable_name="messages"),
-                MessagesPlaceholder(variable_name="agent_scratchpad"),
-            ])
-            agent = create_openai_tools_agent(self.model, [], prompt)
-            self.executor = AgentExecutor(
-                agent=agent,
-                tools=[],
-                verbose=True,
-                return_intermediate_steps=True
+            logger.error(f"Error initializing MCP tools: {e}")
+            # If MCP initialization fails, create a basic agent with no tools
+            self.agent = Agent(
+                model=OpenAIChat(id=self.model_name, api_key=self.api_key),
+                description="You are a basic assistant without tools. You can only have conversations."
             )
             logger.info("Sofia Agent initialized with no tools (MCP failed)")
 
     async def cleanup(self):
-        """Clean up MCP client resources"""
-        if self.mcp_client:
+        """Clean up MCP tools resources"""
+        if self.mcp_tools:
             try:
-                await self.mcp_client.__aexit__(None, None, None)
-                logger.info("MCP client cleaned up")
+                await self.mcp_tools.__aexit__(None, None, None)
+                logger.info("MCP tools cleaned up")
             except Exception as e:
-                logger.error(f"Error cleaning up MCP client: {e}")
+                logger.error(f"Error cleaning up MCP tools: {e}")
 
     async def invoke(self, query: str, sessionId: str) -> Dict[str, Any]:
-        if not self.executor:
+        if not self.agent:
             await self.initialize()
-            
-        messages = [HumanMessage(content=query)]
-        result = await self.executor.ainvoke({"messages": messages})
-        return self._format_response(result)
+
+        if not self.agent:
+            raise Exception("Agent not initialized")
+
+        # Use agent.run() to get a complete response
+        response: RunResponse = self.agent.run(query, session_id=sessionId)
+        return self._format_response(response.content if response else "")
 
     async def stream(self, query: str, sessionId: str) -> AsyncIterable[Dict[str, Any]]:
-        if not self.executor:
+        if not self.agent:
             await self.initialize()
             
-        messages = [HumanMessage(content=query)]
+        # Use agent.run(stream=True) to get a streaming response
+        for chunk in self.agent.run(query, stream=True, session_id=sessionId):
+            if chunk.tool_calls and chunk.tool_calls[-1]:
+                tool_call = chunk.tool_calls[-1]
+                yield {
+                    "is_task_complete": False,
+                    "require_user_input": False,
+                    "content": f"Using {tool_call.name if hasattr(tool_call, 'name') else 'unknown'} tool...",
+                }
+            elif chunk.content:
+                yield {
+                    "is_task_complete": False,
+                    "require_user_input": False,
+                    "content": chunk.content,
+                }
         
-        # Handle intermediate steps
-        async for chunk in self.executor.astream({"messages": messages}):
-            if "intermediate_steps" in chunk and chunk["intermediate_steps"]:
-                step = chunk["intermediate_steps"][-1]
-                if isinstance(step[0], dict) and "tool" in step[0]:
-                    tool_name = step[0].get("tool", "unknown")
-                    yield {
-                        "is_task_complete": False,
-                        "require_user_input": False,
-                        "content": f"Using {tool_name} tool...",
-                    }
+        # Get the final complete response
+        final_response: RunResponse = self.agent.run(query, session_id=sessionId)
+        yield self._format_response(final_response.content if final_response else "")
         
-        # Final result
-        result = await self.executor.ainvoke({"messages": messages})
-        yield self._format_response(result)
-        
-    def _format_response(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        if not result or "output" not in result:
+    def _format_response(self, result: str) -> Dict[str, Any]:
+        if not result:
             return {
                 "is_task_complete": False,
                 "require_user_input": True,
                 "content": "We are unable to process your request at the moment. Please try again.",
             }
             
-        content = result["output"]
+        content = result
         
         # Parse the content to determine if more input is needed
         if "I need more information" in content or "Could you provide" in content:
@@ -198,7 +201,7 @@ class SofiaAgent:
 sofia_agent = SofiaAgent()
 
 async def process_message(message: Message) -> Union[str, Dict[str, Any]]:
-    """Process incoming messages using the LangGraph-based agent"""
+    """Process incoming messages using the Agno-based agent"""
     try:
         # Extract text from message parts
         text_content = ""
@@ -214,9 +217,7 @@ async def process_message(message: Message) -> Union[str, Dict[str, Any]]:
         # Use the agent to process the request
         response = await sofia_agent.invoke(text_content, session_id)
         
-        # The TaskManager expects either a string (to be wrapped in a TextPart)
-        # or a dictionary (to be wrapped in a DataPart)
-        # Return the response directly - don't extract just the content
+        # Return the response directly
         return response
 
     except Exception as e:
@@ -224,7 +225,7 @@ async def process_message(message: Message) -> Union[str, Dict[str, Any]]:
         return f"Sorry, I encountered an error: {str(e)}"
 
 async def stream_message(message: Message) -> AsyncIterable[Union[str, Dict[str, Any]]]:
-    """Stream responses for incoming messages using the LangGraph-based agent"""
+    """Stream responses for incoming messages using the Agno-based agent"""
     try:
         # Extract text from message parts
         text_content = ""
@@ -239,8 +240,6 @@ async def stream_message(message: Message) -> AsyncIterable[Union[str, Dict[str,
         
         # Use the agent to stream responses for the request
         async for response in sofia_agent.stream(text_content, session_id):
-            # The TaskManager expects either a string (to be wrapped in a TextPart)
-            # or a dictionary (to be wrapped in a DataPart)
             yield response.get('content', 'Processing...')
 
     except Exception as e:
