@@ -13,6 +13,7 @@
     "@phosphor-icons/react": "^2.1.7",
     "@tailwindcss/vite": "^4.1.4",
     "@xyflow/react": "^12.6.0",
+    "a2a-client": "file:../../common/js/release/a2a-client-1.0.1.tgz",
     "motion": "^12.8.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

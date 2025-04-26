@@ -1,0 +1,32 @@
+# 源文件 - dist 已包含
+client.ts
+
+# 开发和构建相关文件
+.git
+.github
+rollup.config.js
+tsconfig.json
+build.sh
+.vscode
+.idea
+.DS_Store
+
+# 临时文件
+node_modules
+npm-debug.log
+yarn-error.log
+.npm
+*.tgz
+
+# 测试文件
+test
+tests
+__tests__
+coverage
+
+# 示例和文档
+examples
+docs
+BUILD.md
+BROWSER_USAGE.md
+BUILD_DIST.md 
