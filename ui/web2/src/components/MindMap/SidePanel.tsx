@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Node } from "@xyflow/react";
+import type { Node } from "@xyflow/react";
 import {
     X,
     Calendar,
@@ -13,11 +14,13 @@ import {
     Spinner as Loader2,
 } from "@phosphor-icons/react";
 import { generateChatResponse } from "../../services/openai";
+import { useA2AClient } from "../../context/A2AClientContext";
+import type { NodeData } from "../MindMap/types";
 
 interface SidePanelProps {
     isOpen: boolean;
     onClose: () => void;
-    node: Node | null;
+    node: Node<NodeData> | null;
     expandNode: (nodeId: string) => void;
 }
 
@@ -29,12 +32,13 @@ const SidePanel: React.FC<SidePanelProps> = ({
 }) => {
     const [question, setQuestion] = useState("");
     const [chatHistory, setChatHistory] = useState<
-        Array<{ type: "user" | "assistant"; content: string }>
+        Array<{ type: "user" | "assistant"; content: string; id: string }>
     >([]);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const { client } = useA2AClient();
 
-    if (!node) return null;
+    if (!node || !client) return null;
 
     const data = node.data;
 
@@ -46,15 +50,15 @@ const SidePanel: React.FC<SidePanelProps> = ({
         setQuestion("");
         setChatHistory((prev) => [
             ...prev,
-            { type: "user", content: userQuestion },
+            { type: "user", content: userQuestion, id: `user-${Date.now()}` },
         ]);
 
         setIsLoading(true);
         try {
-            const response = await generateChatResponse(data, userQuestion);
+            const response = await generateChatResponse(client, data, userQuestion, setChatHistory);
             setChatHistory((prev) => [
                 ...prev,
-                { type: "assistant", content: response },
+                { type: "assistant", content: response, id: `assistant-${Date.now()}` },
             ]);
         } catch (error) {
             console.error("Error:", error);
@@ -64,6 +68,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
                     type: "assistant",
                     content:
                         "I apologize, but I encountered an error while processing your request.",
+                    id: `error-${Date.now()}`
                 },
             ]);
         } finally {
@@ -87,6 +92,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                 {data.title || data.label || "Details"}
                             </h2>
                             <button
+                                type="button"
                                 onClick={onClose}
                                 className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                             >
@@ -114,11 +120,11 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                             <ul className="mt-2 space-y-1">
                                                 {data.relatedBreakthroughs.map(
                                                     (
-                                                        breakthrough: any,
+                                                        breakthrough: string,
                                                         index: number
                                                     ) => (
                                                         <li
-                                                            key={index}
+                                                            key={`breakthrough-${breakthrough.substring(0, 10)}-${index}`}
                                                             className="flex items-start"
                                                         >
                                                             <ArrowRight className="h-3 w-3 text-emerald-500 mt-0.5 mr-1 flex-shrink-0" />
@@ -137,6 +143,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                         )}
 
                                         <button
+                                            type="button"
                                             onClick={() => expandNode(node.id)}
                                             className="mt-3 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded text-xs font-medium hover:bg-emerald-200 dark:hover:bg-emerald-800/40 transition-colors"
                                         >
@@ -216,7 +223,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                                     {data.keyInsights.map(
                                                         (insight, index) => (
                                                             <div
-                                                                key={index}
+                                                                key={insight.id || `insight-${insight.content.substring(0, 10)}-${index}`}
                                                                 className="bg-sky-50 dark:bg-sky-900/20 rounded p-2"
                                                             >
                                                                 <p className="text-xs text-sky-700 dark:text-sky-300">
@@ -239,13 +246,10 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                                                         <div className="mt-2 flex flex-wrap gap-1">
                                                                             {insight.relatedTechnologies.map(
                                                                                 (
-                                                                                    tech,
-                                                                                    techIndex
+                                                                                    tech: string
                                                                                 ) => (
                                                                                     <span
-                                                                                        key={
-                                                                                            techIndex
-                                                                                        }
+                                                                                        key={`tech-${tech}`}
                                                                                         className="inline-block bg-sky-100 dark:bg-sky-800/40 text-[10px] px-1.5 py-0.5 rounded-full text-sky-700 dark:text-sky-300"
                                                                                     >
                                                                                         {
@@ -264,6 +268,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                         )}
 
                                     <button
+                                        type="button"
                                         onClick={() => expandNode(node.id)}
                                         className="mt-3 px-3 py-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 rounded text-xs font-medium hover:bg-sky-200 dark:hover:bg-sky-800/40 transition-colors"
                                     >
@@ -277,6 +282,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
 
                     <div className="border-t border-gray-200 dark:border-gray-700">
                         <button
+                            type="button"
                             onClick={() => setIsChatOpen(!isChatOpen)}
                             className="w-full p-3 flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                         >
@@ -294,9 +300,9 @@ const SidePanel: React.FC<SidePanelProps> = ({
                         {isChatOpen && (
                             <div className="p-3 border-t border-gray-200 dark:border-gray-700">
                                 <div className="mb-3 max-h-40 overflow-y-auto space-y-3">
-                                    {chatHistory.map((message, index) => (
+                                    {chatHistory.map((message) => (
                                         <div
-                                            key={index}
+                                            key={message.id}
                                             className={`flex ${
                                                 message.type === "user"
                                                     ? "justify-end"

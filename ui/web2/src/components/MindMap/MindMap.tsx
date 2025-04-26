@@ -1,16 +1,18 @@
-import React, { useState, useCallback, useEffect } from "react";
+// Runtime imports
+import { useState, useCallback, useEffect } from "react";
 import {
     ReactFlow,
     Controls,
     Background,
     useNodesState,
     useEdgesState,
-    NodeTypes,
-    Node,
-    ReactFlowInstance,
     BackgroundVariant,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+
+// Type-only imports
+import type { Node as FlowNode, ReactFlowInstance, NodeTypes } from "@xyflow/react";
+import type { MouseEvent } from "react";
 
 import { CategoryNode } from "./Nodes/CategoryNode";
 import { BreakthroughNode } from "./Nodes/BreakthroughNode";
@@ -19,12 +21,19 @@ import SidePanel from "./SidePanel";
 import { useTheme } from "../../context/ThemeContext";
 import { useCanvasStore } from "../../store/canvasStore";
 
+// Define the structure for the custom event
+interface FocusNodeEvent extends CustomEvent {
+    detail: {
+        nodeId: string;
+    };
+}
+
 const nodeTypes: NodeTypes = {
     category: CategoryNode,
     breakthrough: BreakthroughNode,
 };
 
-export const MindMap: React.FC = () => {
+export const MindMap = () => {
     const { theme } = useTheme();
     const { canvases, currentCanvasId, updateCanvas, addCanvas } =
         useCanvasStore();
@@ -36,7 +45,7 @@ export const MindMap: React.FC = () => {
     const [edges, setEdges, onEdgesChange] = useEdgesState(
         currentCanvas?.edges || []
     );
-    const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+    const [selectedNode, setSelectedNode] = useState<FlowNode | null>(null);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [reactFlowInstance, setReactFlowInstance] =
         useState<ReactFlowInstance | null>(null);
@@ -47,7 +56,7 @@ export const MindMap: React.FC = () => {
             setNodes(currentCanvas.nodes);
             setEdges(currentCanvas.edges);
         }
-    }, [currentCanvasId, currentCanvas, setNodes, setEdges]);
+    }, [currentCanvas, setNodes, setEdges]);
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -60,7 +69,7 @@ export const MindMap: React.FC = () => {
     }, [nodes, edges, currentCanvasId, updateCanvas]);
 
     useEffect(() => {
-        const handleFocusNode = (event: CustomEvent) => {
+        const handleFocusNode = (event: FocusNodeEvent) => {
             if (!reactFlowInstance) return;
 
             const nodeId = event.detail.nodeId;
@@ -68,7 +77,9 @@ export const MindMap: React.FC = () => {
 
             if (node) {
                 // Center view on node with some zoom
-                reactFlowInstance.setCenter(node.position.x, node.position.y, {
+                const x = node.position?.x || 0;
+                const y = node.position?.y || 0;
+                reactFlowInstance.setCenter(x, y, {
                     zoom: 1.5,
                     duration: 800,
                 });
@@ -87,7 +98,7 @@ export const MindMap: React.FC = () => {
             );
     }, [reactFlowInstance, nodes]);
 
-    const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    const onNodeClick = useCallback((event: MouseEvent, node: FlowNode) => {
         event.stopPropagation();
         if (node.type === "custom") {
             setSidebarExpanded(true);
@@ -110,7 +121,7 @@ export const MindMap: React.FC = () => {
             y: (window.innerHeight / 2 - 50 - transform.y) / transform.zoom,
         };
 
-        const newNode: Node = {
+        const newNode: FlowNode = {
             id: `custom-${Date.now()}`,
             type: "custom",
             position,
@@ -124,7 +135,7 @@ export const MindMap: React.FC = () => {
                         )
                     );
                 },
-                onSelect: (_id: string) => {
+                onSelect: () => {
                     setSidebarExpanded(true);
                 },
             },
@@ -203,7 +214,7 @@ export const MindMap: React.FC = () => {
                         color={theme === "dark" ? "#374151" : "#e0e0e066"}
                         gap={32}
                         size={1}
-                        bgColor="#fafafa"
+                        bgColor={theme === "dark" ? "#1F2937" : "#fafafa"}
                         variant={BackgroundVariant.Dots}
                     />
                     <Controls className="m-2 text-gray-500 dark:text-gray-100" />

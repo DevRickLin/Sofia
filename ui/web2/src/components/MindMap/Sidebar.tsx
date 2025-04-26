@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     Plus,
-    MapTrifold as Map,
+    MapTrifold as MapIcon,
     Stack as Layers,
     CaretRight as ChevronRight,
     PaperPlaneTilt as Send,
@@ -12,12 +13,28 @@ import {
 } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCanvasStore } from "../../store/canvasStore";
+import { generateChatResponse } from "../../services/openai";
+import { useA2AClient } from "../../context/A2AClientContext";
 
 interface SidebarProps {
     onAddNode: () => void;
     onNewCanvas: () => void;
     isExpanded: boolean;
     onToggleExpanded: (expanded: boolean) => void;
+}
+
+interface KeyInsight {
+    content: string;
+    implications: string;
+}
+
+interface NodeData {
+    title?: string;
+    label?: string;
+    description?: string;
+    summary?: string;
+    details?: string;
+    keyInsights?: KeyInsight[];
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -29,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     const [showMapsDropdown, setShowMapsDropdown] = useState(false);
     const [question, setQuestion] = useState("");
     const [chatHistory, setChatHistory] = useState<
-        Array<{ type: "user" | "ai"; content: string }>
+        Array<{ type: "user" | "assistant"; content: string; id: string }>
     >([]);
     const [isLoading, setIsLoading] = useState(false);
     const [editingCanvasId, setEditingCanvasId] = useState<string | null>(null);
@@ -47,10 +64,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     const searchRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const editInputRef = useRef<HTMLInputElement>(null);
     const { canvases, currentCanvasId, setCurrentCanvas, updateCanvasName } =
         useCanvasStore();
     const currentCanvas = canvases.find((c) => c.id === currentCanvasId);
+    const { client } = useA2AClient();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -75,6 +93,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         }
     }, [showSearch]);
 
+    useEffect(() => {
+        if (editingCanvasId && editInputRef.current) {
+            editInputRef.current.focus();
+        }
+    }, [editingCanvasId]);
+
     const handleSearch = (query: string) => {
         setSearchQuery(query);
         if (!query.trim() || !currentCanvas) {
@@ -84,15 +108,15 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         const results = currentCanvas.nodes
             .filter((node) => {
-                const data = node.data;
+                const data = node.data as unknown as NodeData;
                 const searchText = [
-                    data.title,
-                    data.label,
-                    data.description,
-                    data.summary,
-                    data.details,
+                    data.title || "",
+                    data.label || "",
+                    data.description || "",
+                    data.summary || "",
+                    data.details || "",
                     ...(data.keyInsights?.map(
-                        (insight) =>
+                        (insight: KeyInsight) =>
                             `${insight.content} ${insight.implications}`
                     ) || []),
                 ]
@@ -104,9 +128,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             })
             .map((node) => ({
                 id: node.id,
-                title: node.data.title || node.data.label || "Untitled",
+                title: ((node.data as unknown as NodeData).title || (node.data as unknown as NodeData).label || "Untitled") as string,
                 type: node.type || "unknown",
-                content: node.data.description || node.data.summary || "",
+                content: ((node.data as unknown as NodeData).description || (node.data as unknown as NodeData).summary || "") as string,
             }));
 
         setSearchResults(results);
@@ -125,25 +149,40 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!question.trim() || isLoading) return;
+        if (!question.trim() || isLoading || !client || !currentCanvas) return;
 
         const userQuestion = question.trim();
         setQuestion("");
         setChatHistory((prev) => [
             ...prev,
-            { type: "user", content: userQuestion },
+            { type: "user", content: userQuestion, id: `user-${Date.now()}` },
         ]);
 
         setIsLoading(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            const aiResponse = `Here's what I found about "${userQuestion}"...`;
+            // Create a NodeData object with relevant information from the canvas
+            const canvasData = {
+                title: currentCanvas.name,
+                description: `This is a mind map called "${currentCanvas.name}"`,
+                // Add any other relevant properties that might help the AI understand the context
+            };
+            
+            const response = await generateChatResponse(client, canvasData, userQuestion, setChatHistory);
             setChatHistory((prev) => [
                 ...prev,
-                { type: "ai", content: aiResponse },
+                { type: "assistant", content: response, id: `assistant-${Date.now()}` },
             ]);
         } catch (error) {
             console.error("Error:", error);
+            setChatHistory((prev) => [
+                ...prev,
+                {
+                    type: "assistant",
+                    content:
+                        "I apologize, but I encountered an error while processing your request.",
+                    id: `error-${Date.now()}`
+                },
+            ]);
         } finally {
             setIsLoading(false);
         }
@@ -167,6 +206,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="w-12 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-3 shadow-sm">
                 <div className="flex flex-col items-center space-y-3">
                     <button
+                        type="button"
                         onClick={onAddNode}
                         className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors group relative"
                         title="Add Free Node"
@@ -179,6 +219,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                     <div className="relative" ref={searchRef}>
                         <button
+                            type="button"
                             onClick={() => setShowSearch(!showSearch)}
                             className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors group relative"
                             title="Search"
@@ -217,6 +258,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             <Search className="absolute left-2.5 top-1.5 h-4 w-4 text-gray-400" />
                                             {searchQuery && (
                                                 <button
+                                                    type="button"
                                                     onClick={() => {
                                                         setSearchQuery("");
                                                         setSearchResults([]);
@@ -234,6 +276,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         <div className="max-h-64 overflow-y-auto border-t border-gray-200 dark:border-gray-700">
                                             {searchResults.map((result) => (
                                                 <button
+                                                    type="button"
                                                     key={result.id}
                                                     onClick={() =>
                                                         handleSearchResultClick(
@@ -265,6 +308,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
 
                     <button
+                        type="button"
                         onClick={onNewCanvas}
                         className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors group relative"
                         title="New Canvas"
@@ -281,10 +325,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onMouseLeave={() => setShowMapsDropdown(false)}
                     >
                         <button
+                            type="button"
                             className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors relative"
                             title="My Knowledge Maps"
                         >
-                            <Map className="h-4 w-4" />
+                            <MapIcon className="h-4 w-4" />
                             <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                 My Knowledge Maps
                             </span>
@@ -324,7 +369,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                             )
                                                         }
                                                         className="flex-1 px-1.5 py-0.5 text-xs border rounded focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                                        autoFocus
+                                                        ref={editInputRef}
                                                         onBlur={
                                                             handleCanvasNameSubmit
                                                         }
@@ -333,6 +378,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             ) : (
                                                 <>
                                                     <button
+                                                        type="button"
                                                         onClick={() => {
                                                             setCurrentCanvas(
                                                                 canvas.id
@@ -351,6 +397,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                         {canvas.name}
                                                     </button>
                                                     <button
+                                                        type="button"
                                                         onClick={() => {
                                                             setEditingCanvasId(
                                                                 canvas.id
@@ -374,6 +421,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
 
                 <button
+                    type="button"
                     onClick={() => onToggleExpanded(!isExpanded)}
                     className="mt-auto p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                 >
@@ -405,9 +453,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                            {chatHistory.map((message, index) => (
+                            {chatHistory.map((message) => (
                                 <div
-                                    key={index}
+                                    key={message.id}
                                     className={`flex ${
                                         message.type === "user"
                                             ? "justify-end"
