@@ -1,6 +1,7 @@
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse, PlainTextResponse
 from starlette.requests import Request
+from starlette.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 from common.a2a.protocol import (
     SendTaskRequest,
@@ -50,6 +51,10 @@ class A2AServer:
         endpoint="/",
         agent_card: AgentCard = None,
         task_manager: TaskManager = None,
+        allow_origins: list[str] = ["*"],
+        allow_methods: list[str] = ["GET", "POST", "OPTIONS"],
+        allow_headers: list[str] = ["*"],
+        allow_credentials: bool = False,
     ):
         self.host = host
         self.port = port
@@ -57,6 +62,16 @@ class A2AServer:
         self.task_manager = task_manager
         self.agent_card = agent_card
         self.app = Starlette()
+        
+        # Add CORS middleware
+        self.app.add_middleware(
+            CORSMiddleware,
+            allow_origins=allow_origins,
+            allow_methods=allow_methods,
+            allow_headers=allow_headers,
+            allow_credentials=allow_credentials,
+        )
+        
         self.app.add_route(self.endpoint, self._process_request, methods=["POST"])
         self.app.add_route(
             "/.well-known/agent.json", self._get_agent_card, methods=["GET"]
