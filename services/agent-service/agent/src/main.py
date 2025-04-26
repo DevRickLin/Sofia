@@ -141,7 +141,9 @@ class SofiaAgent:
 
         # Use agent.run() to get a complete response
         response: RunResponse = self.agent.run(query, session_id=sessionId)
-        return self._format_response(response.content if response else "")
+        formatted_response = self._format_response(response.content if response else "")
+        logger.info(f"Response for session {sessionId}: {formatted_response}")
+        return formatted_response
 
     async def stream(self, query: str, sessionId: str) -> AsyncIterable[Dict[str, Any]]:
         if not self.agent:
@@ -151,51 +153,65 @@ class SofiaAgent:
         for chunk in self.agent.run(query, stream=True, session_id=sessionId):
             if chunk.tool_calls and chunk.tool_calls[-1]:
                 tool_call = chunk.tool_calls[-1]
-                yield {
+                response_chunk = {
                     "is_task_complete": False,
                     "require_user_input": False,
                     "content": f"Using {tool_call.name if hasattr(tool_call, 'name') else 'unknown'} tool...",
                 }
+                logger.info(f"Tool call chunk for session {sessionId}: {response_chunk}")
+                yield response_chunk
             elif chunk.content:
-                yield {
+                response_chunk = {
                     "is_task_complete": False,
                     "require_user_input": False,
                     "content": chunk.content,
                 }
+                logger.info(f"Content chunk for session {sessionId}: {response_chunk}")
+                yield response_chunk
         
         # Get the final complete response
         final_response: RunResponse = self.agent.run(query, session_id=sessionId)
-        yield self._format_response(final_response.content if final_response else "")
+        formatted_response = self._format_response(final_response.content if final_response else "")
+        logger.info(f"Final streaming response for session {sessionId}: {formatted_response}")
+        yield formatted_response
         
     def _format_response(self, result: str) -> Dict[str, Any]:
         if not result:
-            return {
+            response = {
                 "is_task_complete": False,
                 "require_user_input": True,
                 "content": "We are unable to process your request at the moment. Please try again.",
             }
+            logger.info(f"Empty result response: {response}")
+            return response
             
         content = result
         
         # Parse the content to determine if more input is needed
         if "I need more information" in content or "Could you provide" in content:
-            return {
+            response = {
                 "is_task_complete": False,
                 "require_user_input": True,
                 "content": content
             }
+            logger.info(f"Need more info response: {response}")
+            return response
         elif "error" in content.lower():
-            return {
+            response = {
                 "is_task_complete": False,
                 "require_user_input": True,
                 "content": content
             }
+            logger.info(f"Error response: {response}")
+            return response
         else:
-            return {
+            response = {
                 "is_task_complete": True,
                 "require_user_input": False,
                 "content": content
             }
+            logger.info(f"Successful response: {response}")
+            return response
 
 # Create the general-purpose agent
 sofia_agent = SofiaAgent()
