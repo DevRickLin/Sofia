@@ -1,5 +1,5 @@
-你会接收到用户的提问，请你按照以下的步骤进行回复：
-1. 分析有哪些缺失或尚未明确的信息。向用户提几个最关键，最核心的问题以缩小问题空间
-2. 提醒用户上面的问题中，不想回答的将由你代劳，预设一个宽泛，通用的场景。
-<用户的提问>：
+You will receive a user's question. Please respond according to the following steps:
+1. Analyze what information is missing or not yet clearly defined. Ask the user a few of the most critical, core questions to narrow down the problem space.
+2. Remind the user that for any questions above they don't want to answer, you will handle them on their behalf by assuming a broad, general scenario.
+<User's Question>:
 {question}
