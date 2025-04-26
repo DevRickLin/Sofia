@@ -139,11 +139,11 @@ async def start_agent_service():
     project_root = os.path.abspath(os.path.join(script_dir, ".."))
     agent_service_dir = os.path.join(project_root, "services", "agent-service")
     
-    # Start agent
+    # Start agent - using project_root as cwd instead of agent_service_dir
     agent_process = start_process(
         ["python", os.path.join(agent_service_dir, "agent/src/main.py")],
         "Agent",
-        cwd=agent_service_dir
+        cwd=project_root
     )
     
     # Wait for agent to start
