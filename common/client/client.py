@@ -22,6 +22,13 @@ logger = logging.getLogger(__name__)
 
 class A2AClient:
     def __init__(self, agent_card: AgentCard = None, url: str = None):
+        # print("--------------------------------")
+        # print("--------------------------------")
+        # print("a2a client init")
+        # print(agent_card)
+        # print(url)
+        # print("--------------------------------")
+        # print("--------------------------------")
         if agent_card:
             self.url = agent_card.url
         elif url:
@@ -30,6 +37,12 @@ class A2AClient:
             raise ValueError("Must provide either agent_card or url")
 
     async def send_task(self, message: str or Dict[str, Any], id: str = None) -> SendTaskResponse:
+        # print("--------------------------------")
+        # print("--------------------------------")
+        # print(message)
+        # print(type(message))
+        # print("--------------------------------")
+        # print("--------------------------------")
         """Send a task to the agent"""
         # Create message object
         if isinstance(message, str):
@@ -49,6 +62,7 @@ class A2AClient:
         
         # Create task payload
         task_id = str(uuid4())
+        
         payload = {
             "id": task_id,
             "sessionId": str(uuid4()),
@@ -57,6 +71,7 @@ class A2AClient:
         
         # Create request
         request = SendTaskRequest(params=payload, id=id or str(uuid4()))
+        logger.info(f"A2AClient send_task request:{request}")
         return SendTaskResponse(**await self._send_request(request))
     
     async def send_task_streaming(self, message: str or Dict[str, Any], id: str = None) -> AsyncIterable[SendTaskStreamingResponse]:

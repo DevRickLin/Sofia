@@ -84,12 +84,25 @@ async def interactive_mode():
     print("Type your arithmetic queries (or 'exit' to quit)")
     
     while True:
-        query = input(f"{BOLD}> {RESET}")
+        # 使用明确的提示符并确保输入被正确捕获
+        # 打印命令提示符，使用粗体格式化 ">" 符号
+        # BOLD 使文本加粗，RESET 恢复默认格式
+        # end="" 防止换行，flush=True 确保立即显示
+        print(f"{BOLD}> {RESET}", end="", flush=True)
+        try:
+            query = str(input("Input your query:").strip())
+            if not query:
+                print(f"{YELLOW}Empty input. Please type something.{RESET}")
+                continue
+            logger.info(f"User input received: {query}")
+        except (EOFError, KeyboardInterrupt) as e:
+            print(f"{YELLOW}Input error occurred. Please try again.{RESET}")
+            query = ""
+            continue
         if query.lower() == 'exit':
             break
-        
+        logger.info(f"Interactive Mode query:{query}")
         response = await send_query(query)
-        
         # Process and display the response
         if "result" in response:
             content = response.get("result", {}).get("content", "No content")
@@ -126,7 +139,9 @@ async def streaming_interactive_mode():
     print("You'll see responses as they are generated.")
     
     while True:
-        query = input(f"{BOLD}> {RESET}")
+        # 使用明确的提示符并确保输入被正确捕获
+        print(f"{BOLD}> {RESET}", end="", flush=True)
+        query = input()
         if query.lower() == 'exit':
             break
         
@@ -280,17 +295,22 @@ async def streaming_interactive_mode():
 
 async def run_test_queries():
     """Run test queries silently."""
-    test_queries = [
-        "What is 5 + 3?",
-        "Calculate 10 * 7",
-        "Divide 100 by 2",
-        "What is the sum of 4, 8, and 12?",
-        "Tell me a joke"
-    ]
+    # test_queries = [
+    #     "What is 5 + 3?",
+    #     "Calculate 10 * 7",
+    #     "Divide 100 by 2",
+    #     "What is the sum of 4, 8, and 12?",
+    #     "Tell me a joke"
+    # ]
+    # test_queries = ["what is 3+5?"]
+    test_queries = ["What is the recent update of the agent"]
     
     logger.info("Running test queries...")
     for query in test_queries:
-        await send_query(query)
+        print(f"Sending query: {query}")
+        response = await send_query(query)
+        print(f"Received response for: {query}")
+        print(response)
     logger.info("Test queries completed")
 
 async def main_async():
@@ -304,7 +324,8 @@ async def main_async():
     print(f"2. {CYAN}Streaming Mode{RESET} (see responses as they come in)")
     
     while True:
-        mode = input(f"{BOLD}Select mode (1 or 2):{RESET} ")
+        print(f"{BOLD}Select mode (1 or 2):{RESET} ", end="", flush=True)
+        mode = input()
         if mode == "1":
             await interactive_mode()
             break
