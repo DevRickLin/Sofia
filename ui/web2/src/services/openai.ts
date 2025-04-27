@@ -31,7 +31,7 @@ User question: ${userQuestion}`;
       ]);
       
       // Use asyncGenerator pattern with for-await-of
-      const streamGenerator = client.sendTaskStreaming({ prompt });
+      const streamGenerator = client.sendTaskStreaming(prompt);
       
       for await (const chunk of streamGenerator) {
         // Extract text content based on the type of event
