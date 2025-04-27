@@ -14,8 +14,8 @@ import {
 } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCanvasStore } from "../../store/canvasStore";
-import { generateChatResponse } from "../../services/openai";
-import { useA2AClient } from "../../context/A2AClientContext";
+import type { A2AClient } from 'a2a-client';
+import { generateChatResponse } from "../../services/mock";
 
 interface SidebarProps {
     onAddNode: () => void;
@@ -67,10 +67,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     const searchInputRef = useRef<HTMLInputElement>(null);
     const editInputRef = useRef<HTMLInputElement>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
-    const { canvases, currentCanvasId, setCurrentCanvas, updateCanvasName } =
+    const { canvases, currentCanvasId, setCurrentCanvas, updateCanvasName, initDefault } =
         useCanvasStore();
     const currentCanvas = canvases.find((c) => c.id === currentCanvasId);
-    const { client } = useA2AClient();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -165,7 +164,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!question.trim() || isLoading || !client || !currentCanvas) return;
+        if (!question.trim() || isLoading || !currentCanvas) return;
 
         const userQuestion = question.trim();
         setQuestion("");
@@ -173,6 +172,11 @@ const Sidebar: React.FC<SidebarProps> = ({
             ...prev,
             { type: "user", content: userQuestion, id: `user-${Date.now()}` },
         ]);
+
+        // Check if this is the second user message, if so, initialize the default canvas
+        if (chatHistory.filter(msg => msg.type === "user").length === 1) {
+            initDefault();
+        }
 
         setIsLoading(true);
         try {
@@ -183,7 +187,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 // Add any other relevant properties that might help the AI understand the context
             };
             
-            await generateChatResponse(client, canvasData, userQuestion, setChatHistory);
+            await generateChatResponse({} as A2AClient, canvasData, userQuestion, setChatHistory);
         } catch (error) {
             console.error("Error:", error);
             setChatHistory((prev) => [

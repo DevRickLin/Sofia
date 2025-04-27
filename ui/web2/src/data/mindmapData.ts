@@ -1,10 +1,11 @@
-import { Node, Edge } from "@xyflow/react";
+import type { Node, Edge } from "@xyflow/react";
 
 const addOnExpandToNodeData = (nodes: Node[]): Node[] => {
     return nodes.map((node) => ({
         ...node,
         data: {
             ...node.data,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             onExpand: (_id: string) => {
                 // This will be replaced at runtime with actual function
             },

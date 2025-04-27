@@ -1,5 +1,5 @@
 // Runtime imports
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
     ReactFlow,
     Controls,
@@ -51,7 +51,7 @@ const nodeTypes: NodeTypes = {
 
 export const MindMap = () => {
     const { theme } = useTheme();
-    const { canvases, currentCanvasId, updateCanvas, addCanvas } =
+    const { canvases, currentCanvasId, addCanvas } =
         useCanvasStore();
     const currentCanvas = canvases.find((c) => c.id === currentCanvasId);
 
@@ -66,10 +66,15 @@ export const MindMap = () => {
     const [reactFlowInstance, setReactFlowInstance] =
         useState<ReactFlowInstance | null>(null);
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
+    const nodesRef = useRef(nodes);
 
-    const deleteNode = useCallback((nodeId: string) => {
-        console.log('Delete clicked for node:', nodeId);
-    }, []);
+    useEffect(() => {
+        nodesRef.current = nodes;
+    }, [nodes]);
+
+    // const deleteNode = useCallback((nodeId: string) => {
+    //     console.log('Delete clicked for node:', nodeId);
+    // }, []);
 
     const expandNode = useCallback(
         (nodeId: string) => {
@@ -166,6 +171,19 @@ export const MindMap = () => {
     //     return () => clearTimeout(timeoutId);
     // }, [nodes, edges, currentCanvasId, updateCanvas]);
 
+    // Effect to check if any nodes are outside viewport and fit view when needed
+    useEffect(() => {
+        if (!reactFlowInstance || nodes.length === 0) return;
+        
+        // Auto-fit nodes when they might be outside the viewport
+        // We add a small delay to ensure the nodes have been rendered
+        const timeoutId = setTimeout(() => {
+            reactFlowInstance.fitView({ padding: 0.1, duration: 400 });
+        }, 100);
+        
+        return () => clearTimeout(timeoutId);
+    }, [reactFlowInstance, nodes.length]);
+
     useEffect(() => {
         const handleFocusNode = (event: FocusNodeEvent) => {
             if (!reactFlowInstance) return;
@@ -196,6 +214,22 @@ export const MindMap = () => {
             );
     }, [reactFlowInstance, nodes]);
 
+    // Function to focus on a specific node
+    const focusNode = useCallback((nodeId: string) => {
+        if (!reactFlowInstance) return;
+        
+        const node = nodesRef.current.find((n) => n.id === nodeId);
+        
+        if (node) {
+            const x = node.position?.x || 0;
+            const y = node.position?.y || 0;
+            reactFlowInstance.setCenter(x, y, {
+                zoom: 1.5,
+                duration: 800,
+            });
+        }
+    }, [reactFlowInstance]);
+
     const handleBackgroundClick = useCallback(() => {
         setIsPanelOpen(false);
         setSidebarExpanded(false);
@@ -223,8 +257,9 @@ export const MindMap = () => {
             y: (window.innerHeight / 2 - 50 - transform.y) / transform.zoom,
         };
 
+        const newNodeId = `question-${Date.now()}`;
         const newNode: FlowNode = {
-            id: `question-${Date.now()}`,
+            id: newNodeId,
             type: "breakthrough",
             position,
             data: {
@@ -249,12 +284,15 @@ export const MindMap = () => {
         setNodes((nds) => [...nds, newNode]);
         // Only expand the sidebar for chat
         setSidebarExpanded(true);
-    }, [reactFlowInstance, setNodes, setSidebarExpanded, expandNode]);
+
+        setTimeout(() => {
+            focusNode(newNodeId);
+        }, 50);
+    }, [reactFlowInstance, expandNode, setNodes, focusNode]);
 
     const handleNewCanvas = useCallback(() => {
         addCanvas();
     }, [addCanvas]);
-
 
     return (
         <div className="relative flex h-full w-full">
