@@ -194,11 +194,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
 
     return (
-        <div
-            className={`flex h-full transition-all duration-300 ease-in-out ${
-                isExpanded ? "w-80" : "w-12"
-            }`}
-        >
+        <div className="flex h-full">
             <div className="w-12 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-3 shadow-sm">
                 <div className="flex flex-col items-center space-y-3">
                     <button
@@ -213,10 +209,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </span>
                     </button>
 
-                    <div className="relative" ref={searchRef}>
+                    <div 
+                        className="relative" 
+                        ref={searchRef}
+                        style={{ position: 'relative' }}
+                    >
                         <button
                             type="button"
-                            onClick={() => setShowSearch(!showSearch)}
+                            onClick={() => {
+                                setShowSearch(true);
+                                setTimeout(() => {
+                                    searchInputRef.current?.focus();
+                                }, 100);
+                            }}
                             className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors group relative"
                             title="Search"
                         >
@@ -226,18 +231,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                             </span>
                         </button>
 
-                        <AnimatePresence>
-                            {showSearch && (
-                                <motion.div
-                                    initial={{ opacity: 0, x: 10, width: 0 }}
-                                    animate={{
-                                        opacity: 1,
-                                        x: 0,
-                                        width: "auto",
-                                    }}
-                                    exit={{ opacity: 0, x: 10, width: 0 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="absolute left-full top-0 ml-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+                        {showSearch && (
+                            <div
+                                className="fixed top-0 left-0 right-0 bottom-0 z-40"
+                                onClick={(e) => {
+                                    if (e.target === e.currentTarget) {
+                                        setShowSearch(false);
+                                        setSearchQuery("");
+                                        setSearchResults([]);
+                                    }
+                                }}
+                            >
+                                <div 
+                                    className="absolute left-12 top-0 ml-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     <div className="p-2">
                                         <div className="relative">
@@ -250,6 +257,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                 }
                                                 placeholder="Search mindmap..."
                                                 className="w-full px-3 py-1.5 pl-8 pr-8 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Escape') {
+                                                        setShowSearch(false);
+                                                        setSearchQuery('');
+                                                        setSearchResults([]);
+                                                    }
+                                                }}
                                             />
                                             <Search className="absolute left-2.5 top-1.5 h-4 w-4 text-gray-400" />
                                             {searchQuery && (
@@ -274,11 +288,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                 <button
                                                     type="button"
                                                     key={result.id}
-                                                    onClick={() =>
-                                                        handleSearchResultClick(
-                                                            result.id
-                                                        )
-                                                    }
+                                                    onClick={() => {
+                                                        handleSearchResultClick(result.id);
+                                                        setShowSearch(false);
+                                                    }}
                                                     className="w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                                                 >
                                                     <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
@@ -292,15 +305,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         </div>
                                     )}
 
-                                    {searchQuery &&
-                                        searchResults.length === 0 && (
-                                            <div className="p-2 text-xs text-gray-500 dark:text-gray-400 text-center border-t border-gray-200 dark:border-gray-700">
-                                                No results found
-                                            </div>
-                                        )}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                    {searchQuery && searchResults.length === 0 && (
+                                        <div className="p-2 text-xs text-gray-500 dark:text-gray-400 text-center border-t border-gray-200 dark:border-gray-700">
+                                            No results found
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <button
@@ -433,7 +445,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {isExpanded && (
                     <motion.div
                         initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: "auto", opacity: 1 }}
+                        animate={{ width: "300px", opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                         className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col"
@@ -481,16 +493,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </div>
 
                         <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-                            <form
-                                onSubmit={handleSubmit}
-                                className="flex gap-2"
-                            >
+                            <form onSubmit={handleSubmit} className="flex gap-2">
                                 <input
                                     type="text"
                                     value={question}
-                                    onChange={(e) =>
-                                        setQuestion(e.target.value)
-                                    }
+                                    onChange={(e) => setQuestion(e.target.value)}
                                     placeholder="Ask a question..."
                                     className="flex-1 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                                 />

@@ -9,8 +9,8 @@ import {
     X,
     Export as Share2,
     User,
-    ThreeD as MoreVertical,
 } from "@phosphor-icons/react";
+import SofiaLogo from "../../imgs/sofia_logo.png";
 
 const Header: React.FC = () => {
     const { theme, toggleTheme } = useTheme();
@@ -53,32 +53,11 @@ const Header: React.FC = () => {
                                 transition={{ duration: 0.5 }}
                                 className="flex items-center"
                             >
-                                <svg
-                                    className="h-8 w-auto text-emerald-500"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    aria-labelledby="logoTitle"
-                                >
-                                    <title id="logoTitle">Sofia Logo</title>
-                                    <path
-                                        d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                    <path
-                                        d="M7 14s2 2 5 2 5-2 5-2M9 9h.01M15 9h.01"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                </svg>
-                                <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
-                                    Sofia
-                                </span>
+                                <img
+                                    src={SofiaLogo}
+                                    alt="Sofia Logo"
+                                    className="h-8 w-auto"
+                                />
                             </motion.div>
                         </div>
                     </div>
@@ -87,7 +66,7 @@ const Header: React.FC = () => {
                         <button
                             type="button"
                             onClick={handleShare}
-                            className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="p-2 rounded-md text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             aria-label="Share"
                         >
                             <Share2 className="h-5 w-5" />
@@ -95,7 +74,7 @@ const Header: React.FC = () => {
 
                         <button
                             type="button"
-                            className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="p-2 rounded-md text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             aria-label="User account"
                         >
                             <User className="h-5 w-5" />
@@ -104,7 +83,7 @@ const Header: React.FC = () => {
                         <button
                             type="button"
                             onClick={toggleTheme}
-                            className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="p-2 rounded-md text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             aria-label="Toggle theme"
                         >
                             {theme === "dark" ? (
@@ -113,21 +92,13 @@ const Header: React.FC = () => {
                                 <Moon className="h-5 w-5" />
                             )}
                         </button>
-
-                        <button
-                            type="button"
-                            className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            aria-label="More options"
-                        >
-                            <MoreVertical className="h-5 w-5" />
-                        </button>
                     </div>
 
                     <div className="-mr-2 flex items-center sm:hidden">
                         <button
                             type="button"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500"
+                            className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500"
                         >
                             {isMenuOpen ? (
                                 <X className="h-6 w-6" />
@@ -146,14 +117,14 @@ const Header: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={handleShare}
-                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
                             >
                                 <Share2 className="h-5 w-5 mr-3" />
                                 Share
                             </button>
                             <button
                                 type="button"
-                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
                             >
                                 <User className="h-5 w-5 mr-3" />
                                 Account
@@ -161,7 +132,7 @@ const Header: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={toggleTheme}
-                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
                             >
                                 {theme === "dark" ? (
                                     <>
@@ -174,13 +145,6 @@ const Header: React.FC = () => {
                                         Dark Mode
                                     </>
                                 )}
-                            </button>
-                            <button
-                                type="button"
-                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                            >
-                                <MoreVertical className="h-5 w-5 mr-3" />
-                                More Options
                             </button>
                         </div>
                     </div>
