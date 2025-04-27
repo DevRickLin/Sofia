@@ -13,65 +13,147 @@ import {
     ChatTeardropDots as MessageSquare,
     Spinner as Loader2,
     CaretUp,
+    Plus,
+    Brain,
 } from "@phosphor-icons/react";
-import { generateChatResponse } from "../../services/openai";
-import { useA2AClient } from "../../context/A2AClientContext";
+import { generateChatResponse } from "../../services/mock2";
+import type { ChatMessage, ResponseCard } from "../../services/mock2";
 import type { NodeData } from "../MindMap/types";
+import type { A2AClient } from 'a2a-client';
 
 interface SidePanelProps {
     isOpen: boolean;
     onClose: () => void;
     node: Node<NodeData> | null;
+    expandNode: (nodeId: string) => void;
+    addChildNode?: (parentId: string, data: NodeChildData) => void;
 }
+
+export interface NodeChildData {
+    title: string;
+    label?: string;
+    description: string;
+    nodeType: string;
+    type: string;
+}
+
+// Theme colors for different card types
+const cardThemes = {
+    info: {
+        bg: 'bg-blue-50 dark:bg-blue-900/20',
+        text: 'text-blue-700 dark:text-blue-300',
+        border: 'border-blue-200 dark:border-blue-700'
+    },
+    insight: {
+        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+        text: 'text-emerald-700 dark:text-emerald-300',
+        border: 'border-emerald-200 dark:border-emerald-700'
+    },
+    summary: {
+        bg: 'bg-purple-50 dark:bg-purple-900/20',
+        text: 'text-purple-700 dark:text-purple-300',
+        border: 'border-purple-200 dark:border-purple-700'
+    },
+    action: {
+        bg: 'bg-amber-50 dark:bg-amber-900/20',
+        text: 'text-amber-700 dark:text-amber-300',
+        border: 'border-amber-200 dark:border-amber-700'
+    }
+};
+
+const ResponseCardComponent: React.FC<{
+    card: ResponseCard;
+    onAdopt: (card: ResponseCard) => void;
+}> = ({ card, onAdopt }) => {
+    const theme = cardThemes[card.type];
+    
+    return (
+        <div className={`${theme.bg} rounded p-2 border ${theme.border}`}>
+            {card.title && (
+                <h4 className={`text-xs font-medium ${theme.text} mb-1`}>
+                    {card.title}
+                </h4>
+            )}
+            <p className={`text-xs ${theme.text}`}>
+                {card.content}
+            </p>
+            <div className="mt-2 flex justify-end">
+                <button
+                    type="button"
+                    onClick={() => onAdopt(card)}
+                    className={`text-[10px] px-2 py-0.5 rounded ${theme.bg} hover:bg-opacity-80 ${theme.text} border ${theme.border} flex items-center`}
+                >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add to Map
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const SidePanel: React.FC<SidePanelProps> = ({
     isOpen,
     onClose,
     node,
+    expandNode,
+    addChildNode,
 }) => {
     const [question, setQuestion] = useState("");
-    const [chatHistory, setChatHistory] = useState<
-        Array<{ type: "user" | "assistant"; content: string; id: string }>
-    >([]);
-    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [chatHistories, setChatHistories] = useState<Record<string, ChatMessage[]>>({});
+    const [isChatOpen, setIsChatOpen] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
-    const { client } = useA2AClient();
 
-    if (!node || !client) return null;
+    // Get current chat history for the selected node
+    const currentChatHistory = node ? (chatHistories[node.id] || []) : [];
+
+    if (!node) return null;
 
     const data = node.data;
 
     const handleQuestionSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!question.trim() || isLoading) return;
+        if (!question.trim() || isLoading || !node) return;
 
         const userQuestion = question.trim();
         setQuestion("");
-        setChatHistory((prev) => [
-            ...prev,
-            { type: "user", content: userQuestion, id: `user-${Date.now()}` },
-        ]);
-
         setIsLoading(true);
+        
         try {
-            const response = await generateChatResponse(client, data, userQuestion, setChatHistory);
-            setChatHistory((prev) => [
-                ...prev,
-                { type: "assistant", content: response, id: `assistant-${Date.now()}` },
-            ]);
+            // Use our mock service to generate a response
+            await generateChatResponse({} as A2AClient, data, userQuestion, (history) => {
+                setChatHistories(prev => ({
+                    ...prev,
+                    [node.id]: typeof history === 'function' ? history(prev[node.id] || []) : history
+                }));
+            });
         } catch (error) {
             console.error("Error:", error);
-            setChatHistory((prev) => [
+            setChatHistories(prev => ({
                 ...prev,
-                {
-                    type: "assistant",
-                    content:
-                        "I apologize, but I encountered an error while processing your request.",
-                    id: `error-${Date.now()}`
-                },
-            ]);
+                [node.id]: [
+                    ...(prev[node.id] || []),
+                    {
+                        type: "assistant-answer",
+                        content: "I apologize, but I encountered an error while processing your request.",
+                        id: `error-${Date.now()}`
+                    },
+                ]
+            }));
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleAdoptCard = (card: ResponseCard) => {
+        if (addChildNode && node) {
+            // Add the card content as a child node of the currently selected node
+            addChildNode(node.id, {
+                title: card.title || (card.type === 'insight' ? 'Insight' : card.type === 'summary' ? 'Summary' : 'Content'),
+                label: card.title,
+                description: card.content,
+                nodeType: 'content',
+                type: card.type
+            });
         }
     };
 
@@ -300,14 +382,14 @@ const SidePanel: React.FC<SidePanelProps> = ({
                         {isChatOpen && (
                             <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
                                 <div className="mb-4 max-h-40 overflow-y-auto space-y-3">
-                                    {chatHistory.map((message) => (
+                                    {currentChatHistory.map((message) => (
                                         <div
                                             key={message.id}
                                             className={`flex ${
                                                 message.type === "user"
                                                     ? "justify-end"
                                                     : "justify-start"
-                                            }`}
+                                            } flex-col ${message.type !== "user" ? "w-full" : ""}`}
                                         >
                                             <div
                                                 className={`max-w-[80%] rounded px-3 py-1.5 ${
@@ -322,6 +404,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                             </div>
                                         </div>
                                     ))}
+                                    
                                     {isLoading && (
                                         <div className="flex justify-start">
                                             <div className="bg-gray-100 dark:bg-gray-700 rounded px-3 py-1.5">

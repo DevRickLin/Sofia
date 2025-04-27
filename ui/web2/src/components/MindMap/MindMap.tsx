@@ -18,6 +18,7 @@ import { CategoryNode } from "./Nodes/CategoryNode";
 import { BreakthroughNode } from "./Nodes/BreakthroughNode";
 import Sidebar from "./Sidebar";
 import SidePanel from "./SidePanel";
+import type { NodeChildData } from "./SidePanel";
 import { useTheme } from "../../context/ThemeContext";
 import { useCanvasStore } from "../../store/canvasStore";
 
@@ -294,6 +295,104 @@ export const MindMap = () => {
         addCanvas();
     }, [addCanvas]);
 
+    const addChildNode = useCallback(
+        (parentId: string, childData: NodeChildData) => {
+            if (!reactFlowInstance) return;
+            
+            // Find parent node to position child appropriately
+            const parentNode = nodes.find(node => node.id === parentId);
+            if (!parentNode) return;
+            
+            // Node dimensions (approximate)
+            const nodeWidth = 280;
+            const nodeHeight = 120;
+            // Padding between nodes
+            const padding = 40;
+            
+            // Function to check if two nodes overlap
+            const nodesOverlap = (pos1: {x: number, y: number}, pos2: {x: number, y: number}) => {
+                return (
+                    Math.abs(pos1.x - pos2.x) < nodeWidth + padding &&
+                    Math.abs(pos1.y - pos2.y) < nodeHeight + padding
+                );
+            };
+            
+            // Start with a position directly below the parent
+            let childPosition = {
+                x: parentNode.position.x,
+                y: parentNode.position.y + nodeHeight + padding
+            };
+            
+            // Grid system for positioning - start at column 0
+            let column = 0;
+            let row = 0;
+            let positionFound = false;
+            
+            // Keep trying positions until we find one that doesn't overlap
+            while (!positionFound && row < 10) { // Limit to 10 rows to prevent infinite loop
+                positionFound = true;
+                
+                // Check for overlap with all existing nodes
+                for (const node of nodes) {
+                    if (nodesOverlap(childPosition, node.position)) {
+                        positionFound = false;
+                        break;
+                    }
+                }
+                
+                if (!positionFound) {
+                    // Move to the next position in a grid-like pattern
+                    column++;
+                    
+                    // When we've tried 3 columns, move to the next row
+                    if (column > 2) {
+                        column = 0;
+                        row++;
+                    }
+                    
+                    // Calculate new position
+                    childPosition = {
+                        x: parentNode.position.x + (column * (nodeWidth + padding)) - nodeWidth,
+                        y: parentNode.position.y + ((row + 1) * (nodeHeight + padding))
+                    };
+                }
+            }
+            
+            // Generate a unique ID for the new node
+            const newNodeId = `${childData.nodeType}-${Date.now()}`;
+            
+            // Create the new node
+            const newNode = {
+                id: newNodeId,
+                type: childData.nodeType === 'content' ? 'breakthrough' : childData.nodeType,
+                position: childPosition,
+                data: {
+                    ...childData,
+                    label: childData.title,
+                    isExpanded: false
+                },
+            };
+            
+            // Create an edge connecting parent to child
+            const newEdge = {
+                id: `e-${parentId}-${newNodeId}`,
+                source: parentId,
+                target: newNodeId,
+                type: 'smoothstep'
+            };
+            
+            // Add the new node and edge to state
+            setNodes(nodes => [...nodes, newNode]);
+            setEdges(edges => [...edges, newEdge]);
+            
+            // Focus on the new node
+            setTimeout(() => {
+                focusNode(newNodeId);
+            }, 50);
+        },
+        [reactFlowInstance, nodes, setNodes, setEdges, focusNode]
+    );
+
     return (
         <div className="relative flex h-full w-full">
             <Sidebar
@@ -336,6 +435,8 @@ export const MindMap = () => {
                 isOpen={isPanelOpen}
                 onClose={() => setIsPanelOpen(false)}
                 node={selectedNode}
+                expandNode={expandNode}
+                addChildNode={addChildNode}
             />
         </div>
     );
