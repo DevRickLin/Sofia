@@ -211,10 +211,10 @@ export const MindMap = () => {
                     onInit={setReactFlowInstance}
                 >
                     <Background
-                        color={theme === "dark" ? "#374151" : "#e0e0e066"}
+                        color={theme === "dark" ? "#374151" : "#ffffff"}
                         gap={32}
                         size={1}
-                        bgColor={theme === "dark" ? "#1F2937" : "#fafafa"}
+                        bgColor={theme === "dark" ? "#1F2937" : "#ffffff"}
                         variant={BackgroundVariant.Dots}
                     />
                     <Controls className="m-2 text-gray-500 dark:text-gray-100" />

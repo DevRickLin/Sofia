@@ -3,9 +3,10 @@
 // ======================================= //
 
 export type ColorPattern = {
-    default: string; // rgb hex
-    light: string; // rgb hex
-    dark: string; // rgb hex
+    title_color: string; // rgb hex
+    light_background: string; // rgb hex
+    light_background_content_node: string; // rgb hex
+    dark_background: string; // rgb hex
     bg: string;
     border: string;
     title: string;

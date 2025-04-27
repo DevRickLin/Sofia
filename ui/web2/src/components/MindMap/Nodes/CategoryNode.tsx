@@ -49,16 +49,16 @@ export const CategoryNode = memo((props: NodeProps<CategoryNode>) => {
                 <BNBodyContent>
                     <div>
                         <h3
-                            className={`text-lg font-semibold`}
+                            className={`text-lg font-bold`}
                             style={{
-                                color: colors.default,
+                                color: colors.title_color,
                             }}
                         >
                             {data.title}
                         </h3>
                         <div className="p-[2px]">
                             <div
-                                className={`mt-1 pl-3 border-l-2 border-[#bdbdbd]/30 text-sm text-[#757575]`}
+                                className={`mt-1 pl-3 border-l-2 border-[#080808]/30 text-sm text-[#080808]`}
                             >
                                 {data.summary}
                             </div>

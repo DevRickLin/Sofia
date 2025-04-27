@@ -8,8 +8,9 @@ import {
     BNExpandContent,
 } from "./BaseNode";
 import { ColorPattern, Color } from "./type";
-import { NodeProps, Node } from "@xyflow/react";
+import { NodeProps, Node, useNodes } from "@xyflow/react";
 import { getColor } from "./utils";
+import { CategoryNodeData } from "./CategoryNode";
 
 type KeyInsightType = {
     content: string;
@@ -28,6 +29,7 @@ export interface BreakthroughNodeData {
     keyInsights: KeyInsightType[];
     position: { x: number; y: number };
     color: Color;
+    parentId?: string;
     [key: string]: unknown;
 }
 
@@ -35,7 +37,12 @@ type BreakthroughNode = Node<BreakthroughNodeData, "BreakthroughNode">;
 
 export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
     const { data, selected } = props;
-    const colors: ColorPattern = getColor(data.color);
+    let colors: ColorPattern = getColor(data.color);
+    // colors.light_background = colors.light_background_content_node;
+    colors = {
+        ...colors,
+        light_background: colors.light_background_content_node,
+    };
 
     return (
         <BaseNode colors={colors} selected={selected}>
@@ -45,7 +52,7 @@ export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
                         <h3
                             className={`text-lg font-semibold`}
                             style={{
-                                color: colors.default,
+                                color: colors.title_color,
                             }}
                         >
                             {data.title}

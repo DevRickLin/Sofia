@@ -148,8 +148,8 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                             className="mt-3 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded text-xs font-medium hover:bg-emerald-200 dark:hover:bg-emerald-800/40 transition-colors"
                                         >
                                             {data.isExpanded
-                                                ? "Collapse"
-                                                : "Expand"}{" "}
+                                                ? "Expand"
+                                                : "Collapse"}{" "}
                                             Node
                                         </button>
                                     </div>

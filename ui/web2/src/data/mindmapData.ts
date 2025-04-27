@@ -20,7 +20,7 @@ const baseNodes: Node[] = [
         data: {
             title: "AI Agent Breakthroughs",
             summary: "Recent advances in AI agents from Oct 2024 to Apr 2025",
-            color: "blue",
+            color: "gray",
             isExpanded: true,
             relatedBreakthroughs: [
                 "Autonomous Agent Frameworks",
@@ -75,7 +75,7 @@ const baseNodes: Node[] = [
         position: { x: 300, y: 150 },
         data: {
             title: "Domain Assistants",
-            color: "gray",
+            color: "blue",
             summary:
                 "Specialized AI for medicine, law, science, and other domains",
             isExpanded: false,
@@ -102,7 +102,7 @@ const baseNodes: Node[] = [
         data: {
             title: "Claude 3.5 Computer Use",
             date: "Oct 2024",
-            color: "green",
+            color: "yellow",
             organization: "Anthropic",
             summary:
                 "AI model can control a GUI (click, type) autonomously to perform tasks",
@@ -144,7 +144,7 @@ const baseNodes: Node[] = [
         data: {
             title: "Agent K v1.0",
             date: "Nov 2024",
-            color: "green",
+            color: "yellow",
             organization: "Huawei & UCL",
             summary:
                 "Autonomous data science agent reaching Kaggle Grandmaster-level performance",
@@ -186,7 +186,7 @@ const baseNodes: Node[] = [
         data: {
             title: "The AI Scientist",
             date: "Sep 2024",
-            color: "green",
+            color: "yellow",
             organization: "Univ. of Toronto/Oxford",
             summary:
                 "Fully automated research pipeline for conducting AI research end-to-end",
@@ -205,7 +205,7 @@ const baseNodes: Node[] = [
         data: {
             title: "MALT Training",
             date: "Dec 2024",
-            color: "green",
+            color: "purple",
             organization: "Oxford & INRIA",
             summary:
                 "Multi-agent LLM training framework that boosts reasoning accuracy on complex tasks",
@@ -223,7 +223,7 @@ const baseNodes: Node[] = [
         data: {
             title: "AgentStore",
             date: "Oct 2024",
-            color: "green",
+            color: "purple",
             organization: "Jia et al.",
             summary:
                 'Platform allowing specialized agents to be "plugged in" and orchestrated by a controller',
@@ -241,7 +241,7 @@ const baseNodes: Node[] = [
         data: {
             title: "Bel Esprit",
             date: "Dec 2024",
-            color: "green",
+            color: "purple",
             organization: "aiXplain",
             summary:
                 "Conversational agent that builds AI model pipelines via collaborating sub-agents",
@@ -260,7 +260,7 @@ const baseNodes: Node[] = [
         data: {
             title: "WALL-E Agent",
             date: "Oct 2024",
-            color: "green",
+            color: "red",
             organization: "Tencent & UTS",
             summary:
                 "LLM-based embodied agent with learned rules + MPC planning for improved results",
@@ -278,7 +278,7 @@ const baseNodes: Node[] = [
         data: {
             title: "GenEx",
             date: "Nov 2024",
-            color: "green",
+            color: "red",
             organization: "Johns Hopkins",
             summary:
                 "Generative World Explorer that lets an embodied agent mentally explore unseen areas",
@@ -296,7 +296,7 @@ const baseNodes: Node[] = [
         data: {
             title: "Generative Agents",
             date: "Nov 2024",
-            color: "green",
+            color: "red",
             organization: "Stanford / DeepMind",
             summary:
                 "Simulated 1,000 distinct human personas in interactive environments with high realism",
@@ -315,7 +315,7 @@ const baseNodes: Node[] = [
         data: {
             title: "MDAgents",
             date: "Dec 2024",
-            color: "green",
+            color: "blue",
             organization: "MIT Media Lab",
             summary:
                 'Medical multi-agent system assigning AI "teams" to cases for improved diagnoses',
@@ -333,7 +333,7 @@ const baseNodes: Node[] = [
         data: {
             title: "DynaSaur",
             date: "Nov 2024",
-            color: "green",
+            color: "blue",
             organization: "Adobe Research",
             summary:
                 "LLM agent that writes new code actions on the fly for doubled performance",
@@ -351,7 +351,7 @@ const baseNodes: Node[] = [
         data: {
             title: "GitHub Copilot X",
             date: "Nov 2024",
-            color: "green",
+            color: "blue",
             organization: "GitHub",
             summary:
                 "Expanded coding assistant using multiple models with improved orchestration abilities",

@@ -54,10 +54,11 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
             >
                 <div
                     ref={ref}
-                    className={`py-3 pl-4 pr-2 rounded-lg shadow-md w-[256px]`}
+                    className={`py-3 pl-4 pr-2 rounded-3xl shadow-md w-[256px] border-3`}
                     style={{
-                        boxShadow: "0 4px 8px 2px rgba(0, 0, 0, 0.08)",
-                        backgroundColor: colors.light,
+                        boxShadow: "0 2px 8px 2px rgba(0, 0, 0, 0.1)",
+                        backgroundColor: colors.light_background,
+                        borderColor: colors.light_background,
                     }}
                     onMouseEnter={showTooltip}
                     onMouseLeave={hideTooltip}
