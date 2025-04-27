@@ -2,6 +2,30 @@ import type { A2AClient } from 'a2a-client';
 import type { Dispatch, SetStateAction } from 'react';
 import type { NodeData } from '../components/MindMap/types';
 
+// Generator to manage the response sequence
+function* responseGenerator() {
+  // First call - clarification questions
+  yield `To better address your question about recent AI agent technology breakthroughs, I need to clarify a few key aspects:
+
+1. Domain Focus: Are you interested in a specific application area (e.g., robotics, healthcare, customer service) or general advancements in AI agents?
+2. Timeframe: How recent? The last 6 months, 1 year, or a broader period?
+3. Technical Depth: Do you want high-level summaries (e.g., "AI agents can now do X") or detailed technical insights (e.g., architectures like Mixture of Experts)?
+4. Type of Breakthrough: Are you looking for improvements in capabilities (e.g., planning, tool use), scalability, or real-world deployments?
+
+If you'd prefer not to specify, I'll assume a general scenario—covering notable advances in the past year across capabilities like multi-agent collaboration, memory/context handling, and real-world integration.`;
+  
+  // Second call - mind map setup
+  yield "Thank you for providing those details. I've set up a mind map with recent AI agent technology breakthroughs based on your preferences. You can now explore the different nodes to learn more about each breakthrough.";
+  
+  // Any subsequent calls
+  while (true) {
+    yield "Is there anything specific about the AI agent breakthroughs in the mind map that you'd like me to explain further?";
+  }
+}
+
+// Create and store the generator instance
+const responseIterator = responseGenerator();
+
 export const generateChatResponse = async (
   client: A2AClient,
   nodeData: NodeData,
@@ -15,62 +39,16 @@ export const generateChatResponse = async (
   console.log("Using client:", client);
   console.log("Processing node data:", nodeData);
   
-  // Check if this is likely a second message (we'll look at the history length if setChatHistory is available)
-  let isSecondMessage = false;
-  if (setChatHistory) {
-    setChatHistory(prev => {
-      // Check if this will be the second user message
-      isSecondMessage = prev.filter(msg => msg.type === "user").length === 1;
-      return prev;
-    });
-  }
+  // Get the next response from the generator
+  const response = responseIterator.next().value as string;
   
-  // For demonstration, check if question is about AI agent technology
-  const isAboutAIAgent = userQuestion.toLowerCase().includes('ai agent') || 
-                        userQuestion.toLowerCase().includes('agent technology');
-  
-  // Special handling for the second message - initialize default nodes
-  if (isSecondMessage) {
-    const secondMessageResponse = "Thank you for your second message! I've initialized the mind map with some AI agent breakthroughs for you to explore. Feel free to ask me any questions about the content or how to work with the map.";
-    
-    if (setChatHistory) {
-      setChatHistory(prev => [
-        ...prev,
-        { type: "assistant", content: secondMessageResponse, id: `assistant-${Date.now()}` }
-      ]);
-    }
-    
-    return secondMessageResponse;
-  }
-  
-  // If related to AI agents, first ask clarification questions
-  if (isAboutAIAgent && setChatHistory) {
-    const clarificationQuestions = [
-      "Could you specify which aspect of AI agent technology you're interested in?",
-      "Are you looking for recent research papers or practical applications?",
-      "Would you like to know about specific companies working on AI agents?"
-    ];
-    
-    // Add clarification questions to chat history
-    const randomQuestion = clarificationQuestions[Math.floor(Math.random() * clarificationQuestions.length)];
-    setChatHistory(prev => [
-      ...prev,
-      { type: "assistant", content: randomQuestion, id: `assistant-${Date.now()}` }
-    ]);
-    
-    return randomQuestion;
-  }
-  
-  // Default response if not about AI agents or if setChatHistory is not provided
-  const defaultResponse = `I'm a mock AI assistant. This is a simulated response to your question: "${userQuestion}". In a real application, I would provide a helpful answer based on the context.`;
-  
-  // Add the response to chat history if setChatHistory is provided
+  // Update chat history if setChatHistory is provided
   if (setChatHistory) {
     setChatHistory(prev => [
       ...prev,
-      { type: "assistant", content: defaultResponse, id: `assistant-${Date.now()}` }
+      { type: "assistant", content: response, id: `assistant-${Date.now()}` }
     ]);
   }
   
-  return defaultResponse;
+  return response;
 };
