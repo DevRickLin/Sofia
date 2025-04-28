@@ -375,6 +375,32 @@ export const MindMap = () => {
         });
     }, []);
 
+    // Auto-expand nodes with visible key insights, even if they were manually collapsed
+    useEffect(() => {
+        // This effect ensures that any node with visible key insights remains expanded
+        // Find all nodes with visible insights that are currently collapsed
+        const collapsedNodesWithVisibleInsights = nodes.filter(node => {
+            // Skip if already expanded
+            if (node.data.isExpanded) return false;
+            
+            // Check if the node has visible key insights
+            const keyInsights: KeyInsight[] = Array.isArray(node.data.keyInsights) ? node.data.keyInsights : [];
+            return keyInsights.some((insight: KeyInsight) => insight.visible === true);
+        });
+        
+        // Auto-expand any nodes that have visible insights but are collapsed
+        if (collapsedNodesWithVisibleInsights.length > 0) {
+            console.log('Auto-expanding nodes with visible insights:', collapsedNodesWithVisibleInsights);
+            
+            // Expand each node
+            collapsedNodesWithVisibleInsights.forEach(node => {
+                setTimeout(() => {
+                    expandNode(node.id, true);
+                }, 0);
+            });
+        }
+    }, [nodes, expandNode]);
+
     return (
         <div className="relative flex h-full w-full">
             <Sidebar
