@@ -340,7 +340,7 @@ export const MindMap = () => {
       const nodeWidth = 280;
       const nodeHeight = 120;
       // Padding between nodes
-      const padding = 40;
+      const padding = 80;
 
       // Function to check if two nodes overlap
       const nodesOverlap = (
