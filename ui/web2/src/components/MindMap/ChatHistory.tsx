@@ -17,6 +17,13 @@ export default function ChatHistory({
   onSend,
 }: ChatHistoryProps) {
   const [input, setInput] = React.useState("");
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [history]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +82,7 @@ export default function ChatHistory({
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSubmit} className="flex items-center gap-2">
         <input
