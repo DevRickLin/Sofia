@@ -12,6 +12,7 @@ import {
     PaperPlaneTilt as Send,
     ChatTeardropDots as MessageSquare,
     Spinner as Loader2,
+    CaretUp,
 } from "@phosphor-icons/react";
 import { generateChatResponse } from "../../services/openai";
 import { useA2AClient } from "../../context/A2AClientContext";
@@ -261,22 +262,44 @@ const SidePanel: React.FC<SidePanelProps> = ({
                         <button
                             type="button"
                             onClick={() => setIsChatOpen(!isChatOpen)}
-                            className="w-full p-3 flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                            className={`w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 ${
+                                isChatOpen 
+                                ? 'bg-gray-50 dark:bg-gray-700/30 shadow-inner' 
+                                : 'bg-white dark:bg-gray-800'
+                            }`}
                         >
-                            <div className="flex items-center">
-                                <MessageSquare className="h-4 w-4 mr-2" />
-                                <span className="text-xs font-medium">
-                                    Ask Follow-up Questions
-                                </span>
+                            <div className="flex items-center space-x-3">
+                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-900/20">
+                                    <MessageSquare 
+                                        weight="bold"
+                                        className="h-4 w-4 text-sky-600 dark:text-sky-400" 
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        Ask Follow-up Questions
+                                    </span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                        Get more insights about this topic
+                                    </span>
+                                </div>
                             </div>
-                            <span className="text-xs text-gray-500">
-                                {isChatOpen ? "Close" : "Open"} Chat
-                            </span>
+                            {isChatOpen ? (
+                                <X 
+                                    weight="bold"
+                                    className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors" 
+                                />
+                            ) : (
+                                <CaretUp 
+                                    weight="bold"
+                                    className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors" 
+                                />
+                            )}
                         </button>
 
                         {isChatOpen && (
-                            <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-                                <div className="mb-3 max-h-40 overflow-y-auto space-y-3">
+                            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
+                                <div className="mb-4 max-h-40 overflow-y-auto space-y-3">
                                     {chatHistory.map((message) => (
                                         <div
                                             key={message.id}
@@ -289,7 +312,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                             <div
                                                 className={`max-w-[80%] rounded px-3 py-1.5 ${
                                                     message.type === "user"
-                                                        ? "bg-sky-500 text-white"
+                                                        ? "bg-[#dbf9fe] text-gray-900"
                                                         : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                                 }`}
                                             >
@@ -319,15 +342,15 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                             setQuestion(e.target.value)
                                         }
                                         placeholder="Ask about this breakthrough..."
-                                        className="flex-1 px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                        className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         disabled={isLoading}
                                     />
                                     <button
                                         type="submit"
-                                        className={`px-3 py-1.5 bg-sky-500 text-white rounded hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                        className={`px-3 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed ${
                                             isLoading
                                                 ? "cursor-not-allowed"
-                                                : "hover:bg-sky-600"
+                                                : "hover:bg-sky-600 hover:shadow-md"
                                         }`}
                                         disabled={isLoading}
                                     >

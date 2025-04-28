@@ -10,6 +10,7 @@ import {
     PencilSimpleLine as Edit2,
     MagnifyingGlass as Search,
     X,
+    Lightbulb,
 } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCanvasStore } from "../../store/canvasStore";
@@ -470,17 +471,26 @@ const Sidebar: React.FC<SidebarProps> = ({
                         transition={{ duration: 0.3 }}
                         className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col"
                     >
-                        <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                                Your Knowledge Assistant
-                            </h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Ask me anything about AI. I'm here to help you
-                                organizing your thoughts!
-                            </p>
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-emerald-50 dark:bg-emerald-900/20">
+                            <div className="flex items-center space-x-3">
+                                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-800/40">
+                                    <Lightbulb 
+                                        weight="bold"
+                                        className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" 
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+                                        Insight Map Generator
+                                    </h3>
+                                    <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
+                                        Ask me to create insight maps about any topic
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
                             {chatHistory.map((message) => (
                                 <div
                                     key={message.id}
@@ -491,13 +501,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     }`}
                                 >
                                     <div
-                                        className={`max-w-[85%] rounded-lg px-3 py-1.5 ${
+                                        className={`max-w-[85%] rounded-xl shadow-sm ${
                                             message.type === "user"
-                                                ? "bg-emerald-500 text-white"
-                                                : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                                ? "bg-[#ecfdf5] text-gray-900 px-3 py-1.5"
+                                                : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 border border-gray-100 dark:border-gray-600"
                                         }`}
                                     >
-                                        <p className="text-xs">
+                                        <p className="text-xs leading-relaxed">
                                             {message.content}
                                         </p>
                                     </div>
@@ -505,26 +515,29 @@ const Sidebar: React.FC<SidebarProps> = ({
                             ))}
                             {isLoading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-1.5">
-                                        <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                                    <div className="bg-white dark:bg-gray-700 rounded-xl px-3 py-2 shadow-sm border border-gray-100 dark:border-gray-600">
+                                        <div className="flex items-center space-x-2">
+                                            <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-500" />
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">Generating insights...</span>
+                                        </div>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+                        <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
                             <form onSubmit={handleSubmit} className="flex gap-2">
                                 <input
                                     type="text"
                                     value={question}
                                     onChange={(e) => setQuestion(e.target.value)}
-                                    placeholder="Ask a question..."
-                                    className="flex-1 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    placeholder="Ask me to create an insight map..."
+                                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
                                 />
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-3 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md flex items-center justify-center"
                                 >
                                     {isLoading ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
