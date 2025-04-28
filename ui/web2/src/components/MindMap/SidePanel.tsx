@@ -381,7 +381,6 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                                             insight.visible ? 'opacity-50' : 'opacity-100'
                                                         }`}
                                                         title="Show in mindmap"
-                                                        disabled={insight.visible}
                                                     >
                                                         <Plus className="h-3 w-3" weight="bold" />
                                                     </button>
