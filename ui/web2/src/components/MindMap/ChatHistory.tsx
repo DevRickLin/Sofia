@@ -51,10 +51,28 @@ export default function ChatHistory({
           if (msg.type === "assistant-answer" && msg.cards && msg.cards.length > 0) {
             return msg.cards.map((card) => {
               if (card.type === "node" && card.nodeData) {
+                // 定义 mock 数据
+                const mockNodeData: NodeData = {
+                  title: "Mock Breakthrough",
+                  summary: "This is a mock breakthrough node.",
+                  color: "orange",
+                  date: "2025-01-01",
+                  organization: "Mock Org",
+                  details: "This node is added as a mock for testing.",
+                  keyInsights: [
+                    {
+                      id: "mock-insight-1",
+                      content: "Mock insight content.",
+                      implications: "Mock implications.",
+                      relatedTechnologies: ["MockTech1", "MockTech2"],
+                      visible: true,
+                    },
+                  ],
+                };
                 return (
                   <div key={card.id} className="flex justify-start">
                     <div>
-                      <BreakthroughNodePreview data={card.nodeData} onAddNode={onAddNodeFromPreview} />
+                      <BreakthroughNodePreview data={mockNodeData} onAddNode={() => onAddNodeFromPreview?.(mockNodeData)} />
                     </div>
                   </div>
                 );
