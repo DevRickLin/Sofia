@@ -47,6 +47,52 @@ interface FocusNodeEvent extends CustomEvent {
     };
 }
 
+// 工具函数：让节点居中并占据画布 30% 以上空间
+function focusNodeWithScale({
+    node,
+    reactFlowInstance,
+    duration = 800,
+    minPercent = 0.3,
+}: {
+    node: FlowNode;
+    reactFlowInstance: ReactFlowInstance;
+    duration?: number;
+    minPercent?: number;
+}) {
+    if (!node || !reactFlowInstance) return;
+    // 获取画布容器尺寸
+    const container = document.querySelector('.react-flow');
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const canvasWidth = containerRect.width;
+    const canvasHeight = containerRect.height;
+
+    // 获取节点 DOM 尺寸
+    const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
+    // 默认宽高
+    let nodeWidth = 256;
+    let nodeHeight = 120;
+    if (nodeElement) {
+        const rect = nodeElement.getBoundingClientRect();
+        nodeWidth = rect.width;
+        nodeHeight = rect.height;
+    }
+    // 计算缩放比例
+    const scaleX = canvasWidth / nodeWidth;
+    const scaleY = canvasHeight / nodeHeight;
+    // 目标缩放比例，使节点占据 minPercent 画布
+    const zoom = Math.min(scaleX, scaleY) * minPercent;
+    // 限制最大最小缩放
+    const minZoom = 0.2;
+    const maxZoom = 1.5;
+    const finalZoom = Math.max(minZoom, Math.min(zoom, maxZoom));
+    // 居中
+    reactFlowInstance.setCenter(node.position.x, node.position.y, {
+        zoom: finalZoom,
+        duration,
+    });
+}
+
 const nodeTypes: NodeTypes = {
     category: CategoryNode,
     breakthrough: BreakthroughNode,
@@ -203,11 +249,17 @@ export const MindMap = () => {
             handleNodeSelect(node);
             setIsPanelOpen(true);
             setSidebarExpanded(false);
+            // --- 新增：点击节点时聚焦并缩放 ---
+            if (reactFlowInstance) {
+                setTimeout(() => {
+                    focusNodeWithScale({ node, reactFlowInstance, duration: 600 });
+                }, 0);
+            }
         } else if (node.type === "breakthrough" && !node.data.summary) {
             // For new question nodes, expand the chat sidebar
             setSidebarExpanded(true);
         }
-    }, [handleNodeSelect]);
+    }, [handleNodeSelect, reactFlowInstance]);
 
     const handleBackgroundClick = useCallback(() => {
         setIsPanelOpen(false);
@@ -413,17 +465,9 @@ export const MindMap = () => {
                         // This helps with dynamic content that may still be rendering
                         setTimeout(() => {
                             expandNode(nodeId, true);
-                            // Focus on the node to make sure the user can see it
+                            // --- 修改为 focusNodeWithScale ---
                             if (reactFlowInstance) {
-                                const nodeElement = document.querySelector(`[data-id="${nodeId}"]`);
-                                if (nodeElement) {
-                                    const nodeX = node.position.x;
-                                    const nodeY = node.position.y;
-                                    reactFlowInstance.setCenter(nodeX, nodeY, { 
-                                        zoom: reactFlowInstance.getZoom(),
-                                        duration: 300 
-                                    });
-                                }
+                                focusNodeWithScale({ node, reactFlowInstance, duration: 400 });
                             }
                         }, 200);
                     }, 0);
@@ -540,14 +584,8 @@ export const MindMap = () => {
             const node = nodes.find((n) => n.id === nodeId);
 
             if (node) {
-                // Center view on node with some zoom
-                const x = node.position?.x || 0;
-                const y = node.position?.y || 0;
-                reactFlowInstance.setCenter(x, y, {
-                    zoom: 1.5,
-                    duration: 800,
-                });
-
+                // --- 修改为 focusNodeWithScale ---
+                focusNodeWithScale({ node, reactFlowInstance, duration: 800 });
                 handleNodeSelect(node);
                 setIsPanelOpen(true);
             }
