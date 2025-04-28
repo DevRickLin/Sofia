@@ -799,15 +799,24 @@ export const MindMap = () => {
               return [
                 {
                   label: node.data.isDetailExpanded ? "收起详细信息" : "展开详细信息",
-                  onClick: () => toggleDetailExpanded(node.id),
+                  onClick: () => {
+                    console.log('toggleDetailExpanded', node.id);
+                    toggleDetailExpanded(node.id);
+                  },
                 },
                 {
                   label: node.data.isChildrenExpanded ? "收起子节点" : "展开子节点",
-                  onClick: () => expandNode(node.id),
+                  onClick: () => {
+                    console.log('expandNode', node.id);
+                    expandNode(node.id);
+                  },
                 },
                 {
                   label: "删除节点",
-                  onClick: () => handleDeleteNode(node.id),
+                  onClick: () => {
+                    console.log('handleDeleteNode', node.id);
+                    handleDeleteNode(node.id);
+                  },
                 },
               ];
             })() as ContextMenuItem[]}
