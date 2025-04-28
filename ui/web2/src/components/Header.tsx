@@ -63,7 +63,7 @@ const Header: React.FC = () => {
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5 }}
-                                className="flex items-center fixed left-4 sm:left-6 lg:left-8"
+                                className="flex items-center"
                             >
                                 <img
                                     src={SofiaLogo}
@@ -125,22 +125,25 @@ const Header: React.FC = () => {
 
                                         <div className="p-2">
                                             <button
-                                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center space-x-2"
+                                                type="button"
                                                 onClick={() => console.log('Settings clicked')}
+                                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center space-x-2"
                                             >
                                                 <Gear className="w-4 h-4" />
                                                 <span>Settings</span>
                                             </button>
                                             <button
-                                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center space-x-2"
+                                                type="button"
                                                 onClick={() => console.log('Support clicked')}
+                                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center space-x-2"
                                             >
                                                 <EnvelopeSimple className="w-4 h-4" />
                                                 <span>Support</span>
                                             </button>
                                             <button
-                                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 rounded-md flex items-center space-x-2"
+                                                type="button"
                                                 onClick={() => console.log('Sign out clicked')}
+                                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 rounded-md flex items-center space-x-2"
                                             >
                                                 <SignOut className="w-4 h-4" />
                                                 <span>Sign out</span>
