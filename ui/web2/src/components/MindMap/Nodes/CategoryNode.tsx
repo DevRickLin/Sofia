@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import {
     BaseNode,
     BNBody,
@@ -30,13 +30,25 @@ type CategoryNode = Node<CategoryNodeData, "CategoryNode">;
 export const CategoryNode = memo((props: NodeProps<CategoryNode>) => {
     const { data, selected, id } = props;
     const colors: ColorPattern = getColor(data.color);
+    const [isNodeExpanded, setIsNodeExpanded] = useState(data.isExpanded || false);
 
     // Check if the node has any children
     const edges = useEdges();
     const hasChildren = edges.some(edge => edge.source === id);
 
+    // Sync with external isExpanded state changes
+    useEffect(() => {
+        setIsNodeExpanded(data.isExpanded || false);
+    }, [data.isExpanded]);
+
+    const handleExpandNode = (nodeId: string) => {
+        if (data.expandNode) {
+            data.expandNode(nodeId);
+        }
+    };
+
     return (
-        <BaseNode colors={colors} selected={selected}>
+        <BaseNode colors={colors} selected={selected} initialExpanded={isNodeExpanded}>
             <BNBody>
                 <BNBodyContent>
                     <div>
@@ -70,9 +82,9 @@ export const CategoryNode = memo((props: NodeProps<CategoryNode>) => {
             </BNExpandContent>
             {hasChildren && data.expandNode && (
                 <SubNodesHandle 
-                    expandNode={data.expandNode} 
+                    expandNode={handleExpandNode} 
                     nodeId={id} 
-                    isExpanded={data.isExpanded || false}
+                    isExpanded={isNodeExpanded}
                 />
             )}
         </BaseNode>

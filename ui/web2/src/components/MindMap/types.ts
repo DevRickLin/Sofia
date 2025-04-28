@@ -5,6 +5,7 @@ export interface KeyInsight {
   content: string;
   implications: string;
   relatedTechnologies?: string[];
+  visible?: boolean;
 }
 
 export interface NodeData extends Record<string, unknown> {

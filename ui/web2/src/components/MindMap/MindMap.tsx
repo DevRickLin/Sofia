@@ -21,6 +21,7 @@ import SidePanel from "./SidePanel";
 import type { NodeChildData } from "./SidePanel";
 import { useTheme } from "../../context/ThemeContext";
 import { useCanvasStore } from "../../store/canvasStore";
+import type { KeyInsight } from "./types";
 
 // Add custom styles for the canvas background
 const canvasBackgroundStyle = {
@@ -78,13 +79,14 @@ export const MindMap = () => {
     // }, []);
 
     const expandNode = useCallback(
-        (nodeId: string) => {
+        (nodeId: string, forceExpand?: boolean) => {
             // First update the clicked node's expanded state
             let newExpandedState = false;
             setNodes((nds) =>
                 nds.map((node) => {
                     if (node.id === nodeId) {
-                        newExpandedState = !node.data.isExpanded;
+                        // If forceExpand is provided, use that value; otherwise toggle the current state
+                        newExpandedState = forceExpand !== undefined ? forceExpand : !node.data.isExpanded;
                         return {
                             ...node,
                             data: {
@@ -102,11 +104,10 @@ export const MindMap = () => {
                 const directChildren = allEdges
                     .filter(edge => edge.source === parentId)
                     .map(edge => edge.target);
-                
                 const descendants = [...directChildren];
-                directChildren.forEach(childId => {
+                for (const childId of directChildren) {
                     descendants.push(...getDescendantNodes(childId, allEdges));
-                });
+                }
                 
                 return descendants;
             };
@@ -392,6 +393,123 @@ export const MindMap = () => {
         },
         [reactFlowInstance, nodes, setNodes, setEdges, focusNode]
     );
+    const handleAddKeyInsight = useCallback((nodeId: string, insight: KeyInsight) => {
+        console.log('MindMap handleAddKeyInsight called with:', { nodeId, insight });
+        setNodes((nds) => {
+            const newNodes = nds.map((node) => {
+                if (node.id === nodeId) {
+                    const nodeData = node.data;
+                    const keyInsights: KeyInsight[] = Array.isArray(nodeData.keyInsights) ? nodeData.keyInsights : [];
+                    console.log('Current keyInsights:', keyInsights);
+                    
+                    // Find the insight by content since it's unique
+                    const existingInsightIndex = keyInsights.findIndex(
+                        (i) => i.content === insight.content
+                    );
+                    console.log('existingInsightIndex:', existingInsightIndex);
+
+                    let updatedInsights: KeyInsight[];
+                    if (existingInsightIndex !== -1) {
+                        // Update existing insight
+                        updatedInsights = [...keyInsights];
+                        updatedInsights[existingInsightIndex] = {
+                            ...updatedInsights[existingInsightIndex],
+                            visible: true
+                        };
+                        console.log('Updating existing insight:', updatedInsights[existingInsightIndex]);
+                    } else {
+                        // Add new insight with visible flag
+                        updatedInsights = [...keyInsights, { ...insight, visible: true }];
+                        console.log('Adding new insight:', insight);
+                    }
+
+                    // Create updated node with expanded state set to true
+                    const updatedNode = {
+                        ...node,
+                        data: {
+                            ...nodeData,
+                            keyInsights: updatedInsights,
+                            isExpanded: true // Always set to expanded when adding/showing insights
+                        }
+                    };
+
+                    // Always expand the node when showing an insight, regardless of current state
+                    console.log('Expanding node:', nodeId);
+                    // Use setTimeout to ensure the DOM has updated with new content before expanding
+                    setTimeout(() => {
+                        expandNode(nodeId, true);
+                        
+                        // Trigger another expansion after a delay to ensure full content visibility
+                        // This helps with dynamic content that may still be rendering
+                        setTimeout(() => {
+                            expandNode(nodeId, true);
+                            
+                            // Focus on the node to make sure the user can see it
+                            if (reactFlowInstance) {
+                                const nodeElement = document.querySelector(`[data-id="${nodeId}"]`);
+                                if (nodeElement) {
+                                    const rect = nodeElement.getBoundingClientRect();
+                                    const nodeX = node.position.x;
+                                    const nodeY = node.position.y;
+                                    reactFlowInstance.setCenter(nodeX, nodeY, { 
+                                        zoom: reactFlowInstance.getZoom(),
+                                        duration: 300 
+                                    });
+                                }
+                            }
+                        }, 200);
+                    }, 0);
+
+                    console.log('Updated node:', updatedNode);
+                    return updatedNode;
+                }
+                return node;
+            });
+
+            console.log('New nodes state:', newNodes);
+            return newNodes;
+        });
+    }, [expandNode, reactFlowInstance]);
+
+    const handleRemoveKeyInsight = useCallback((nodeId: string, insightIndex: number) => {
+        console.log('MindMap handleRemoveKeyInsight called with:', { nodeId, insightIndex });
+        setNodes((nds) => {
+            const newNodes = nds.map((node) => {
+                if (node.id === nodeId) {
+                    const nodeData = node.data;
+                    const keyInsights: KeyInsight[] = Array.isArray(nodeData.keyInsights) ? nodeData.keyInsights : [];
+                    console.log('Current keyInsights:', keyInsights);
+                    console.log('Insight at index:', insightIndex, keyInsights[insightIndex]);
+                    
+                    // Make sure the index exists
+                    if (keyInsights[insightIndex]) {
+                        const updatedInsights = [...keyInsights];
+                        updatedInsights[insightIndex] = {
+                            ...updatedInsights[insightIndex],
+                            visible: false
+                        };
+                        console.log('Updated insight:', updatedInsights[insightIndex]);
+
+                        const updatedNode = {
+                            ...node,
+                            data: {
+                                ...nodeData,
+                                keyInsights: updatedInsights
+                            }
+                        };
+                        console.log('Updated node:', updatedNode);
+                        return updatedNode;
+                    } else {
+                        console.error('Invalid insight index:', insightIndex, 'for keyInsights:', keyInsights);
+                    }
+                }
+                return node;
+            });
+
+            console.log('New nodes state:', newNodes);
+            return newNodes;
+        });
+    }, []);
 
     return (
         <div className="relative flex h-full w-full">
@@ -439,6 +557,8 @@ export const MindMap = () => {
                 node={selectedNode}
                 expandNode={expandNode}
                 addChildNode={addChildNode}
+                onAddKeyInsight={handleAddKeyInsight}
+                onRemoveKeyInsight={handleRemoveKeyInsight}
             />
         </div>
     );

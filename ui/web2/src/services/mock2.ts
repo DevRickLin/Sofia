@@ -44,7 +44,7 @@ export const generateChatResponse = async (
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   // Generate a thinking message based on user question
-  const thinkingContent = `I'm analyzing your question about "${userQuestion.substring(0, 30)}${userQuestion.length > 30 ? '...' : ''}". Let me process this in the context of the current node information.`;
+  const thinkingContent = `*I'm analyzing your question about* **"${userQuestion.substring(0, 30)}${userQuestion.length > 30 ? '...' : ''}"**\n\n_Let me process this in the context of the current node information..._`;
   
   // Add thinking message to history
   const thinkingId = `thinking-${Date.now()}`;
@@ -84,13 +84,13 @@ function generateContextualAnswer(query: string, nodeData: NodeData): string {
   let answer = '';
   
   if (lowercaseQuery.includes('what') || lowercaseQuery.includes('explain') || lowercaseQuery.includes('describe')) {
-    answer = `${nodeData.title || 'This topic'} is a significant development in the field. ${nodeData.summary || 'It represents an important advancement that has implications across multiple domains.'}`;
+    answer = `**${nodeData.title || 'This topic'}** is a significant development in the field. ${nodeData.summary || 'It represents an important advancement that has implications across multiple domains.'}`;
   } else if (lowercaseQuery.includes('why') || lowercaseQuery.includes('reason')) {
-    answer = `The significance of ${nodeData.title || 'this development'} lies in its ability to transform how we approach problems in the field. ${nodeData.details || 'The underlying principles represent a paradigm shift in thinking.'}`; 
+    answer = `The significance of **${nodeData.title || 'this development'}** lies in its ability to transform how we approach problems in the field. ${nodeData.details || 'The underlying principles represent a paradigm shift in thinking.'}`; 
   } else if (lowercaseQuery.includes('how') || lowercaseQuery.includes('method') || lowercaseQuery.includes('approach')) {
-    answer = `The methodology behind ${nodeData.title || 'this advancement'} involves innovative approaches to problem-solving. ${nodeData.details || 'It combines multiple techniques to achieve breakthrough results.'}`;
+    answer = `The methodology behind **${nodeData.title || 'this advancement'}** involves innovative approaches to problem-solving. ${nodeData.details || 'It combines multiple techniques to achieve breakthrough results.'}`;
   } else {
-    answer = `Based on the available information about ${nodeData.title || 'this topic'}, I can provide the following insights: ${nodeData.summary || 'This represents a significant development with wide-ranging implications.'} ${nodeData.details || ''}`;
+    answer = `Based on the available information about **${nodeData.title || 'this topic'}**, I can provide the following insights: ${nodeData.summary || 'This represents a significant development with wide-ranging implications.'} ${nodeData.details || ''}`;
   }
   
   return answer;
@@ -108,19 +108,19 @@ function generateResponseCards(answerContent: string): ResponseCard[] {
       id: `card-summary-${Date.now()}`,
       type: 'summary',
       title: 'Key Summary',
-      content: answerContent.substring(0, firstThird)
+      content: `### Summary\n\n${answerContent.substring(0, firstThird)}`
     },
     {
       id: `card-insight-${Date.now()}`,
       type: 'insight',
       title: 'Critical Insight',
-      content: answerContent.substring(firstThird, secondThird)
+      content: `### Insight\n\n${answerContent.substring(firstThird, secondThird)}\n\n* This insight provides new perspective on the topic\n* Consider how this relates to other developments in the field`
     },
     {
       id: `card-action-${Date.now()}`,
       type: 'action',
       title: 'Recommended Action',
-      content: answerContent.substring(secondThird)
+      content: `### Next Steps\n\n1. **Explore** - ${answerContent.substring(secondThird)}\n2. **Connect** - Relate this to other nodes in the mind map\n3. **Extend** - Consider practical applications`
     }
   ];
 } 

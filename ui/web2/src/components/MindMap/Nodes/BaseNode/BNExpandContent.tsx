@@ -14,17 +14,25 @@ export const BNExpandContent = forwardRef<
     const { isExpanded } = useContext(BaseNodeContext);
     const ref = useRef<HTMLDivElement>(null);
     const [height, setHeight] = useState("0px");
+    const [contentChanged, setContentChanged] = useState(false);
 
+    // Check if content has changed - useful to trigger resize when insights are added
+    useEffect(() => {
+        setContentChanged(prev => !prev);
+    }, [children]);
+
+    // Adjust height when expansion state changes or content changes
     useEffect(() => {
         if (ref.current) {
             if (isExpanded) {
                 const scrollHeight = ref.current.scrollHeight;
-                setHeight(`${scrollHeight}px`);
+                // Add extra padding to ensure all content is visible
+                setHeight(`${scrollHeight + 20}px`);
             } else {
                 setHeight("0px");
             }
         }
-    }, [isExpanded]);
+    }, [isExpanded, contentChanged]);
 
     useEffect(() => {
         const el = ref.current;
@@ -32,9 +40,10 @@ export const BNExpandContent = forwardRef<
 
         if (isExpanded) {
             const scrollHeight = el.scrollHeight;
-            setHeight(`${scrollHeight}px`);
+            // Add extra padding to ensure all content is visible
+            setHeight(`${scrollHeight + 20}px`);
 
-            // After transition, set to auto
+            // After transition, set to auto to accommodate any content changes
             const timeout = setTimeout(() => {
                 setHeight("auto");
             }, 500); // Match the duration
@@ -47,6 +56,32 @@ export const BNExpandContent = forwardRef<
                 setHeight("0px");
             });
         }
+    }, [isExpanded, contentChanged]);
+
+    // Create a mutation observer to detect content changes
+    useEffect(() => {
+        if (!ref.current) return;
+        
+        const observer = new MutationObserver(() => {
+            if (isExpanded && ref.current) {
+                const scrollHeight = ref.current.scrollHeight;
+                setHeight(`${scrollHeight + 20}px`);
+                
+                // Reset to auto after transition
+                setTimeout(() => {
+                    setHeight("auto");
+                }, 300);
+            }
+        });
+        
+        observer.observe(ref.current, { 
+            childList: true, 
+            subtree: true, 
+            characterData: true,
+            attributes: true
+        });
+        
+        return () => observer.disconnect();
     }, [isExpanded]);
 
     return (

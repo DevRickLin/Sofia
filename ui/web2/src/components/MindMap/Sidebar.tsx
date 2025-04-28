@@ -1,5 +1,8 @@
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
     Plus,
     MapTrifold as MapIcon,
@@ -37,6 +40,34 @@ interface NodeData {
     details?: string;
     keyInsights?: KeyInsight[];
 }
+
+// 定义通用的 Markdown 组件配置
+const markdownComponents: Components = {
+    // 自定义列表项的样式
+    li: ({...props}) => <li className="my-0" {...props} />,
+    // 自定义段落样式
+    p: ({...props}) => <p className="my-1" {...props} />,
+    // 自定义标题样式
+    h1: ({...props}) => <h1 className="text-sm font-bold my-1" {...props} />,
+    h2: ({...props}) => <h2 className="text-xs font-bold my-1" {...props} />,
+    h3: ({...props}) => <h3 className="text-xs font-semibold my-0.5" {...props} />,
+    // 自定义代码块样式
+    code: ({className, children, ...props}) => {
+        const match = /language-(\w+)/.exec(className || '');
+        const isInline = !match && (className || '').indexOf('inline') !== -1;
+        return isInline 
+            ? <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[0.9em]" {...props}>{children}</code>
+            : <code className="block bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto text-[0.9em]" {...props}>{children}</code>;
+    },
+    // 增强表格样式
+    table: ({...props}) => (
+        <div className="overflow-x-auto my-2">
+            <table className="border-collapse border border-gray-300 dark:border-gray-700 text-[0.9em]" {...props} />
+        </div>
+    ),
+    th: ({...props}) => <th className="border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-2 py-1" {...props} />,
+    td: ({...props}) => <td className="border border-gray-300 dark:border-gray-700 px-2 py-1" {...props} />
+};
 
 const Sidebar: React.FC<SidebarProps> = ({
     onAddNode,
@@ -311,8 +342,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                     <div className="text-xs font-medium text-gray-900">
                                                         {result.title}
                                                     </div>
-                                                    <div className="text-xs text-gray-500 line-clamp-2">
-                                                        {result.content}
+                                                    <div className="text-xs text-gray-500 line-clamp-2 prose prose-sm dark:prose-invert max-w-none markdown-content">
+                                                        <ReactMarkdown
+                                                            remarkPlugins={[remarkGfm]}
+                                                            components={markdownComponents}
+                                                        >
+                                                            {result.content}
+                                                        </ReactMarkdown>
                                                     </div>
                                                 </button>
                                             ))}
@@ -336,6 +372,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     setSearchQuery("");
                                     setSearchResults([]);
                                 }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') {
+                                        setShowSearch(false);
+                                        setSearchQuery("");
+                                        setSearchResults([]);
+                                    }
+                                }}
+                                role="button"
+                                tabIndex={0}
                             />
                         )}
                     </div>
@@ -511,9 +556,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                 : "bg-white text-gray-900 px-3 py-2 border border-gray-100"
                                         }`}
                                     >
-                                        <p className="text-xs leading-relaxed">
-                                            {message.content}
-                                        </p>
+                                        <div className="text-xs leading-relaxed prose prose-sm dark:prose-invert max-w-none markdown-content">
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
+                                                components={markdownComponents}
+                                            >
+                                                {message.content}
+                                            </ReactMarkdown>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
