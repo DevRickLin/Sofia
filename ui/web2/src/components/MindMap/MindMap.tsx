@@ -144,12 +144,12 @@ export const MindMap = () => {
           if (node.id === nodeId) {
             // If forceExpand is provided, use that value; otherwise toggle the current state
             newExpandedState =
-              forceExpand !== undefined ? forceExpand : !node.data.isExpanded;
+              forceExpand !== undefined ? forceExpand : !node.data.isChildrenExpanded;
             return {
               ...node,
               data: {
                 ...node.data,
-                isExpanded: newExpandedState,
+                isChildrenExpanded: newExpandedState,
               },
             };
           }
@@ -191,7 +191,7 @@ export const MindMap = () => {
               hidden: !newExpandedState || !isDirectChild,
               data: {
                 ...node.data,
-                isExpanded: false, // Collapse all descendants when parent is collapsed
+                isChildrenExpanded: false, // Collapse all descendants when parent is collapsed
               },
             };
           }
@@ -313,6 +313,8 @@ export const MindMap = () => {
         onSelect: () => {
           setSidebarExpanded(true);
         },
+        isChildrenExpanded: false,
+        isDetailExpanded: false,
       },
       draggable: true,
     };
@@ -412,7 +414,8 @@ export const MindMap = () => {
         data: {
           ...childData,
           label: childData.title,
-          isExpanded: false,
+          isChildrenExpanded: false,
+          isDetailExpanded: false,
         },
       };
 
@@ -501,7 +504,8 @@ export const MindMap = () => {
               data: {
                 ...nodeData,
                 keyInsights: updatedInsights,
-                isExpanded: true, // Always set to expanded when adding/showing insights
+                isChildrenExpanded: true,
+                isDetailExpanded: true,
               },
             };
 
@@ -574,6 +578,8 @@ export const MindMap = () => {
                 data: {
                   ...nodeData,
                   keyInsights: updatedInsights,
+                  isChildrenExpanded: false,
+                  isDetailExpanded: false,
                 },
               };
               console.log("Updated node:", updatedNode);
@@ -603,7 +609,7 @@ export const MindMap = () => {
     // Find all nodes with visible insights that are currently collapsed
     const collapsedNodesWithVisibleInsights = nodes.filter((node) => {
       // Skip if already expanded
-      if (node.data.isExpanded) return false;
+      if (node.data.isChildrenExpanded) return false;
 
       // Check if the node has visible key insights
       const keyInsights: KeyInsight[] = Array.isArray(node.data.keyInsights)
@@ -682,6 +688,23 @@ export const MindMap = () => {
     ? nodes.find((n) => n.id === selectedNodeId) || null
     : null;
 
+  // 新增：详情展开/收起
+  const toggleDetailExpanded = useCallback((nodeId: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                isDetailExpanded: !node.data.isDetailExpanded,
+              },
+            }
+          : node
+      )
+    );
+  }, [setNodes]);
+
   return (
     <div className="relative flex h-full w-full">
       <Sidebar
@@ -753,6 +776,7 @@ export const MindMap = () => {
         onAddNodeFromPreview={handleAddNodeFromPreview}
         chatHistories={chatHistories}
         setChatHistories={setChatHistories}
+        toggleDetailExpanded={toggleDetailExpanded}
       />
     </div>
   );

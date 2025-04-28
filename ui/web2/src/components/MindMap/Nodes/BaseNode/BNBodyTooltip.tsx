@@ -1,4 +1,5 @@
-import React, { forwardRef, useContext } from "react";
+import type React from "react";
+import { forwardRef, useContext } from "react";
 import { BaseNodeContext } from "./context";
 import { LabeledIcon } from "./LabeledIcon";
 import { CornersIn, CornersOut, Trash } from "@phosphor-icons/react";
@@ -21,7 +22,7 @@ export type BNBodyTooltipProps = {
 
 export const BNBodyTooltip = forwardRef<HTMLDivElement, BNBodyTooltipProps>(
     ({ tools, enableExpand, enableDelete, nodeId, onDelete, ...props }, ref) => {
-        const { showTooltip, hideTooltip, isExpanded, setIsExpanded } =
+        const { showTooltip, hideTooltip, isDetailExpanded, setIsDetailExpanded } =
             useContext(BaseNodeContext);
 
         return (
@@ -31,18 +32,18 @@ export const BNBodyTooltip = forwardRef<HTMLDivElement, BNBodyTooltipProps>(
                         <LabeledIcon
                             key={0}
                             icon={
-                                isExpanded ? (
+                                isDetailExpanded ? (
                                     <CornersIn className="text-gray-400 hover:text-gray-600" />
                                 ) : (
                                     <CornersOut className="text-gray-400 hover:text-gray-600" />
                                 )
                             }
-                            label={isExpanded ? "Collapse" : "Expand"}
+                            label={isDetailExpanded ? "Collapse" : "Expand"}
                             forceVisible={true}
                             onClick={(event) => {
                                 event.stopPropagation();
                                 event.preventDefault();
-                                setIsExpanded(!isExpanded);
+                                setIsDetailExpanded(!isDetailExpanded);
                             }}
                             onMouseEnter={showTooltip}
                             onMouseLeave={hideTooltip}
@@ -71,7 +72,7 @@ export const BNBodyTooltip = forwardRef<HTMLDivElement, BNBodyTooltipProps>(
                         tools.length > 0 &&
                         tools.map((tool, index) => (
                             <LabeledIcon
-                                key={index + 2}
+                                key={tool.label || tool.iconAfter?.toString() || index}
                                 icon={tool.icon}
                                 label={tool.label}
                                 forceVisible={tool.forceVisible ?? false}

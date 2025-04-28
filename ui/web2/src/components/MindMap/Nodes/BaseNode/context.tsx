@@ -4,12 +4,18 @@ export const BaseNodeContext = createContext<{
     isTooltipVisible: boolean;
     showTooltip: () => void;
     hideTooltip: () => void;
-    isExpanded: boolean;
-    setIsExpanded: (isExpanded: boolean) => void;
-}>({
-    isTooltipVisible: false,
-    showTooltip: () => {},
-    hideTooltip: () => {},
-    isExpanded: false,
-    setIsExpanded: () => {},
-});
+    isDetailExpanded: boolean;
+    setIsDetailExpanded: (isExpanded: boolean) => void;
+    isChildrenExpanded: boolean;
+    setIsChildrenExpanded: (isExpanded: boolean) => void;
+}>(
+    {
+        isTooltipVisible: false,
+        showTooltip: () => {},
+        hideTooltip: () => {},
+        isDetailExpanded: false,
+        setIsDetailExpanded: () => {},
+        isChildrenExpanded: false,
+        setIsChildrenExpanded: () => {},
+    }
+);

@@ -30,6 +30,7 @@ interface SidePanelProps {
   onAddNodeFromPreview?: (data: NodeData) => void;
   chatHistories: Record<string, ChatMessage[]>;
   setChatHistories: React.Dispatch<React.SetStateAction<Record<string, ChatMessage[]>>>;
+  toggleDetailExpanded?: (nodeId: string) => void;
 }
 
 export interface NodeChildData {
@@ -50,6 +51,7 @@ export default function SidePanel({
   onAddNodeFromPreview,
   chatHistories,
   setChatHistories,
+  toggleDetailExpanded,
 }: SidePanelProps) {
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -246,13 +248,22 @@ export default function SidePanel({
                     />
                   </div>
                 )}
-                {expandNode && (
+                {toggleDetailExpanded && (
+                  <button
+                    type="button"
+                    onClick={() => toggleDetailExpanded(node.id)}
+                    className="mt-3 px-3 py-1.5 bg-sky-100 text-sky-700 rounded text-xs font-medium hover:bg-sky-200 transition-colors w-full"
+                  >
+                    {data.isDetailExpanded ? "Hide" : "Show"} Details
+                  </button>
+                )}
+                {!toggleDetailExpanded && expandNode && (
                   <button
                     type="button"
                     onClick={() => expandNode(node.id)}
                     className="mt-3 px-3 py-1.5 bg-sky-100 text-sky-700 rounded text-xs font-medium hover:bg-sky-200 transition-colors w-full"
                   >
-                    {data.isExpanded ? "Hide" : "Show"} Details
+                    {data.isChildrenExpanded ? "Hide" : "Show"} Children
                   </button>
                 )}
               </div>

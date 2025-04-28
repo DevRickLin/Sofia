@@ -8,8 +8,9 @@ import {
     BNExpandContent,
     SubNodesHandle,
 } from "./BaseNode";
-import { ColorPattern, Color } from "./type";
-import { NodeProps, Node, useEdges } from "@xyflow/react";
+import type { ColorPattern, Color } from "./type";
+import type { NodeProps, Node } from "@xyflow/react";
+import { useEdges } from "@xyflow/react";
 import { getColor } from "./utils";
 import { Lightbulb } from "@phosphor-icons/react";
 import type { KeyInsight } from "../types";
@@ -27,7 +28,8 @@ export interface BreakthroughNodeData {
     color: Color;
     parentId?: string;
     expandNode?: (nodeId: string) => void;
-    isExpanded?: boolean;
+    isDetailExpanded?: boolean;
+    isChildrenExpanded?: boolean;
     [key: string]: unknown;
 }
 
@@ -36,7 +38,8 @@ type BreakthroughNode = Node<BreakthroughNodeData>;
 export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
     const { data, selected, id } = props;
     let colors: ColorPattern = getColor(data.color);
-    const [isNodeExpanded, setIsNodeExpanded] = useState(data.isExpanded || false);
+    const [isDetailExpanded, setIsDetailExpanded] = useState(data.isDetailExpanded || false);
+    const [isChildrenExpanded, setIsChildrenExpanded] = useState(data.isChildrenExpanded || false);
     const insightsContainerRef = useRef<HTMLDivElement>(null);
     
     colors = {
@@ -48,22 +51,25 @@ export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
     const edges = useEdges();
     const hasChildren = edges.some(edge => edge.source === id);
 
-    // Sync with external isExpanded state changes
+    // Sync with external expanded state changes
     useEffect(() => {
-        setIsNodeExpanded(data.isExpanded || false);
-    }, [data.isExpanded]);
+        setIsDetailExpanded(data.isDetailExpanded || false);
+    }, [data.isDetailExpanded]);
+    useEffect(() => {
+        setIsChildrenExpanded(data.isChildrenExpanded || false);
+    }, [data.isChildrenExpanded]);
 
     // Count visible insights to track when they change
     const visibleInsightsCount = Array.isArray(data.keyInsights) 
         ? data.keyInsights.filter(insight => insight.visible === true).length 
         : 0;
 
-    // Auto-expand when insights become visible
+    // Auto-expand details when insights become visible
     useEffect(() => {
-        if (visibleInsightsCount > 0 && !isNodeExpanded && data.expandNode) {
-            data.expandNode(id);
+        if (visibleInsightsCount > 0 && !isDetailExpanded) {
+            setIsDetailExpanded(true);
         }
-    }, [visibleInsightsCount, isNodeExpanded, data.expandNode, id]);
+    }, [visibleInsightsCount, isDetailExpanded]);
 
     const handleExpandNode = (nodeId: string) => {
         if (data.expandNode) {
@@ -72,12 +78,17 @@ export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
     };
 
     return (
-        <BaseNode colors={colors} selected={selected} initialExpanded={isNodeExpanded}>
+        <BaseNode
+            colors={colors}
+            selected={selected}
+            initialDetailExpanded={isDetailExpanded}
+            initialChildrenExpanded={isChildrenExpanded}
+        >
             <BNBody>
                 <BNBodyContent>
                     <div>
                         <h3
-                            className={`text-lg font-semibold`}
+                            className="text-lg font-semibold"
                             style={{
                                 color: colors.title_color,
                             }}
@@ -91,7 +102,7 @@ export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
                         </div>
                         <div className="p-[2px]">
                             <div
-                                className={`mt-1 pl-3 border-l-2 border-[#bdbdbd]/30 text-sm text-[#757575]`}
+                                className="mt-1 pl-3 border-l-2 border-[#bdbdbd]/30 text-sm text-[#757575]"
                             >
                                 {data.summary}
                             </div>
@@ -106,7 +117,7 @@ export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
             </BNBody>
             <BNHandle colors={colors} enableSourceHandle enableTargetHandle />
             <BNExpandContent>
-                <div className="border-t border-dashed border-gray-400 mt-4 mb-2 mx-4"></div>
+                <div className="border-t border-dashed border-gray-400 mt-4 mb-2 mx-4" />
                 <div className="text-[#757575] p-2">
                     {data.details}
                 </div>
@@ -192,7 +203,7 @@ export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
                 <SubNodesHandle 
                     expandNode={handleExpandNode} 
                     nodeId={id} 
-                    isExpanded={isNodeExpanded}
+                    isExpanded={isChildrenExpanded}
                 />
             )}
         </BaseNode>
