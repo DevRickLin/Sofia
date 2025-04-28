@@ -475,7 +475,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         transition={{ duration: 0.3 }}
                         className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col"
                     >
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-emerald-50 dark:bg-emerald-900/20">
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                             <div className="flex items-center space-x-3">
                                 <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-800/40">
                                     <Lightbulb 
@@ -485,10 +485,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 </div>
                                 <div className="flex flex-col">
                                     <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100">
-                                        Insight Map Generator
+                                        Your Insight Map Assistant
                                     </h3>
                                     <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
-                                        Ask me to create insight maps about any topic
+                                        Ask me to create insight maps about any topic in AI
                                     </p>
                                 </div>
                             </div>
