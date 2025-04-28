@@ -11,8 +11,6 @@ import {
   Lightbulb,
   ChatTeardropDots as MessageSquare,
   CaretUp,
-  Plus,
-  Minus,
 } from "@phosphor-icons/react";
 import { generateChatResponse } from "../../services/mock2";
 import type { ChatMessage } from "../../services/mock2";
@@ -20,6 +18,7 @@ import type { A2AClient } from "a2a-client";
 import type { NodeData, KeyInsight } from "../MindMap/types";
 import ChatHistory from "./ChatHistory";
 import { Rnd } from "react-rnd";
+import KeyInsightList from "./KeyInsightList";
 
 interface SidePanelProps {
   isOpen: boolean;
@@ -54,7 +53,6 @@ export default function SidePanel({
 }: SidePanelProps) {
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [hoveredInsightId, setHoveredInsightId] = useState<string | null>(null);
 
   // Get current chat history for the selected node
   const currentChatHistory = node ? chatHistories[node.id] || [] : [];
@@ -236,103 +234,16 @@ export default function SidePanel({
                       <Lightbulb className="h-3 w-3 mr-1" />
                       Key Insights
                     </h4>
-                    <div className="mt-2 space-y-3">
-                      {data.keyInsights.map(
-                        (insight: KeyInsight, index: number) => (
-                          <div
-                            key={
-                              insight.id ||
-                              `insight-${insight.content.substring(
-                                0,
-                                10
-                              )}-${index}`
-                            }
-                            className={`relative rounded p-2 ${
-                              insight.visible
-                                ? "bg-sky-100 border-l-2 border-sky-500"
-                                : "bg-sky-50"
-                            }`}
-                            onMouseEnter={() =>
-                              setHoveredInsightId(insight.id)
-                            }
-                            onMouseLeave={() => setHoveredInsightId(null)}
-                          >
-                            <div
-                              className="absolute right-2 top-2 z-10 flex flex-col gap-1"
-                              style={{
-                                opacity:
-                                  hoveredInsightId === insight.id ? 1 : 0,
-                                transition: "opacity 0.15s ease-in-out",
-                              }}
-                            >
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAddKeyInsight(insight);
-                                }}
-                                className={`p-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 ${
-                                  insight.visible
-                                    ? "opacity-50"
-                                    : "opacity-100"
-                                }`}
-                                title="Show in mindmap"
-                              >
-                                <Plus className="h-3 w-3" weight="bold" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (node) {
-                                    handleRemoveKeyInsight(index);
-                                  }
-                                }}
-                                className={`p-1 rounded-full bg-sky-200 hover:bg-sky-300 text-sky-600 ${
-                                  !insight.visible
-                                    ? "opacity-50"
-                                    : "opacity-100"
-                                }`}
-                                title="Hide from mindmap"
-                              >
-                                <Minus className="h-3 w-3" weight="bold" />
-                              </button>
-                            </div>
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1 pr-8">
-                                <p className="text-xs text-sky-700">
-                                  {insight.content}
-                                </p>
-                                <p className="mt-1 text-xs text-sky-600 italic">
-                                  {insight.implications}
-                                </p>
-                                {insight.relatedTechnologies &&
-                                  insight.relatedTechnologies.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap gap-1">
-                                      {insight.relatedTechnologies.map(
-                                        (tech) => (
-                                          <span
-                                            key={`tech-${tech}`}
-                                            className="inline-block bg-sky-100 text-[10px] px-1.5 py-0.5 rounded-full text-sky-700"
-                                          >
-                                            {tech}
-                                          </span>
-                                        )
-                                      )}
-                                    </div>
-                                  )}
-                              </div>
-                            </div>
-                            {insight.visible && (
-                              <div className="mt-1 text-[10px] text-sky-600 font-medium flex items-center">
-                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-500 mr-1" />
-                                Visible in mindmap
-                              </div>
-                            )}
-                          </div>
-                        )
-                      )}
-                    </div>
+                    <KeyInsightList
+                      keyInsights={data.keyInsights}
+                      isAdded={false}
+                      onAddKeyInsight={handleAddKeyInsight}
+                      onRemoveKeyInsight={(insight) => {
+                        // 找到 index
+                        const idx = data.keyInsights?.findIndex(i => i.id === insight.id);
+                        if (idx !== undefined && idx >= 0) handleRemoveKeyInsight(idx);
+                      }}
+                    />
                   </div>
                 )}
                 {expandNode && (
