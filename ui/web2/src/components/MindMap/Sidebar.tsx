@@ -1,4 +1,4 @@
-import type React from "react";
+import React from "react";
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
@@ -8,8 +8,6 @@ import {
     MapTrifold as MapIcon,
     Stack as Layers,
     CaretRight as ChevronRight,
-    PaperPlaneTilt as Send,
-    Spinner as Loader2,
     PencilSimpleLine as Edit2,
     MagnifyingGlass as Search,
     X,
@@ -18,7 +16,9 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useCanvasStore } from "../../store/canvasStore";
 import type { A2AClient } from 'a2a-client';
-import { generateChatResponse } from "../../services/mock";
+import { generateChatResponse } from "../../services/mock2";
+import ChatHistory from "./ChatHistory";
+import type { ChatMessage } from "../../services/mock2";
 
 interface SidebarProps {
     onAddNode: () => void;
@@ -76,10 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     onToggleExpanded,
 }) => {
     const [showMapsDropdown, setShowMapsDropdown] = useState(false);
-    const [question, setQuestion] = useState("");
-    const [chatHistory, setChatHistory] = useState<
-        Array<{ type: "user" | "assistant"; content: string; id: string }>
-    >([]);
+    const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [editingCanvasId, setEditingCanvasId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
@@ -101,6 +98,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     const { canvases, currentCanvasId, setCurrentCanvas, updateCanvasName, initDefault } =
         useCanvasStore();
     const currentCanvas = canvases.find((c) => c.id === currentCanvasId);
+
+    // 记录上一次 chatHistory 长度
+    const chatHistoryRef = React.useRef<ChatMessage[]>([]);
+    React.useEffect(() => {
+        chatHistoryRef.current = chatHistory;
+    }, [chatHistory]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -191,48 +194,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         setShowSearch(false);
         setSearchQuery("");
         setSearchResults([]);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!question.trim() || isLoading || !currentCanvas) return;
-
-        const userQuestion = question.trim();
-        setQuestion("");
-        setChatHistory((prev) => [
-            ...prev,
-            { type: "user", content: userQuestion, id: `user-${Date.now()}` },
-        ]);
-
-        // Check if this is the second user message, if so, initialize the default canvas
-        if (chatHistory.filter(msg => msg.type === "user").length === 1) {
-            initDefault();
-        }
-
-        setIsLoading(true);
-        try {
-            // Create a NodeData object with relevant information from the canvas
-            const canvasData = {
-                title: currentCanvas.name,
-                description: `This is a mind map called "${currentCanvas.name}"`,
-                // Add any other relevant properties that might help the AI understand the context
-            };
-            
-            await generateChatResponse({} as A2AClient, canvasData, userQuestion, setChatHistory);
-        } catch (error) {
-            console.error("Error:", error);
-            setChatHistory((prev) => [
-                ...prev,
-                {
-                    type: "assistant",
-                    content:
-                        "I apologize, but I encountered an error while processing your request.",
-                    id: `error-${Date.now()}`
-                },
-            ]);
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     const handleCanvasNameSubmit = (e: React.FormEvent) => {
@@ -540,66 +501,44 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {chatHistory.map((message) => (
-                                <div
-                                    key={message.id}
-                                    className={`flex ${
-                                        message.type === "user"
-                                            ? "justify-end"
-                                            : "justify-start"
-                                    }`}
-                                >
-                                    <div
-                                        className={`max-w-[85%] rounded-xl shadow-sm ${
-                                            message.type === "user"
-                                                ? "bg-[#ecfdf5] text-gray-900 px-3 py-1.5"
-                                                : "bg-white text-gray-900 px-3 py-2 border border-gray-100"
-                                        }`}
-                                    >
-                                        <div className="text-xs leading-relaxed prose prose-sm dark:prose-invert max-w-none markdown-content">
-                                            <ReactMarkdown
-                                                remarkPlugins={[remarkGfm]}
-                                                components={markdownComponents}
-                                            >
-                                                {message.content}
-                                            </ReactMarkdown>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100">
-                                        <div className="flex items-center space-x-2">
-                                            <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-500" />
-                                            <span className="text-xs text-gray-500">Generating insights...</span>
-                                        </div>
-                                    </div>
-                                </div>
+                            {currentCanvas && (
+                                <ChatHistory
+                                    history={chatHistory}
+                                    isLoading={isLoading}
+                                    onSend={async (userQuestion) => {
+                                        // 判断用户消息数
+                                        const userMsgCount = chatHistoryRef.current.filter(msg => msg.type === "user").length;
+                                        if (userMsgCount === 1 && typeof initDefault === 'function') {
+                                            initDefault();
+                                        }
+                                        setIsLoading(true);
+                                        try {
+                                            const canvasData = {
+                                                ...currentCanvas,
+                                                title: currentCanvas.name,
+                                                description: `This is a mind map called "${currentCanvas.name}"`,
+                                            };
+                                            await generateChatResponse({} as A2AClient, canvasData, userQuestion, setChatHistory);
+                                        } catch {
+                                            setChatHistory((prev) => [
+                                                ...prev,
+                                                {
+                                                    type: "assistant-answer",
+                                                    content:
+                                                        "I apologize, but I encountered an error while processing your request.",
+                                                    id: `error-${Date.now()}`,
+                                                },
+                                            ]);
+                                        } finally {
+                                            setIsLoading(false);
+                                        }
+                                    }}
+                                />
                             )}
                         </div>
 
                         <div className="p-3 border-t border-gray-200 bg-gray-50">
-                            <form onSubmit={handleSubmit} className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={question}
-                                    onChange={(e) => setQuestion(e.target.value)}
-                                    placeholder="Ask me to create an insight map..."
-                                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="px-3 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md flex items-center justify-center"
-                                >
-                                    {isLoading ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <Send className="h-4 w-4" />
-                                    )}
-                                </button>
-                            </form>
+                            {/* Chat input is now handled by ChatHistory */}
                         </div>
                     </motion.div>
                 )}

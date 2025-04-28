@@ -2,9 +2,6 @@ import type React from "react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Node } from "@xyflow/react";
-import ReactMarkdown from "react-markdown";
-import type { Components } from "react-markdown";
-import remarkGfm from "remark-gfm";
 import {
   X,
   Calendar,
@@ -12,9 +9,7 @@ import {
   Globe,
   ArrowRight,
   Lightbulb,
-  PaperPlaneTilt as Send,
   ChatTeardropDots as MessageSquare,
-  Spinner as Loader2,
   CaretUp,
   Plus,
   Minus,
@@ -23,6 +18,7 @@ import { generateChatResponse } from "../../services/mock2";
 import type { ChatMessage } from "../../services/mock2";
 import type { A2AClient } from "a2a-client";
 import type { NodeData, KeyInsight } from "../MindMap/types";
+import ChatHistory from "./ChatHistory";
 
 interface SidePanelProps {
   isOpen: boolean;
@@ -41,61 +37,6 @@ export interface NodeChildData {
   type: string;
 }
 
-// 定义通用的 Markdown 组件配置
-const markdownComponents: Components = {
-  // 自定义列表项的样式
-  li: ({ ...props }) => <li className="my-0" {...props} />,
-  // 自定义段落样式
-  p: ({ ...props }) => <p className="my-1" {...props} />,
-  // 自定义标题样式
-  h1: ({ ...props }) => <h1 className="text-sm font-bold my-1" {...props} />,
-  h2: ({ ...props }) => <h2 className="text-xs font-bold my-1" {...props} />,
-  h3: ({ ...props }) => (
-    <h3 className="text-xs font-semibold my-0.5" {...props} />
-  ),
-  // 自定义代码块样式
-  code: ({ className, children, ...props }) => {
-    const match = /language-(\w+)/.exec(className || "");
-    const isInline = !match && (className || "").indexOf("inline") !== -1;
-    return isInline ? (
-      <code
-        className="px-1 py-0.5 bg-gray-100 rounded text-[0.9em]"
-        {...props}
-      >
-        {children}
-      </code>
-    ) : (
-      <code
-        className="block bg-gray-100 p-2 rounded overflow-x-auto text-[0.9em]"
-        {...props}
-      >
-        {children}
-      </code>
-    );
-  },
-  // 增强表格样式
-  table: ({ ...props }) => (
-    <div className="overflow-x-auto my-2">
-      <table
-        className="border-collapse border border-gray-300 text-[0.9em]"
-        {...props}
-      />
-    </div>
-  ),
-  th: ({ ...props }) => (
-    <th
-      className="border border-gray-300 bg-gray-100 px-2 py-1"
-      {...props}
-    />
-  ),
-  td: ({ ...props }) => (
-    <td
-      className="border border-gray-300 px-2 py-1"
-      {...props}
-    />
-  ),
-};
-
 export default function SidePanel({
   isOpen,
   onClose,
@@ -104,7 +45,6 @@ export default function SidePanel({
   onAddKeyInsight,
   onRemoveKeyInsight,
 }: SidePanelProps) {
-  const [question, setQuestion] = useState("");
   const [chatHistories, setChatHistories] = useState<
     Record<string, ChatMessage[]>
   >({});
@@ -118,49 +58,6 @@ export default function SidePanel({
   if (!node) return null;
 
   const data = node.data;
-
-  const handleQuestionSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!question.trim() || isLoading || !node) return;
-
-    const userQuestion = question.trim();
-    setQuestion("");
-    setIsLoading(true);
-
-    try {
-      // Use our mock service to generate a response
-      await generateChatResponse(
-        {} as A2AClient,
-        data,
-        userQuestion,
-        (history) => {
-          setChatHistories((prev) => ({
-            ...prev,
-            [node.id]:
-              typeof history === "function"
-                ? history(prev[node.id] || [])
-                : history,
-          }));
-        }
-      );
-    } catch (error) {
-      console.error("Error:", error);
-      setChatHistories((prev) => ({
-        ...prev,
-        [node.id]: [
-          ...(prev[node.id] || []),
-          {
-            type: "assistant-answer",
-            content:
-              "I apologize, but I encountered an error while processing your request.",
-            id: `error-${Date.now()}`,
-          },
-        ],
-      }));
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleAddKeyInsight = (insight: KeyInsight) => {
     console.log("Adding insight:", insight);
@@ -478,75 +375,46 @@ export default function SidePanel({
               )}
             </button>
 
-            {isChatOpen && (
-              <div className="p-4 border-t border-gray-200 bg-gray-50">
-                <div className="mb-4 max-h-40 overflow-y-auto space-y-3">
-                  {currentChatHistory.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${
-                        message.type === "user"
-                          ? "justify-end"
-                          : "justify-start"
-                      } flex-col ${
-                        message.type !== "user" ? "w-full" : ""
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded px-3 py-1.5 ${
-                          message.type === "user"
-                            ? "bg-[#dbf9fe] text-gray-900"
-                            : "bg-gray-100 text-gray-900"
-                        }`}
-                      >
-                        <div className="text-xs whitespace-pre-wrap prose prose-sm max-w-none markdown-content">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={markdownComponents}
-                          >
-                            {message.content}
-                          </ReactMarkdown>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-gray-100 rounded px-3 py-1.5">
-                        <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <form
-                  onSubmit={handleQuestionSubmit}
-                  className="flex items-center gap-2"
-                >
-                  <input
-                    type="text"
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    placeholder="Ask a follow-up question..."
-                    className="flex-1 text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-gray-900"
-                  />
-                  <button
-                    type="submit"
-                    className={`px-3 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isLoading
-                        ? "cursor-not-allowed"
-                        : "hover:bg-sky-600 hover:shadow-md"
-                    }`}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </button>
-                </form>
+            {isChatOpen && node && (
+              <div className="p-4 border-t border-gray-200 bg-gray-50" style={{height: '260px'}}>
+                <ChatHistory
+                  history={currentChatHistory}
+                  isLoading={isLoading}
+                  onSend={async (userQuestion) => {
+                    setIsLoading(true);
+                    try {
+                      await generateChatResponse(
+                        {} as A2AClient,
+                        data,
+                        userQuestion,
+                        (history) => {
+                          setChatHistories((prev) => ({
+                            ...prev,
+                            [node.id]:
+                              typeof history === "function"
+                                ? history(prev[node.id] || [])
+                                : history,
+                          }));
+                        }
+                      );
+                    } catch {
+                      setChatHistories((prev) => ({
+                        ...prev,
+                        [node.id]: [
+                          ...(prev[node.id] || []),
+                          {
+                            type: "assistant-answer",
+                            content:
+                              "I apologize, but I encountered an error while processing your request.",
+                            id: `error-${Date.now()}`,
+                          },
+                        ],
+                      }));
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
+                />
               </div>
             )}
           </div>

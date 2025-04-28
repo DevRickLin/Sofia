@@ -13,8 +13,51 @@ export interface ChatMessage {
 export interface ResponseCard {
   id: string;
   content: string;
-  type: 'info' | 'insight' | 'summary' | 'action';
+  type: 'info' | 'insight' | 'summary' | 'action' | 'node';
   title?: string;
+  nodeData?: NodeData;
+}
+
+// 用于每个 nodeId 的 generator 管理
+const generators: Record<string, Generator<{type: string; content?: string; cards?: ResponseCard[]; nodeCard?: ResponseCard}, void, unknown>> = {};
+
+// 生成器工厂：每次 yield 不同类型的 response
+function* getChatResponseGenerator(nodeData: NodeData, userQuestion: string) {
+  // 第一次 yield 普通文本
+  yield {
+    type: 'text',
+    content: generateContextualAnswer(userQuestion, nodeData),
+  };
+  // 第二次 yield summary/insight/action 卡片
+  yield {
+    type: 'cards',
+    cards: generateResponseCards(generateContextualAnswer(userQuestion, nodeData)),
+  };
+  // 第三次及以后 yield node 卡片
+  while (true) {
+    const nodeCard: ResponseCard = {
+      id: `node-card-${Date.now()}`,
+      type: 'node',
+      title: nodeData.title || 'AI节点',
+      content: nodeData.summary || 'AI生成的节点内容',
+      nodeData: {
+        id: `ai-node-${Date.now()}`,
+        title: nodeData.title || 'AI节点',
+        summary: nodeData.summary || 'AI生成的节点内容',
+        details: nodeData.details || '',
+        date: nodeData.date || '',
+        organization: nodeData.organization || '',
+        source: nodeData.source || '',
+        keyInsights: nodeData.keyInsights || [],
+        position: nodeData.position || { x: 0, y: 0 },
+        color: nodeData.color || 'blue',
+      }
+    };
+    yield {
+      type: 'node',
+      nodeCard
+    };
+  }
 }
 
 export const generateChatResponse = async (
@@ -23,13 +66,19 @@ export const generateChatResponse = async (
   userQuestion: string,
   setHistory: (history: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void
 ): Promise<void> => {
+  // 获取 nodeId
+  const nodeId = typeof nodeData.id === 'string' ? nodeData.id : 'default-node';
+  // 获取或创建 generator
+  if (!generators[nodeId]) {
+    generators[nodeId] = getChatResponseGenerator(nodeData, userQuestion);
+  }
+  const gen = generators[nodeId];
+
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  
   // Log the parameters to satisfy linter
   console.log("Using client:", client);
   console.log("Processing node data:", nodeData);
-  
   // Add user message to history
   setHistory(prev => [
     ...prev,
@@ -39,13 +88,10 @@ export const generateChatResponse = async (
       id: `user-${Date.now()}` 
     }
   ]);
-  
   // Simulate AI thinking with a delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
+  await new Promise(resolve => setTimeout(resolve, 800));
   // Generate a thinking message based on user question
   const thinkingContent = `*I'm analyzing your question about* **"${userQuestion.substring(0, 30)}${userQuestion.length > 30 ? '...' : ''}"**\n\n_Let me process this in the context of the current node information..._`;
-  
   // Add thinking message to history
   const thinkingId = `thinking-${Date.now()}`;
   setHistory(prev => [
@@ -56,26 +102,41 @@ export const generateChatResponse = async (
       id: thinkingId 
     }
   ]);
-  
   // Simulate processing with another delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Create the answer message
-  const answerContent = generateContextualAnswer(userQuestion, nodeData);
-  
-  // Create response cards from the answer
-  const cards = generateResponseCards(answerContent);
-  
-  // Add answer with cards to history
-  setHistory(prev => [
-    ...prev,
-    { 
-      type: "assistant-answer", 
-      content: answerContent, 
-      id: `answer-${Date.now()}`,
-      cards
-    }
-  ]);
+  await new Promise(resolve => setTimeout(resolve, 1200));
+
+  // 获取 generator 的下一个 response
+  const { value } = gen.next();
+  if (value && value.type === 'text') {
+    setHistory(prev => [
+      ...prev,
+      { 
+        type: "assistant-answer", 
+        content: value.content || '', 
+        id: `answer-${Date.now()}`
+      }
+    ]);
+  } else if (value && value.type === 'cards') {
+    setHistory(prev => [
+      ...prev,
+      {
+        type: "assistant-answer",
+        content: '以下是对你的问题的结构化解答：',
+        id: `answer-${Date.now()}`,
+        cards: value.cards
+      }
+    ]);
+  } else if (value && value.type === 'node') {
+    setHistory(prev => [
+      ...prev,
+      {
+        type: "assistant-answer",
+        content: '我为你生成了一个新节点，可以拖拽到画布中。',
+        id: `answer-${Date.now()}`,
+        cards: value.nodeCard ? [value.nodeCard] : []
+      }
+    ]);
+  }
 };
 
 // Helper function to generate a contextual answer based on the query
