@@ -25,6 +25,9 @@ interface SidebarProps {
     onNewCanvas: () => void;
     isExpanded: boolean;
     onToggleExpanded: (expanded: boolean) => void;
+    onAddNodeFromPreview?: (data: NodeData) => void;
+    chatHistories: Record<string, ChatMessage[]>;
+    setChatHistories: React.Dispatch<React.SetStateAction<Record<string, ChatMessage[]>>>;
 }
 
 interface KeyInsight {
@@ -74,9 +77,11 @@ const Sidebar: React.FC<SidebarProps> = ({
     onNewCanvas,
     isExpanded,
     onToggleExpanded,
+    onAddNodeFromPreview,
+    chatHistories,
+    setChatHistories,
 }) => {
     const [showMapsDropdown, setShowMapsDropdown] = useState(false);
-    const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [editingCanvasId, setEditingCanvasId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
@@ -99,6 +104,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         useCanvasStore();
     const currentCanvas = canvases.find((c) => c.id === currentCanvasId);
 
+    // 当前画布的 chatHistory
+    const chatHistory = currentCanvas ? chatHistories[currentCanvas.id] || [] : [];
     // 记录上一次 chatHistory 长度
     const chatHistoryRef = React.useRef<ChatMessage[]>([]);
     React.useEffect(() => {
@@ -518,21 +525,38 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                 title: currentCanvas.name,
                                                 description: `This is a mind map called "${currentCanvas.name}"`,
                                             };
-                                            await generateChatResponse({} as A2AClient, canvasData, userQuestion, setChatHistory);
+                                            await generateChatResponse(
+                                                {} as A2AClient,
+                                                canvasData,
+                                                userQuestion,
+                                                (history) => {
+                                                    setChatHistories((prev) => ({
+                                                        ...prev,
+                                                        [currentCanvas.id]:
+                                                            typeof history === "function"
+                                                                ? history(prev[currentCanvas.id] || [])
+                                                                : history,
+                                                    }));
+                                                }
+                                            );
                                         } catch {
-                                            setChatHistory((prev) => [
+                                            setChatHistories((prev) => ({
                                                 ...prev,
-                                                {
-                                                    type: "assistant-answer",
-                                                    content:
-                                                        "I apologize, but I encountered an error while processing your request.",
-                                                    id: `error-${Date.now()}`,
-                                                },
-                                            ]);
+                                                [currentCanvas.id]: [
+                                                    ...(prev[currentCanvas.id] || []),
+                                                    {
+                                                        type: "assistant-answer",
+                                                        content:
+                                                            "I apologize, but I encountered an error while processing your request.",
+                                                        id: `error-${Date.now()}`,
+                                                    },
+                                                ],
+                                            }));
                                         } finally {
                                             setIsLoading(false);
                                         }
                                     }}
+                                    onAddNodeFromPreview={onAddNodeFromPreview}
                                 />
                             )}
                         </div>

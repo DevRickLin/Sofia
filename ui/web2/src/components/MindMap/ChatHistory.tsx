@@ -4,17 +4,20 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ChatMessage } from "../../services/mock2";
 import BreakthroughNodePreview from "./BreakthroughNodePreview";
+import type { NodeData } from "./types";
 
 interface ChatHistoryProps {
   history: ChatMessage[];
   isLoading: boolean;
   onSend: (question: string) => void;
+  onAddNodeFromPreview?: (data: NodeData) => void;
 }
 
 export default function ChatHistory({
   history,
   isLoading,
   onSend,
+  onAddNodeFromPreview,
 }: ChatHistoryProps) {
   const [input, setInput] = React.useState("");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -51,7 +54,7 @@ export default function ChatHistory({
                 return (
                   <div key={card.id} className="flex justify-start">
                     <div>
-                      <BreakthroughNodePreview data={card.nodeData} />
+                      <BreakthroughNodePreview data={card.nodeData} onAddNode={onAddNodeFromPreview} />
                     </div>
                   </div>
                 );

@@ -28,6 +28,9 @@ interface SidePanelProps {
   expandNode: (nodeId: string) => void;
   onAddKeyInsight?: (nodeId: string, insight: KeyInsight) => void;
   onRemoveKeyInsight?: (nodeId: string, insightIndex: number) => void;
+  onAddNodeFromPreview?: (data: NodeData) => void;
+  chatHistories: Record<string, ChatMessage[]>;
+  setChatHistories: React.Dispatch<React.SetStateAction<Record<string, ChatMessage[]>>>;
 }
 
 export interface NodeChildData {
@@ -45,10 +48,10 @@ export default function SidePanel({
   expandNode,
   onAddKeyInsight,
   onRemoveKeyInsight,
+  onAddNodeFromPreview,
+  chatHistories,
+  setChatHistories,
 }: SidePanelProps) {
-  const [chatHistories, setChatHistories] = useState<
-    Record<string, ChatMessage[]>
-  >({});
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredInsightId, setHoveredInsightId] = useState<string | null>(null);
@@ -420,6 +423,7 @@ export default function SidePanel({
                         setIsLoading(false);
                       }
                     }}
+                    onAddNodeFromPreview={onAddNodeFromPreview}
                   />
                 </div>
               )}

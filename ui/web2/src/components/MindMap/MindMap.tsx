@@ -21,7 +21,8 @@ import SidePanel from "./SidePanel";
 import type { NodeChildData } from "./SidePanel";
 import { useTheme } from "../../context/ThemeContext";
 import { useCanvasStore } from "../../store/canvasStore";
-import type { KeyInsight } from "./types";
+import type { KeyInsight, NodeData } from "./types";
+import type { ChatMessage } from "../../services/mock2";
 
 // Add custom styles for the canvas background
 const canvasBackgroundStyle = {
@@ -53,7 +54,7 @@ const nodeTypes: NodeTypes = {
 
 export const MindMap = () => {
     const { theme } = useTheme();
-    const { canvases, currentCanvasId, addCanvas } =
+    const { canvases, currentCanvasId, addCanvas, updateCanvas } =
         useCanvasStore();
     const currentCanvas = canvases.find((c) => c.id === currentCanvasId);
 
@@ -64,11 +65,13 @@ export const MindMap = () => {
         currentCanvas?.edges || []
     );
     const [selectedNode, setSelectedNode] = useState<FlowNode | null>(null);
+    const lastSelectedNodeRef = useRef<FlowNode | null>(null);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [reactFlowInstance, setReactFlowInstance] =
         useState<ReactFlowInstance | null>(null);
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
     const nodesRef = useRef(nodes);
+    const [chatHistories, setChatHistories] = useState<Record<string, ChatMessage[]>>({});
 
     useEffect(() => {
         nodesRef.current = nodes;
@@ -186,68 +189,29 @@ export const MindMap = () => {
         return () => clearTimeout(timeoutId);
     }, [reactFlowInstance, nodes.length]);
 
-    useEffect(() => {
-        const handleFocusNode = (event: FocusNodeEvent) => {
-            if (!reactFlowInstance) return;
-
-            const nodeId = event.detail.nodeId;
-            const node = nodes.find((n) => n.id === nodeId);
-
-            if (node) {
-                // Center view on node with some zoom
-                const x = node.position?.x || 0;
-                const y = node.position?.y || 0;
-                reactFlowInstance.setCenter(x, y, {
-                    zoom: 1.5,
-                    duration: 800,
-                });
-
-                // Select the node
-                setSelectedNode(node);
-                setIsPanelOpen(true);
-            }
-        };
-
-        window.addEventListener("focusNode", handleFocusNode as EventListener);
-        return () =>
-            window.removeEventListener(
-                "focusNode",
-                handleFocusNode as EventListener
-            );
-    }, [reactFlowInstance, nodes]);
-
-    // Function to focus on a specific node
-    const focusNode = useCallback((nodeId: string) => {
-        if (!reactFlowInstance) return;
-        
-        const node = nodesRef.current.find((n) => n.id === nodeId);
-        
+    const handleNodeSelect = useCallback((node: FlowNode | null) => {
+        setSelectedNode(node);
         if (node) {
-            const x = node.position?.x || 0;
-            const y = node.position?.y || 0;
-            reactFlowInstance.setCenter(x, y, {
-                zoom: 1.5,
-                duration: 800,
-            });
+            lastSelectedNodeRef.current = node;
         }
-    }, [reactFlowInstance]);
-
-    const handleBackgroundClick = useCallback(() => {
-        setIsPanelOpen(false);
-        setSidebarExpanded(false);
     }, []);
 
     const onNodeClick = useCallback((event: MouseEvent, node: FlowNode) => {
         event.stopPropagation();
         // Only show right panel for nodes that have been populated with insights
         if (node.data.summary && node.data.summary !== "Click to start a conversation and explore insights") {
-            setSelectedNode(node);
+            handleNodeSelect(node);
             setIsPanelOpen(true);
             setSidebarExpanded(false);
         } else if (node.type === "breakthrough" && !node.data.summary) {
             // For new question nodes, expand the chat sidebar
             setSidebarExpanded(true);
         }
+    }, [handleNodeSelect]);
+
+    const handleBackgroundClick = useCallback(() => {
+        setIsPanelOpen(false);
+        setSidebarExpanded(false);
     }, []);
 
     const createCustomNode = useCallback(() => {
@@ -288,9 +252,9 @@ export const MindMap = () => {
         setSidebarExpanded(true);
 
         setTimeout(() => {
-            focusNode(newNodeId);
+            handleNodeSelect(newNode);
         }, 50);
-    }, [reactFlowInstance, expandNode, setNodes, focusNode]);
+    }, [reactFlowInstance, expandNode, setNodes, handleNodeSelect]);
 
     const handleNewCanvas = useCallback(() => {
         addCanvas();
@@ -383,15 +347,23 @@ export const MindMap = () => {
             };
             
             // Add the new node and edge to state
-            setNodes(nodes => [...nodes, newNode]);
-            setEdges(edges => [...edges, newEdge]);
+            setNodes(nodes => {
+                const newNodes = [...nodes, newNode];
+                setEdges(edges => {
+                    const newEdges = [...edges, newEdge];
+                    // 同步到 store
+                    updateCanvas(currentCanvasId, newNodes, newEdges);
+                    return newEdges;
+                });
+                return newNodes;
+            });
             
             // Focus on the new node
             setTimeout(() => {
-                focusNode(newNodeId);
+                handleNodeSelect(newNode);
             }, 50);
         },
-        [reactFlowInstance, nodes, setNodes, setEdges, focusNode]
+        [reactFlowInstance, nodes, setNodes, setEdges, handleNodeSelect, updateCanvas, currentCanvasId]
     );
     const handleAddKeyInsight = useCallback((nodeId: string, insight: KeyInsight) => {
         console.log('MindMap handleAddKeyInsight called with:', { nodeId, insight });
@@ -401,7 +373,6 @@ export const MindMap = () => {
                     const nodeData = node.data;
                     const keyInsights: KeyInsight[] = Array.isArray(nodeData.keyInsights) ? nodeData.keyInsights : [];
                     console.log('Current keyInsights:', keyInsights);
-                    
                     // Find the insight by content since it's unique
                     const existingInsightIndex = keyInsights.findIndex(
                         (i) => i.content === insight.content
@@ -438,12 +409,10 @@ export const MindMap = () => {
                     // Use setTimeout to ensure the DOM has updated with new content before expanding
                     setTimeout(() => {
                         expandNode(nodeId, true);
-                        
                         // Trigger another expansion after a delay to ensure full content visibility
                         // This helps with dynamic content that may still be rendering
                         setTimeout(() => {
                             expandNode(nodeId, true);
-                            
                             // Focus on the node to make sure the user can see it
                             if (reactFlowInstance) {
                                 const nodeElement = document.querySelector(`[data-id="${nodeId}"]`);
@@ -469,7 +438,7 @@ export const MindMap = () => {
             console.log('New nodes state:', newNodes);
             return newNodes;
         });
-    }, [expandNode, reactFlowInstance]);
+    }, [expandNode, reactFlowInstance, setNodes]);
 
     const handleRemoveKeyInsight = useCallback((nodeId: string, insightIndex: number) => {
         console.log('MindMap handleRemoveKeyInsight called with:', { nodeId, insightIndex });
@@ -537,6 +506,58 @@ export const MindMap = () => {
         }
     }, [nodes, expandNode]);
 
+    const handleAddNodeFromPreview = useCallback(
+        (nodeData: NodeData) => {
+            // 优先用 selectedNode，否则用 lastSelectedNodeRef.current
+            const parent = selectedNode || lastSelectedNodeRef.current;
+            if (!parent) {
+                alert("请先在画布上选择一个父节点");
+                return;
+            }
+            // 组装 childData
+            const childData = {
+                ...nodeData,
+                nodeType: "breakthrough",
+                type: "breakthrough",
+                title: nodeData.title || "New Node",
+                label: nodeData.title || "New Node",
+                description: nodeData.summary || "",
+            };
+            addChildNode(parent.id, childData);
+        },
+        [selectedNode, addChildNode]
+    );
+
+    useEffect(() => {
+        const handleFocusNode = (event: FocusNodeEvent) => {
+            if (!reactFlowInstance) return;
+
+            const nodeId = event.detail.nodeId;
+            const node = nodes.find((n) => n.id === nodeId);
+
+            if (node) {
+                // Center view on node with some zoom
+                const x = node.position?.x || 0;
+                const y = node.position?.y || 0;
+                reactFlowInstance.setCenter(x, y, {
+                    zoom: 1.5,
+                    duration: 800,
+                });
+
+                // Select the node
+                handleNodeSelect(node);
+                setIsPanelOpen(true);
+            }
+        };
+
+        window.addEventListener("focusNode", handleFocusNode as EventListener);
+        return () =>
+            window.removeEventListener(
+                "focusNode",
+                handleFocusNode as EventListener
+            );
+    }, [reactFlowInstance, nodes, handleNodeSelect]);
+
     return (
         <div className="relative flex h-full w-full">
             <Sidebar
@@ -544,6 +565,9 @@ export const MindMap = () => {
                 onNewCanvas={handleNewCanvas}
                 isExpanded={sidebarExpanded}
                 onToggleExpanded={setSidebarExpanded}
+                onAddNodeFromPreview={handleAddNodeFromPreview}
+                chatHistories={chatHistories}
+                setChatHistories={setChatHistories}
             />
             <div 
                 className="flex-1"
@@ -585,6 +609,9 @@ export const MindMap = () => {
                 addChildNode={addChildNode}
                 onAddKeyInsight={handleAddKeyInsight}
                 onRemoveKeyInsight={handleRemoveKeyInsight}
+                onAddNodeFromPreview={handleAddNodeFromPreview}
+                chatHistories={chatHistories}
+                setChatHistories={setChatHistories}
             />
         </div>
     );
