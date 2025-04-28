@@ -8,7 +8,7 @@ interface KeyInsightListProps {
   onRemoveKeyInsight?: (insight: KeyInsight, e: React.MouseEvent) => void;
 }
 
-const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, isAdded, onAddKeyInsight, onRemoveKeyInsight }) => {
+const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyInsight, onRemoveKeyInsight }) => {
   return (
     <div className="space-y-3 mt-2">
       {keyInsights.map((insight) => (
@@ -23,7 +23,6 @@ const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, isAdded, o
                 type="button"
                 className="w-6 h-6 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold hover:bg-blue-300 disabled:opacity-50"
                 onClick={e => onRemoveKeyInsight?.(insight, e)}
-                disabled={isAdded}
                 title="移除此 insight"
               >
                 -
@@ -33,7 +32,6 @@ const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, isAdded, o
                 type="button"
                 className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold hover:bg-blue-200 disabled:opacity-50"
                 onClick={e => onAddKeyInsight?.(insight, e)}
-                disabled={isAdded}
                 title="添加此 insight"
               >
                 +

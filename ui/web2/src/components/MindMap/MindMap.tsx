@@ -64,8 +64,8 @@ export const MindMap = () => {
     const [edges, setEdges, onEdgesChange] = useEdgesState(
         currentCanvas?.edges || []
     );
-    const [selectedNode, setSelectedNode] = useState<FlowNode | null>(null);
-    const lastSelectedNodeRef = useRef<FlowNode | null>(null);
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    const lastSelectedNodeIdRef = useRef<string | null>(null);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [reactFlowInstance, setReactFlowInstance] =
         useState<ReactFlowInstance | null>(null);
@@ -190,9 +190,9 @@ export const MindMap = () => {
     }, [reactFlowInstance, nodes.length]);
 
     const handleNodeSelect = useCallback((node: FlowNode | null) => {
-        setSelectedNode(node);
+        setSelectedNodeId(node ? node.id : null);
         if (node) {
-            lastSelectedNodeRef.current = node;
+            lastSelectedNodeIdRef.current = node.id;
         }
     }, []);
 
@@ -417,7 +417,6 @@ export const MindMap = () => {
                             if (reactFlowInstance) {
                                 const nodeElement = document.querySelector(`[data-id="${nodeId}"]`);
                                 if (nodeElement) {
-                                    const rect = nodeElement.getBoundingClientRect();
                                     const nodeX = node.position.x;
                                     const nodeY = node.position.y;
                                     reactFlowInstance.setCenter(nodeX, nodeY, { 
@@ -468,9 +467,9 @@ export const MindMap = () => {
                         };
                         console.log('Updated node:', updatedNode);
                         return updatedNode;
-                    } else {
-                        console.error('Invalid insight index:', insightIndex, 'for keyInsights:', keyInsights);
                     }
+                    
+                    console.error('Invalid insight index:', insightIndex, 'for keyInsights:', keyInsights);
                 }
                 return node;
             });
@@ -478,7 +477,7 @@ export const MindMap = () => {
             console.log('New nodes state:', newNodes);
             return newNodes;
         });
-    }, []);
+    }, [setNodes]);
 
     // Auto-expand nodes with visible key insights, even if they were manually collapsed
     useEffect(() => {
@@ -498,20 +497,25 @@ export const MindMap = () => {
             console.log('Auto-expanding nodes with visible insights:', collapsedNodesWithVisibleInsights);
             
             // Expand each node
-            collapsedNodesWithVisibleInsights.forEach(node => {
+            for (const node of collapsedNodesWithVisibleInsights) {
                 setTimeout(() => {
                     expandNode(node.id, true);
                 }, 0);
-            });
+            }
         }
     }, [nodes, expandNode]);
 
     const handleAddNodeFromPreview = useCallback(
         (nodeData: NodeData) => {
-            // 优先用 selectedNode，否则用 lastSelectedNodeRef.current
-            const parent = selectedNode || lastSelectedNodeRef.current;
-            if (!parent) {
+            // 优先用 selectedNodeId，否则用 lastSelectedNodeIdRef.current
+            const parentId = selectedNodeId || lastSelectedNodeIdRef.current;
+            if (!parentId) {
                 alert("请先在画布上选择一个父节点");
+                return;
+            }
+            const parent = nodes.find(n => n.id === parentId);
+            if (!parent) {
+                alert("父节点未找到");
                 return;
             }
             // 组装 childData
@@ -525,7 +529,7 @@ export const MindMap = () => {
             };
             addChildNode(parent.id, childData);
         },
-        [selectedNode, addChildNode]
+        [selectedNodeId, nodes, addChildNode]
     );
 
     useEffect(() => {
@@ -544,7 +548,6 @@ export const MindMap = () => {
                     duration: 800,
                 });
 
-                // Select the node
                 handleNodeSelect(node);
                 setIsPanelOpen(true);
             }
@@ -558,6 +561,9 @@ export const MindMap = () => {
             );
     }, [reactFlowInstance, nodes, handleNodeSelect]);
 
+    // 渲染时获取最新 node
+    const selectedNode = selectedNodeId ? nodes.find(n => n.id === selectedNodeId) || null : null;
+
     return (
         <div className="relative flex h-full w-full">
             <Sidebar
@@ -565,7 +571,17 @@ export const MindMap = () => {
                 onNewCanvas={handleNewCanvas}
                 isExpanded={sidebarExpanded}
                 onToggleExpanded={setSidebarExpanded}
-                onAddNodeFromPreview={handleAddNodeFromPreview}
+                onAddNodeFromPreview={(data) => {
+                    // Ensure data has the required id property for KeyInsight
+                    const nodeData = {
+                        ...data,
+                        keyInsights: data.keyInsights?.map(insight => ({
+                            ...insight,
+                            id: insight.id || crypto.randomUUID()
+                        }))
+                    };
+                    handleAddNodeFromPreview(nodeData);
+                }}
                 chatHistories={chatHistories}
                 setChatHistories={setChatHistories}
             />
@@ -606,7 +622,6 @@ export const MindMap = () => {
                 onClose={() => setIsPanelOpen(false)}
                 node={selectedNode}
                 expandNode={expandNode}
-                addChildNode={addChildNode}
                 onAddKeyInsight={handleAddKeyInsight}
                 onRemoveKeyInsight={handleRemoveKeyInsight}
                 onAddNodeFromPreview={handleAddNodeFromPreview}

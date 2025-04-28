@@ -23,6 +23,34 @@ const generators: Record<string, Generator<{type: string; content?: string; card
 
 // 生成器工厂：每次 yield 不同类型的 response
 function* getChatResponseGenerator(nodeData: NodeData, userQuestion: string) {
+  // 补充 mock keyInsights（如无）
+  const mockKeyInsights = [
+    {
+      id: 'insight-1',
+      content: '模型能自我反思，提升推理能力',
+      implications: '有助于复杂问题的分步求解和自我修正',
+      relatedTechnologies: ['Reinforcement Learning', 'Knowledge Graphs'],
+      visible: true,
+    },
+    {
+      id: 'insight-2',
+      content: '小模型多步推理能力强',
+      implications: '提升AI系统效率，降低算力消耗',
+      relatedTechnologies: ['Model Compression', 'Efficient AI'],
+      visible: true,
+    },
+    {
+      id: 'insight-3',
+      content: '自监督与符号知识图谱结合',
+      implications: '实现更强的自洽性和泛化能力',
+      relatedTechnologies: ['Self-supervision', 'Chain-of-Thought'],
+      visible: true,
+    },
+  ];
+  // 如果 nodeData 没有 keyInsights，则补充
+  if (!nodeData.keyInsights || nodeData.keyInsights.length === 0) {
+    nodeData.keyInsights = mockKeyInsights;
+  }
   // 第一次 yield 普通文本
   yield {
     type: 'text',
