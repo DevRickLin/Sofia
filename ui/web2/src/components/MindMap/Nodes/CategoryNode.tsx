@@ -25,9 +25,14 @@ export interface CategoryNodeData {
     [key: string]: unknown;
 }
 
+export interface CategoryNodeProps extends NodeProps<CategoryNode> {
+    onDelete?: (nodeId: string) => void;
+    onNodeContextMenu?: (info: { x: number; y: number; nodeId: string }) => void;
+}
+
 type CategoryNode = Node<CategoryNodeData, "CategoryNode">;
 
-export const CategoryNode = memo((props: NodeProps<CategoryNode>) => {
+export const CategoryNode = memo((props: CategoryNodeProps) => {
     const { data, selected, id } = props;
     const colors: ColorPattern = getColor(data.color);
     const [isDetailExpanded, setIsDetailExpanded] = useState(data.isDetailExpanded || false);
@@ -55,8 +60,13 @@ export const CategoryNode = memo((props: NodeProps<CategoryNode>) => {
         <BaseNode
             colors={colors}
             selected={selected}
-            initialDetailExpanded={isDetailExpanded}
-            initialChildrenExpanded={isChildrenExpanded}
+            nodeId={id}
+            expandNode={handleExpandNode}
+            toggleDetailExpanded={(nodeId) => setIsDetailExpanded((prev) => !prev)}
+            onDelete={props.onDelete}
+            isDetailExpanded={isDetailExpanded}
+            isChildrenExpanded={isChildrenExpanded}
+            onNodeContextMenu={props.onNodeContextMenu}
         >
             <BNBody>
                 <BNBodyContent>

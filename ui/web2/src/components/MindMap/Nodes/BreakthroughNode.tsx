@@ -33,9 +33,14 @@ export interface BreakthroughNodeData {
     [key: string]: unknown;
 }
 
+export interface BreakthroughNodeProps extends NodeProps<BreakthroughNode> {
+    onDelete?: (nodeId: string) => void;
+    onNodeContextMenu?: (info: { x: number; y: number; nodeId: string }) => void;
+}
+
 type BreakthroughNode = Node<BreakthroughNodeData>;
 
-export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
+export const BreakthroughNode = memo((props: BreakthroughNodeProps) => {
     const { data, selected, id } = props;
     let colors: ColorPattern = getColor(data.color);
     const [isDetailExpanded, setIsDetailExpanded] = useState(data.isDetailExpanded || false);
@@ -81,8 +86,13 @@ export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
         <BaseNode
             colors={colors}
             selected={selected}
-            initialDetailExpanded={isDetailExpanded}
-            initialChildrenExpanded={isChildrenExpanded}
+            nodeId={id}
+            expandNode={handleExpandNode}
+            toggleDetailExpanded={(nodeId) => setIsDetailExpanded((prev) => !prev)}
+            onDelete={props.onDelete}
+            isDetailExpanded={isDetailExpanded}
+            isChildrenExpanded={isChildrenExpanded}
+            onNodeContextMenu={props.onNodeContextMenu}
         >
             <BNBody>
                 <BNBodyContent>

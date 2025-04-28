@@ -27,6 +27,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useCanvasStore } from "../../store/canvasStore";
 import type { KeyInsight, NodeData } from "./types";
 import type { ChatMessage } from "../../services/mock2";
+import ContextMenu, { ContextMenuItem } from "./Nodes/BaseNode/ContextMenu";
 
 // Add custom styles for the canvas background
 const canvasBackgroundStyle = {
@@ -99,11 +100,6 @@ function focusNodeWithScale({
   });
 }
 
-const nodeTypes: NodeTypes = {
-  category: CategoryNode,
-  breakthrough: BreakthroughNode,
-};
-
 export const MindMap = () => {
   const { theme } = useTheme();
   const { canvases, currentCanvasId, addCanvas, updateCanvas } =
@@ -126,6 +122,11 @@ export const MindMap = () => {
   const [chatHistories, setChatHistories] = useState<
     Record<string, ChatMessage[]>
   >({});
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    nodeId: string;
+  } | null>(null);
 
   useEffect(() => {
     nodesRef.current = nodes;
@@ -705,6 +706,28 @@ export const MindMap = () => {
     );
   }, [setNodes]);
 
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    // 递归获取所有子节点
+    const getAllDescendants = (id: string, allEdges: typeof edges): string[] => {
+      const directChildren = allEdges.filter(e => e.source === id).map(e => e.target);
+      let all = [...directChildren];
+      for (const child of directChildren) {
+        all = all.concat(getAllDescendants(child, allEdges));
+      }
+      return all;
+    };
+    const toDelete = [nodeId, ...getAllDescendants(nodeId, edges)];
+    setNodes(nds => nds.filter(n => !toDelete.includes(n.id)));
+    setEdges(eds => eds.filter(e => !toDelete.includes(e.source) && !toDelete.includes(e.target)));
+    // 同步到 store
+    updateCanvas(currentCanvasId, nodes.filter(n => !toDelete.includes(n.id)), edges.filter(e => !toDelete.includes(e.source) && !toDelete.includes(e.target)));
+  }, [edges, nodes, setNodes, setEdges, updateCanvas, currentCanvasId]);
+
+  const nodeTypes: NodeTypes = {
+    category: (props) => <CategoryNode {...props} onNodeContextMenu={setContextMenu} />, 
+    breakthrough: (props) => <BreakthroughNode {...props} onNodeContextMenu={setContextMenu} />,
+  };
+
   return (
     <div className="relative flex h-full w-full">
       <Sidebar
@@ -765,6 +788,31 @@ export const MindMap = () => {
           />
           <Controls className="m-2 text-gray-500 dark:text-gray-100" />
         </ReactFlow>
+        {contextMenu && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            onClose={() => setContextMenu(null)}
+            items={(() => {
+              const node = nodes.find(n => n.id === contextMenu.nodeId);
+              if (!node) return [];
+              return [
+                {
+                  label: node.data.isDetailExpanded ? "收起详细信息" : "展开详细信息",
+                  onClick: () => toggleDetailExpanded(node.id),
+                },
+                {
+                  label: node.data.isChildrenExpanded ? "收起子节点" : "展开子节点",
+                  onClick: () => expandNode(node.id),
+                },
+                {
+                  label: "删除节点",
+                  onClick: () => handleDeleteNode(node.id),
+                },
+              ];
+            })() as ContextMenuItem[]}
+          />
+        )}
       </div>
       <SidePanel
         isOpen={isPanelOpen}

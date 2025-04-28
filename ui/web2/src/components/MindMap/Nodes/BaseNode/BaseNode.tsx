@@ -1,15 +1,22 @@
 import type React from "react";
-import { useState, useRef, useCallback, forwardRef, useEffect, type HTMLAttributes } from "react";
+import { useState, useRef, useCallback, forwardRef } from "react";
+import type { HTMLAttributes } from "react";
 import type { ColorPattern } from "../type";
 import { BaseNodeContext } from "./context";
 import "./style.css";
+import ContextMenu, { ContextMenuItem } from "./ContextMenu";
 
 export type BaseNodeProps = HTMLAttributes<HTMLDivElement> & {
     children: React.ReactNode;
     colors: ColorPattern;
     selected?: boolean;
-    initialDetailExpanded?: boolean;
-    initialChildrenExpanded?: boolean;
+    nodeId?: string;
+    expandNode?: (nodeId: string) => void;
+    toggleDetailExpanded?: (nodeId: string) => void;
+    onDelete?: (nodeId: string) => void;
+    isDetailExpanded?: boolean;
+    isChildrenExpanded?: boolean;
+    onNodeContextMenu?: (info: { x: number; y: number; nodeId: string }) => void;
 };
 
 export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
@@ -18,23 +25,23 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
             children,
             colors,
             selected,
-            initialDetailExpanded = false,
-            initialChildrenExpanded = false
+            nodeId,
+            expandNode,
+            toggleDetailExpanded,
+            onDelete,
+            isDetailExpanded = false,
+            isChildrenExpanded = false,
+            onNodeContextMenu,
+            ...rest
         },
         ref
     ) => {
         const [isTooltipVisible, setTooltipVisible] = useState(false);
-        const [isDetailExpanded, setIsDetailExpanded] = useState(initialDetailExpanded);
-        const [isChildrenExpanded, setIsChildrenExpanded] = useState(initialChildrenExpanded);
         const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-        
-        // Update internal expanded state when props change
-        useEffect(() => {
-            setIsDetailExpanded(initialDetailExpanded);
-        }, [initialDetailExpanded]);
-        useEffect(() => {
-            setIsChildrenExpanded(initialChildrenExpanded);
-        }, [initialChildrenExpanded]);
+        const [contextMenu, setContextMenu] = useState<{
+            x: number;
+            y: number;
+        } | null>(null);
         
         const showTooltip = useCallback(() => {
             if (hideTimeoutRef.current) {
@@ -65,9 +72,9 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
                     showTooltip,
                     hideTooltip,
                     isDetailExpanded,
-                    setIsDetailExpanded,
+                    setIsDetailExpanded: () => {},
                     isChildrenExpanded,
-                    setIsChildrenExpanded,
+                    setIsChildrenExpanded: () => {},
                 }}
             >
                 <div
@@ -85,6 +92,16 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
                     onPointerDown={hideTooltip} // Hide tooltip when drag starts
                     data-detail-expanded={isDetailExpanded}
                     data-children-expanded={isChildrenExpanded}
+                    onContextMenu={e => {
+                        e.preventDefault();
+                        console.log('节点右键', e.clientX, e.clientY);
+                        if (typeof onNodeContextMenu === 'function' && nodeId) {
+                            onNodeContextMenu({ x: e.clientX, y: e.clientY, nodeId });
+                        } else {
+                            setContextMenu({ x: e.clientX, y: e.clientY });
+                        }
+                    }}
+                    {...rest}
                 >
                     {selected && (
                         <div
@@ -96,6 +113,33 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
                         />
                     )}
                     <div className="relative">{children}</div>
+                    {contextMenu && (
+                        <ContextMenu
+                            x={contextMenu.x}
+                            y={contextMenu.y}
+                            onClose={() => setContextMenu(null)}
+                            items={[
+                                toggleDetailExpanded && nodeId
+                                    ? {
+                                        label: isDetailExpanded ? "收起详细信息" : "展开详细信息",
+                                        onClick: () => toggleDetailExpanded(nodeId),
+                                    }
+                                    : null,
+                                expandNode && nodeId
+                                    ? {
+                                        label: isChildrenExpanded ? "收起子节点" : "展开子节点",
+                                        onClick: () => expandNode(nodeId),
+                                    }
+                                    : null,
+                                onDelete && nodeId
+                                    ? {
+                                        label: "删除节点",
+                                        onClick: () => onDelete(nodeId),
+                                    }
+                                    : null,
+                            ].filter(Boolean) as ContextMenuItem[]}
+                        />
+                    )}
                 </div>
             </BaseNodeContext.Provider>
         );
