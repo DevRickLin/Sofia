@@ -215,12 +215,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     return (
         <div className="flex h-full" ref={sidebarRef}>
-            <div className="w-12 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-3 shadow-sm">
+            <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-3 shadow-sm">
                 <div className="flex flex-col items-center space-y-3">
                     <button
                         type="button"
                         onClick={onAddNode}
-                        className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors group relative"
+                        className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors group relative"
                         title="Add Free Node"
                     >
                         <Plus className="h-4 w-4" />
@@ -241,7 +241,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     searchInputRef.current?.focus();
                                 }, 100);
                             }}
-                            className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors group relative"
+                            className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors group relative"
                             title="Search"
                         >
                             <Search className="h-4 w-4" />
@@ -257,7 +257,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                     transition={{ duration: 0.2 }}
-                                    className="absolute left-full top-0 ml-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+                                    className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <div className="p-2">
@@ -270,7 +270,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                     handleSearch(e.target.value)
                                                 }
                                                 placeholder="Search mindmap..."
-                                                className="w-full px-3 py-1.5 pl-8 pr-8 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                                className="w-full px-3 py-1.5 pl-8 pr-8 rounded-lg border border-gray-300 bg-white text-xs text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Escape') {
                                                         setShowSearch(false);
@@ -288,7 +288,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                         setSearchResults([]);
                                                         searchInputRef.current?.focus();
                                                     }}
-                                                    className="absolute right-2 top-1.5 p-0.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                    className="absolute right-2 top-1.5 p-0.5 rounded-full hover:bg-gray-100"
                                                 >
                                                     <X className="h-3 w-3 text-gray-400" />
                                                 </button>
@@ -297,7 +297,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     </div>
 
                                     {searchResults.length > 0 && (
-                                        <div className="max-h-64 overflow-y-auto border-t border-gray-200 dark:border-gray-700">
+                                        <div className="max-h-64 overflow-y-auto border-t border-gray-200">
                                             {searchResults.map((result) => (
                                                 <button
                                                     type="button"
@@ -306,12 +306,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                         handleSearchResultClick(result.id);
                                                         setShowSearch(false);
                                                     }}
-                                                    className="w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                                                    className="w-full text-left p-2 hover:bg-gray-100 transition-colors"
                                                 >
-                                                    <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                                    <div className="text-xs font-medium text-gray-900">
                                                         {result.title}
                                                     </div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                                    <div className="text-xs text-gray-500 line-clamp-2">
                                                         {result.content}
                                                     </div>
                                                 </button>
@@ -320,7 +320,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     )}
 
                                     {searchQuery && searchResults.length === 0 && (
-                                        <div className="p-2 text-xs text-gray-500 dark:text-gray-400 text-center border-t border-gray-200 dark:border-gray-700">
+                                        <div className="p-2 text-xs text-gray-500 text-center border-t border-gray-200">
                                             No results found
                                         </div>
                                     )}
@@ -343,7 +343,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <button
                         type="button"
                         onClick={onNewCanvas}
-                        className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors group relative"
+                        className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors group relative"
                         title="New Canvas"
                     >
                         <Layers className="h-4 w-4" />
@@ -359,7 +359,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     >
                         <button
                             type="button"
-                            className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors relative"
+                            className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors relative"
                             title="My Knowledge Maps"
                         >
                             <MapIcon className="h-4 w-4" />
@@ -375,14 +375,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 10 }}
                                     transition={{ duration: 0.15 }}
-                                    className="absolute left-full ml-2 top-0 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50"
+                                    className="absolute left-full ml-2 top-0 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
                                 >
                                     {canvases.map((canvas) => (
                                         <div
                                             key={canvas.id}
-                                            className={`flex items-center justify-between px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700/50 ${
+                                            className={`flex items-center justify-between px-2 py-1 hover:bg-gray-100 ${
                                                 canvas.id === currentCanvasId
-                                                    ? "bg-emerald-50 dark:bg-emerald-900/20"
+                                                    ? "bg-emerald-50"
                                                     : ""
                                             }`}
                                         >
@@ -423,8 +423,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                         className={`flex-1 text-left text-xs ${
                                                             canvas.id ===
                                                             currentCanvasId
-                                                                ? "text-emerald-700 dark:text-emerald-300 font-medium"
-                                                                : "text-gray-600 dark:text-gray-300"
+                                                                ? "text-emerald-700 font-medium"
+                                                                : "text-gray-600"
                                                         }`}
                                                     >
                                                         {canvas.name}
@@ -439,7 +439,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                                                 canvas.name
                                                             );
                                                         }}
-                                                        className="p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                                        className="p-0.5 text-gray-400 hover:text-gray-600"
                                                     >
                                                         <Edit2 className="h-3 w-3" />
                                                     </button>
@@ -456,7 +456,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <button
                     type="button"
                     onClick={() => onToggleExpanded(!isExpanded)}
-                    className="sidebar-toggle-button mt-auto p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                    className="sidebar-toggle-button mt-auto p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
                 >
                     <ChevronRight
                         className={`h-4 w-4 transition-transform duration-300 ${
@@ -473,21 +473,21 @@ const Sidebar: React.FC<SidebarProps> = ({
                         animate={{ width: "300px", opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col"
+                        className="bg-white border-r border-gray-200 flex flex-col"
                     >
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="p-4 border-b border-gray-200">
                             <div className="flex items-center space-x-3">
-                                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-800/40">
+                                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100">
                                     <Lightbulb 
                                         weight="bold"
-                                        className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" 
+                                        className="h-3.5 w-3.5 text-emerald-600" 
                                     />
                                 </div>
                                 <div className="flex flex-col">
-                                    <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+                                    <h3 className="text-xs font-semibold text-gray-900">
                                         Your Insight Map Assistant
                                     </h3>
-                                    <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
+                                    <p className="text-[11px] text-gray-600 mt-0.5">
                                         Ask me to create insight maps about any topic in AI
                                     </p>
                                 </div>
@@ -508,7 +508,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         className={`max-w-[85%] rounded-xl shadow-sm ${
                                             message.type === "user"
                                                 ? "bg-[#ecfdf5] text-gray-900 px-3 py-1.5"
-                                                : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 border border-gray-100 dark:border-gray-600"
+                                                : "bg-white text-gray-900 px-3 py-2 border border-gray-100"
                                         }`}
                                     >
                                         <p className="text-xs leading-relaxed">
@@ -519,29 +519,29 @@ const Sidebar: React.FC<SidebarProps> = ({
                             ))}
                             {isLoading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-white dark:bg-gray-700 rounded-xl px-3 py-2 shadow-sm border border-gray-100 dark:border-gray-600">
+                                    <div className="bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100">
                                         <div className="flex items-center space-x-2">
                                             <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-500" />
-                                            <span className="text-xs text-gray-500 dark:text-gray-400">Generating insights...</span>
+                                            <span className="text-xs text-gray-500">Generating insights...</span>
                                         </div>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
+                        <div className="p-3 border-t border-gray-200 bg-gray-50">
                             <form onSubmit={handleSubmit} className="flex gap-2">
                                 <input
                                     type="text"
                                     value={question}
                                     onChange={(e) => setQuestion(e.target.value)}
                                     placeholder="Ask me to create an insight map..."
-                                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
                                 />
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="px-3 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md flex items-center justify-center"
+                                    className="px-3 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md flex items-center justify-center"
                                 >
                                     {isLoading ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
