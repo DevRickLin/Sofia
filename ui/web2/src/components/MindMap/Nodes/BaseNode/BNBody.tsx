@@ -51,10 +51,12 @@ export type BNBodyTooltipProps = {
     enableExpand?: boolean;
     enableChat?: boolean;
     enableDelete?: boolean;
+    nodeId?: string;
+    onDelete?: (id: string) => void;
 };
 
 export const BNBodyTooltip = forwardRef<HTMLDivElement, BNBodyTooltipProps>(
-    ({ tools, enableExpand, enableChat, enableDelete, ...props }, ref) => {
+    ({ tools, enableExpand, enableChat, enableDelete, nodeId, onDelete, ...props }, ref) => {
         const { showTooltip, hideTooltip, isExpanded, setIsExpanded } =
             useContext(BaseNodeContext);
 
@@ -93,7 +95,7 @@ export const BNBodyTooltip = forwardRef<HTMLDivElement, BNBodyTooltipProps>(
                             onClick={(event) => {
                                 event.stopPropagation();
                                 event.preventDefault();
-                                console.log("Delete clicked");
+                                console.log('Delete clicked for node:', nodeId);
                             }}
                             onMouseEnter={showTooltip}
                             onMouseLeave={hideTooltip}

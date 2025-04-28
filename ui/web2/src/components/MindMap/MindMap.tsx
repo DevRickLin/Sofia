@@ -21,6 +21,22 @@ import SidePanel from "./SidePanel";
 import { useTheme } from "../../context/ThemeContext";
 import { useCanvasStore } from "../../store/canvasStore";
 
+// Add custom styles for the canvas background
+const canvasBackgroundStyle = {
+    light: {
+        backgroundColor: '#ffffff',
+        backgroundImage: 'radial-gradient(rgba(209, 213, 219, 0.5) 1px, transparent 1px), radial-gradient(rgba(209, 213, 219, 0.3) 1px, transparent 1px)',
+        backgroundSize: '20px 20px, 24px 24px',
+        backgroundPosition: '0 0, 12px 12px',
+    },
+    dark: {
+        backgroundColor: '#1F2937',
+        backgroundImage: 'radial-gradient(rgba(55, 65, 81, 0.15) 1px, transparent 1px), radial-gradient(rgba(55, 65, 81, 0.1) 1px, transparent 1px)',
+        backgroundSize: '20px 20px, 24px 24px',
+        backgroundPosition: '0 0, 12px 12px',
+    },
+};
+
 // Define the structure for the custom event
 interface FocusNodeEvent extends CustomEvent {
     detail: {
@@ -51,22 +67,104 @@ export const MindMap = () => {
         useState<ReactFlowInstance | null>(null);
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
+    const deleteNode = useCallback((nodeId: string) => {
+        console.log('Delete clicked for node:', nodeId);
+    }, []);
+
+    const expandNode = useCallback(
+        (nodeId: string) => {
+            // First update the clicked node's expanded state
+            let newExpandedState = false;
+            setNodes((nds) =>
+                nds.map((node) => {
+                    if (node.id === nodeId) {
+                        newExpandedState = !node.data.isExpanded;
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                isExpanded: newExpandedState,
+                            },
+                        };
+                    }
+                    return node;
+                })
+            );
+
+            // Get all descendant nodes recursively
+            const getDescendantNodes = (parentId: string, allEdges: typeof edges): string[] => {
+                const directChildren = allEdges
+                    .filter(edge => edge.source === parentId)
+                    .map(edge => edge.target);
+                
+                const descendants = [...directChildren];
+                directChildren.forEach(childId => {
+                    descendants.push(...getDescendantNodes(childId, allEdges));
+                });
+                
+                return descendants;
+            };
+
+            // Get all descendant nodes of the clicked node
+            const allDescendants = getDescendantNodes(nodeId, edges);
+
+            // Update visibility of all descendant nodes
+            setNodes((nds) =>
+                nds.map((node) => {
+                    if (allDescendants.includes(node.id)) {
+                        // If parent is being collapsed, collapse all descendants and hide them
+                        // If parent is being expanded, only show direct children
+                        const isDirectChild = edges.some(edge => edge.source === nodeId && edge.target === node.id);
+                        
+                        return {
+                            ...node,
+                            hidden: !newExpandedState || !isDirectChild,
+                            data: {
+                                ...node.data,
+                                isExpanded: false, // Collapse all descendants when parent is collapsed
+                            },
+                        };
+                    }
+                    return node;
+                })
+            );
+        },
+        [edges, setNodes]
+    );
+
     useEffect(() => {
         if (currentCanvas) {
-            setNodes(currentCanvas.nodes);
+            // Add expand handler to all nodes
+            const nodesWithHandlers = currentCanvas.nodes.map(node => ({
+                ...node,
+                data: {
+                    ...node.data,
+                    expandNode: expandNode
+                }
+            }));
+            setNodes(nodesWithHandlers);
             setEdges(currentCanvas.edges);
         }
-    }, [currentCanvas, setNodes, setEdges]);
+    }, [currentCanvas, setNodes, setEdges, expandNode]);
 
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            if (currentCanvasId && (nodes.length > 0 || edges.length > 0)) {
-                updateCanvas(currentCanvasId, nodes, edges);
-            }
-        }, 500);
+    // useEffect(() => {
+    //     const timeoutId = setTimeout(() => {
+    //         if (currentCanvasId && (nodes.length > 0 || edges.length > 0)) {
+    //             // Remove handlers before saving to avoid circular references
+    //             const nodesForSave = nodes.map(node => ({
+    //                 ...node,
+    //                 data: {
+    //                     ...node.data,
+    //                     onDelete: undefined,
+    //                     expandNode: undefined
+    //                 }
+    //             }));
+    //             updateCanvas(currentCanvasId, nodesForSave, edges);
+    //         }
+    //     }, 500);
 
-        return () => clearTimeout(timeoutId);
-    }, [nodes, edges, currentCanvasId, updateCanvas]);
+    //     return () => clearTimeout(timeoutId);
+    // }, [nodes, edges, currentCanvasId, updateCanvas]);
 
     useEffect(() => {
         const handleFocusNode = (event: FocusNodeEvent) => {
@@ -98,18 +196,22 @@ export const MindMap = () => {
             );
     }, [reactFlowInstance, nodes]);
 
-    const onNodeClick = useCallback((event: MouseEvent, node: FlowNode) => {
-        event.stopPropagation();
-        if (node.type === "custom") {
-            setSidebarExpanded(true);
-        } else {
-            setSelectedNode(node);
-            setIsPanelOpen(true);
-        }
-    }, []);
-
     const handleBackgroundClick = useCallback(() => {
         setIsPanelOpen(false);
+        setSidebarExpanded(false);
+    }, []);
+
+    const onNodeClick = useCallback((event: MouseEvent, node: FlowNode) => {
+        event.stopPropagation();
+        // Only show right panel for nodes that have been populated with insights
+        if (node.data.summary && node.data.summary !== "Click to start a conversation and explore insights") {
+            setSelectedNode(node);
+            setIsPanelOpen(true);
+            setSidebarExpanded(false);
+        } else if (node.type === "breakthrough" && !node.data.summary) {
+            // For new question nodes, expand the chat sidebar
+            setSidebarExpanded(true);
+        }
     }, []);
 
     const createCustomNode = useCallback(() => {
@@ -122,19 +224,21 @@ export const MindMap = () => {
         };
 
         const newNode: FlowNode = {
-            id: `custom-${Date.now()}`,
-            type: "custom",
+            id: `question-${Date.now()}`,
+            type: "breakthrough",
             position,
             data: {
-                question: "",
-                onDelete: (id: string) => {
-                    setNodes((nds) => nds.filter((node) => node.id !== id));
-                    setEdges((eds) =>
-                        eds.filter(
-                            (edge) => edge.source !== id && edge.target !== id
-                        )
-                    );
-                },
+                id: `question-${Date.now()}`,
+                title: "Ask a Question",
+                summary: "Click to start a conversation and explore insights",
+                details: "",
+                date: new Date().toISOString(),
+                organization: "",
+                source: "",
+                keyInsights: [],
+                position,
+                color: "emerald",
+                expandNode: expandNode,
                 onSelect: () => {
                     setSidebarExpanded(true);
                 },
@@ -143,46 +247,14 @@ export const MindMap = () => {
         };
 
         setNodes((nds) => [...nds, newNode]);
-    }, [reactFlowInstance, setNodes, setEdges]);
+        // Only expand the sidebar for chat
+        setSidebarExpanded(true);
+    }, [reactFlowInstance, setNodes, setSidebarExpanded, expandNode]);
 
     const handleNewCanvas = useCallback(() => {
         addCanvas();
     }, [addCanvas]);
 
-    const expandNode = useCallback(
-        (nodeId: string) => {
-            setNodes((nds) =>
-                nds.map((node) => {
-                    if (node.id === nodeId) {
-                        return {
-                            ...node,
-                            data: {
-                                ...node.data,
-                                isExpanded: !node.data.isExpanded,
-                            },
-                        };
-                    }
-                    return node;
-                })
-            );
-
-            const childEdges = edges.filter((edge) => edge.source === nodeId);
-            const childNodeIds = childEdges.map((edge) => edge.target);
-
-            setNodes((nds) =>
-                nds.map((node) => {
-                    if (childNodeIds.includes(node.id)) {
-                        return {
-                            ...node,
-                            hidden: !node.hidden,
-                        };
-                    }
-                    return node;
-                })
-            );
-        },
-        [edges, setNodes]
-    );
 
     return (
         <div className="relative flex h-full w-full">
@@ -192,7 +264,10 @@ export const MindMap = () => {
                 isExpanded={sidebarExpanded}
                 onToggleExpanded={setSidebarExpanded}
             />
-            <div className="flex-1">
+            <div 
+                className="flex-1"
+                style={theme === 'dark' ? canvasBackgroundStyle.dark : canvasBackgroundStyle.light}
+            >
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}
@@ -211,10 +286,9 @@ export const MindMap = () => {
                     onInit={setReactFlowInstance}
                 >
                     <Background
-                        color={theme === "dark" ? "#374151" : "#ffffff"}
-                        gap={32}
+                        color={theme === "dark" ? "rgba(55, 65, 81, 0.1)" : "rgba(209, 213, 219, 0.3)"}
+                        gap={24}
                         size={1}
-                        bgColor={theme === "dark" ? "#1F2937" : "#ffffff"}
                         variant={BackgroundVariant.Dots}
                     />
                     <Controls className="m-2 text-gray-500 dark:text-gray-100" />
@@ -224,7 +298,6 @@ export const MindMap = () => {
                 isOpen={isPanelOpen}
                 onClose={() => setIsPanelOpen(false)}
                 node={selectedNode}
-                expandNode={expandNode}
             />
         </div>
     );

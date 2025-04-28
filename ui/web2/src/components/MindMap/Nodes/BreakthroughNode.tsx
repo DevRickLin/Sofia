@@ -6,9 +6,10 @@ import {
     BNBodyTooltip,
     BNHandle,
     BNExpandContent,
+    SubNodesHandle,
 } from "./BaseNode";
 import { ColorPattern, Color } from "./type";
-import { NodeProps, Node, useNodes } from "@xyflow/react";
+import { NodeProps, Node, useNodes, useEdges } from "@xyflow/react";
 import { getColor } from "./utils";
 import { CategoryNodeData } from "./CategoryNode";
 
@@ -30,19 +31,24 @@ export interface BreakthroughNodeData {
     position: { x: number; y: number };
     color: Color;
     parentId?: string;
+    expandNode?: (nodeId: string) => void;
     [key: string]: unknown;
 }
 
 type BreakthroughNode = Node<BreakthroughNodeData, "BreakthroughNode">;
 
 export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
-    const { data, selected } = props;
+    const { data, selected, id } = props;
     let colors: ColorPattern = getColor(data.color);
-    // colors.light_background = colors.light_background_content_node;
     colors = {
         ...colors,
         light_background: colors.light_background_content_node,
     };
+
+    // Check if the node has any children using useNodes hook
+    const nodes = useNodes();
+    const edges = useEdges();
+    const hasChildren = edges.some(edge => edge.source === id);
 
     return (
         <BaseNode colors={colors} selected={selected}>
@@ -66,13 +72,21 @@ export const BreakthroughNode = memo((props: NodeProps<BreakthroughNode>) => {
                         </div>
                     </div>
                 </BNBodyContent>
-                <BNBodyTooltip enableChat enableExpand enableDelete />
+                <BNBodyTooltip 
+                    enableChat 
+                    enableExpand 
+                    enableDelete 
+                    nodeId={id}
+                />
             </BNBody>
             <BNHandle colors={colors} enableSourceHandle enableTargetHandle />
             <BNExpandContent>
                 <div className="border-t border-dashed border-gray-400 mt-4 mb-2 mx-4"></div>
                 <div className="text-[#757575] p-2">{data.details}</div>
             </BNExpandContent>
+            {hasChildren && data.expandNode && (
+                <SubNodesHandle expandNode={data.expandNode} nodeId={id} />
+            )}
         </BaseNode>
     );
 });

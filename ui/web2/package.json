@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^1.1.4",
     "@phosphor-icons/react": "^2.1.7",
     "@tailwindcss/vite": "^4.1.4",
+    "@types/dagre": "^0.7.52",
     "@xyflow/react": "^12.6.0",
     "a2a-client": "file:../../common/js/release/a2a-client-1.0.1.tgz",
     "motion": "^12.8.0",

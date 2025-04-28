@@ -65,6 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     const searchRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const editInputRef = useRef<HTMLInputElement>(null);
+    const sidebarRef = useRef<HTMLDivElement>(null);
     const { canvases, currentCanvasId, setCurrentCanvas, updateCanvasName } =
         useCanvasStore();
     const currentCanvas = canvases.find((c) => c.id === currentCanvasId);
@@ -72,6 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            // Handle search box
             if (
                 searchRef.current &&
                 !searchRef.current.contains(event.target as Node)
@@ -80,12 +82,25 @@ const Sidebar: React.FC<SidebarProps> = ({
                 setSearchQuery("");
                 setSearchResults([]);
             }
+
+            // Handle sidebar collapse
+            if (
+                isExpanded &&
+                sidebarRef.current &&
+                !sidebarRef.current.contains(event.target as Node)
+            ) {
+                const target = event.target as HTMLElement;
+                // Don't collapse if clicking the toggle button or inside the sidebar
+                if (!target.closest('.sidebar-toggle-button')) {
+                    onToggleExpanded(false);
+                }
+            }
         };
 
         document.addEventListener("mousedown", handleClickOutside);
         return () =>
             document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [isExpanded, onToggleExpanded]);
 
     useEffect(() => {
         if (showSearch && searchInputRef.current) {
@@ -194,7 +209,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
 
     return (
-        <div className="flex h-full">
+        <div className="flex h-full" ref={sidebarRef}>
             <div className="w-12 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-3 shadow-sm">
                 <div className="flex flex-col items-center space-y-3">
                     <button
@@ -212,7 +227,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <div 
                         className="relative" 
                         ref={searchRef}
-                        style={{ position: 'relative' }}
                     >
                         <button
                             type="button"
@@ -231,19 +245,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                             </span>
                         </button>
 
-                        {showSearch && (
-                            <div
-                                className="fixed top-0 left-0 right-0 bottom-0 z-40"
-                                onClick={(e) => {
-                                    if (e.target === e.currentTarget) {
-                                        setShowSearch(false);
-                                        setSearchQuery("");
-                                        setSearchResults([]);
-                                    }
-                                }}
-                            >
-                                <div 
-                                    className="absolute left-12 top-0 ml-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+                        <AnimatePresence>
+                            {showSearch && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute left-full top-0 ml-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <div className="p-2">
@@ -310,8 +319,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             No results found
                                         </div>
                                     )}
-                                </div>
-                            </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {showSearch && (
+                            <div
+                                className="fixed inset-0 z-40"
+                                onClick={() => {
+                                    setShowSearch(false);
+                                    setSearchQuery("");
+                                    setSearchResults([]);
+                                }}
+                            />
                         )}
                     </div>
 
@@ -431,7 +451,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <button
                     type="button"
                     onClick={() => onToggleExpanded(!isExpanded)}
-                    className="mt-auto p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                    className="sidebar-toggle-button mt-auto p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                 >
                     <ChevronRight
                         className={`h-4 w-4 transition-transform duration-300 ${

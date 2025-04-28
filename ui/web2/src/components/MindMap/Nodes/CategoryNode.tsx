@@ -7,9 +7,10 @@ import {
     BNHandle,
     BNBodyTooltipType,
     SubNodesHandle,
+    BNExpandContent,
 } from "./BaseNode";
 import { ColorPattern, Color } from "./type";
-import { NodeProps, Node } from "@xyflow/react";
+import { NodeProps, Node, useEdges } from "@xyflow/react";
 import { Lightbulb } from "@phosphor-icons/react";
 import { getColor } from "./utils";
 
@@ -19,29 +20,20 @@ export interface CategoryNodeData {
     summary: string;
     position: { x: number; y: number };
     color: Color;
+    isExpanded?: boolean;
+    expandNode?: (nodeId: string) => void;
     [key: string]: unknown;
 }
 
 type CategoryNode = Node<CategoryNodeData, "CategoryNode">;
 
 export const CategoryNode = memo((props: NodeProps<CategoryNode>) => {
-    const { data, selected } = props;
-
+    const { data, selected, id } = props;
     const colors: ColorPattern = getColor(data.color);
-    const [isExpanded, setIsExpanded] = useState(false);
 
-    const tools: BNBodyTooltipType[] = [
-        {
-            icon: <Lightbulb className="text-gray-400 hover:text-yellow-300" />,
-            label: "Insight",
-            forceVisible: false,
-            onClick: (event) => {
-                event.stopPropagation();
-                event.preventDefault();
-                setIsExpanded(!isExpanded);
-            },
-        },
-    ];
+    // Check if the node has any children
+    const edges = useEdges();
+    const hasChildren = edges.some(edge => edge.source === id);
 
     return (
         <BaseNode colors={colors} selected={selected}>
@@ -49,7 +41,7 @@ export const CategoryNode = memo((props: NodeProps<CategoryNode>) => {
                 <BNBodyContent>
                     <div>
                         <h3
-                            className={`text-lg font-bold`}
+                            className={`text-lg font-semibold`}
                             style={{
                                 color: colors.title_color,
                             }}
@@ -58,17 +50,31 @@ export const CategoryNode = memo((props: NodeProps<CategoryNode>) => {
                         </h3>
                         <div className="p-[2px]">
                             <div
-                                className={`mt-1 pl-3 border-l-2 border-[#080808]/30 text-sm text-[#080808]`}
+                                className={`mt-1 pl-3 border-l-2 border-[#bdbdbd]/30 text-sm text-[#757575]`}
                             >
                                 {data.summary}
                             </div>
                         </div>
                     </div>
                 </BNBodyContent>
-                <BNBodyTooltip tools={tools} enableChat enableDelete />
+                <BNBodyTooltip 
+                    enableExpand 
+                    enableDelete 
+                    nodeId={id}
+                />
             </BNBody>
-            <BNHandle colors={colors} />
-            <SubNodesHandle />
+            <BNHandle colors={colors} enableSourceHandle enableTargetHandle />
+            <BNExpandContent>
+                <div className="border-t border-dashed border-gray-400 mt-4 mb-2 mx-4"></div>
+                <div className="text-[#757575] p-2">{data.summary}</div>
+            </BNExpandContent>
+            {hasChildren && data.expandNode && (
+                <SubNodesHandle 
+                    expandNode={data.expandNode} 
+                    nodeId={id} 
+                    isExpanded={data.isExpanded || false}
+                />
+            )}
         </BaseNode>
     );
 });

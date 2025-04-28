@@ -21,14 +21,12 @@ interface SidePanelProps {
     isOpen: boolean;
     onClose: () => void;
     node: Node<NodeData> | null;
-    expandNode: (nodeId: string) => void;
 }
 
 const SidePanel: React.FC<SidePanelProps> = ({
     isOpen,
     onClose,
     node,
-    expandNode,
 }) => {
     const [question, setQuestion] = useState("");
     const [chatHistory, setChatHistory] = useState<
@@ -137,21 +135,9 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                             </ul>
                                         ) : (
                                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 italic">
-                                                Expand this node to see related
-                                                breakthroughs
+                                                Use the expand button below the node to see related breakthroughs
                                             </p>
                                         )}
-
-                                        <button
-                                            type="button"
-                                            onClick={() => expandNode(node.id)}
-                                            className="mt-3 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded text-xs font-medium hover:bg-emerald-200 dark:hover:bg-emerald-800/40 transition-colors"
-                                        >
-                                            {data.isExpanded
-                                                ? "Expand"
-                                                : "Collapse"}{" "}
-                                            Node
-                                        </button>
                                     </div>
                                 </>
                             )}
@@ -266,15 +252,6 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                                 </div>
                                             </div>
                                         )}
-
-                                    <button
-                                        type="button"
-                                        onClick={() => expandNode(node.id)}
-                                        className="mt-3 px-3 py-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 rounded text-xs font-medium hover:bg-sky-200 dark:hover:bg-sky-800/40 transition-colors"
-                                    >
-                                        {data.isExpanded ? "Hide" : "Show"}{" "}
-                                        Details
-                                    </button>
                                 </>
                             )}
                         </div>
