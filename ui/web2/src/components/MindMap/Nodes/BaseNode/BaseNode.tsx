@@ -4,6 +4,7 @@ import React, {
     useCallback,
     forwardRef,
     HTMLAttributes,
+    useEffect,
 } from "react";
 import { ColorPattern } from "../type";
 import { BaseNodeContext } from "./context";
@@ -13,13 +14,20 @@ export type BaseNodeProps = HTMLAttributes<HTMLDivElement> & {
     children: React.ReactNode;
     colors: ColorPattern;
     selected?: boolean;
+    initialExpanded?: boolean;
 };
 
 export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
-    ({ children, colors, selected }, ref) => {
+    ({ children, colors, selected, initialExpanded = false, ...props }, ref) => {
         const [isTooltipVisible, setTooltipVisible] = useState(false);
-        const [isExpanded, setIsExpanded] = useState(false);
+        const [isExpanded, setIsExpanded] = useState(initialExpanded);
         const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+        
+        // Update internal expanded state when props change
+        useEffect(() => {
+            setIsExpanded(initialExpanded);
+        }, [initialExpanded]);
+        
         const showTooltip = useCallback(() => {
             if (hideTimeoutRef.current) {
                 clearTimeout(hideTimeoutRef.current);
@@ -65,6 +73,7 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
                     onFocus={showTooltip}
                     onBlur={hideTooltip}
                     onPointerDown={hideTooltip} // Hide tooltip when drag starts
+                    data-expanded={isExpanded}
                 >
                     {selected && (
                         <div

@@ -13,21 +13,29 @@ import {
     ChatTeardropDots as MessageSquare,
     Spinner as Loader2,
     CaretUp,
+    Plus,
+    Minus,
 } from "@phosphor-icons/react";
 import { generateChatResponse } from "../../services/openai";
 import { useA2AClient } from "../../context/A2AClientContext";
-import type { NodeData } from "../MindMap/types";
+import type { NodeData, KeyInsight } from "../MindMap/types";
 
 interface SidePanelProps {
     isOpen: boolean;
     onClose: () => void;
     node: Node<NodeData> | null;
+    expandNode?: (nodeId: string) => void;
+    onAddKeyInsight?: (nodeId: string, insight: KeyInsight) => void;
+    onRemoveKeyInsight?: (nodeId: string, insightIndex: number) => void;
 }
 
 const SidePanel: React.FC<SidePanelProps> = ({
     isOpen,
     onClose,
     node,
+    expandNode,
+    onAddKeyInsight,
+    onRemoveKeyInsight,
 }) => {
     const [question, setQuestion] = useState("");
     const [chatHistory, setChatHistory] = useState<
@@ -35,6 +43,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
     >([]);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [hoveredInsightId, setHoveredInsightId] = useState<string | null>(null);
     const { client } = useA2AClient();
 
     if (!node || !client) return null;
@@ -72,6 +81,39 @@ const SidePanel: React.FC<SidePanelProps> = ({
             ]);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleAddKeyInsight = (insight: KeyInsight) => {
+        console.log('Adding insight:', insight);
+        if (onAddKeyInsight && node) {
+            const insightToAdd = {
+                ...insight,
+                id: insight.id || `insight-${Date.now()}`
+            };
+            console.log('Calling onAddKeyInsight with:', node.id, insightToAdd);
+            onAddKeyInsight(node.id, insightToAdd);
+        } else {
+            console.log('onAddKeyInsight or node is null:', { onAddKeyInsight, node });
+        }
+    };
+
+    const handleRemoveKeyInsight = (index: number) => {
+        console.log('Removing insight at index:', index);
+        if (onRemoveKeyInsight && node) {
+            // Check if the key insights array exists and has elements
+            const keyInsights = node.data.keyInsights || [];
+            if (index >= 0 && index < keyInsights.length) {
+                const insight = keyInsights[index];
+                console.log('Found insight to remove:', insight);
+                console.log('Insight visible status:', insight.visible);
+                console.log('Calling onRemoveKeyInsight with:', node.id, index);
+                onRemoveKeyInsight(node.id, index);
+            } else {
+                console.error('Invalid index for keyInsights:', index, keyInsights);
+            }
+        } else {
+            console.log('onRemoveKeyInsight or node is null:', { onRemoveKeyInsight, node });
         }
     };
 
@@ -118,10 +160,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                         {data.relatedBreakthroughs ? (
                                             <ul className="mt-2 space-y-1">
                                                 {data.relatedBreakthroughs.map(
-                                                    (
-                                                        breakthrough: string,
-                                                        index: number
-                                                    ) => (
+                                                    (breakthrough: string, index: number) => (
                                                         <li
                                                             key={`breakthrough-${breakthrough.substring(0, 10)}-${index}`}
                                                             className="flex items-start"
@@ -143,117 +182,160 @@ const SidePanel: React.FC<SidePanelProps> = ({
                                 </>
                             )}
 
-                            {node.type === "breakthrough" && (
-                                <>
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-sky-600 dark:text-sky-400">
-                                            {data.title}
-                                        </h3>
+                            {data.date && data.organization && (
+                                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center text-gray-500 dark:text-gray-400">
+                                        <Calendar className="h-3 w-3 mr-1" />
+                                        <span className="text-xs">{data.date}</span>
+                                    </div>
+                                    <div className="mt-1 flex items-center text-gray-500 dark:text-gray-400">
+                                        <Building className="h-3 w-3 mr-1" />
+                                        <span className="text-xs">
+                                            {data.organization}
+                                        </span>
+                                    </div>
 
-                                        <div className="mt-2 flex items-center text-gray-500 dark:text-gray-400">
-                                            <Calendar className="h-3 w-3 mr-1" />
-                                            <span className="text-xs">
-                                                {data.date}
-                                            </span>
-                                        </div>
-
+                                    {data.source && (
                                         <div className="mt-1 flex items-center text-gray-500 dark:text-gray-400">
-                                            <Building className="h-3 w-3 mr-1" />
-                                            <span className="text-xs">
-                                                {data.organization}
-                                            </span>
-                                        </div>
-
-                                        {data.source && (
-                                            <div className="mt-1 flex items-center text-gray-500 dark:text-gray-400">
-                                                <Globe className="h-3 w-3 mr-1" />
-                                                <a
-                                                    href={data.source}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-xs text-sky-500 hover:text-sky-700 dark:hover:text-sky-300"
-                                                >
-                                                    View Source
-                                                </a>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                                        <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                            Summary
-                                        </h4>
-                                        <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                                            {data.summary}
-                                        </p>
-                                    </div>
-
-                                    {data.details && (
-                                        <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                Details
-                                            </h4>
-                                            <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                                                {data.details}
-                                            </p>
+                                            <Globe className="h-3 w-3 mr-1" />
+                                            <a
+                                                href={data.source}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-xs text-sky-500 hover:text-sky-700 dark:hover:text-sky-300"
+                                            >
+                                                View Source
+                                            </a>
                                         </div>
                                     )}
+                                </div>
+                            )}
 
-                                    {data.keyInsights &&
-                                        data.keyInsights.length > 0 && (
-                                            <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                                                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center">
-                                                    <Lightbulb className="h-3 w-3 mr-1" />
-                                                    Key Insights
-                                                </h4>
-                                                <div className="mt-2 space-y-3">
-                                                    {data.keyInsights.map(
-                                                        (insight, index) => (
-                                                            <div
-                                                                key={insight.id || `insight-${insight.content.substring(0, 10)}-${index}`}
-                                                                className="bg-sky-50 dark:bg-sky-900/20 rounded p-2"
-                                                            >
-                                                                <p className="text-xs text-sky-700 dark:text-sky-300">
-                                                                    {
-                                                                        insight.content
-                                                                    }
-                                                                </p>
+                            <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Summary
+                                </h4>
+                                <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                                    {data.summary}
+                                </p>
+                            </div>
 
-                                                                <p className="mt-1 text-xs text-sky-600 dark:text-sky-400 italic">
-                                                                    {
-                                                                        insight.implications
-                                                                    }
-                                                                </p>
+                            {data.details && (
+                                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                                    <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        Details
+                                    </h4>
+                                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                                        {data.details}
+                                    </p>
+                                </div>
+                            )}
 
-                                                                {insight.relatedTechnologies &&
-                                                                    insight
-                                                                        .relatedTechnologies
-                                                                        .length >
-                                                                        0 && (
-                                                                        <div className="mt-2 flex flex-wrap gap-1">
-                                                                            {insight.relatedTechnologies.map(
-                                                                                (
-                                                                                    tech: string
-                                                                                ) => (
-                                                                                    <span
-                                                                                        key={`tech-${tech}`}
-                                                                                        className="inline-block bg-sky-100 dark:bg-sky-800/40 text-[10px] px-1.5 py-0.5 rounded-full text-sky-700 dark:text-sky-300"
-                                                                                    >
-                                                                                        {
-                                                                                            tech
-                                                                                        }
-                                                                                    </span>
-                                                                                )
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                            </div>
-                                                        )
-                                                    )}
+                            {data.keyInsights && data.keyInsights.length > 0 && (
+                                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                                    <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center">
+                                        <Lightbulb className="h-3 w-3 mr-1" />
+                                        Key Insights
+                                    </h4>
+                                    <div className="mt-2 space-y-3">
+                                        {data.keyInsights.map((insight: KeyInsight, index: number) => (
+                                            <div
+                                                key={insight.id || `insight-${insight.content.substring(0, 10)}-${index}`}
+                                                className={`relative rounded p-2 ${
+                                                    insight.visible 
+                                                    ? "bg-sky-100 dark:bg-sky-800/30 border-l-2 border-sky-500" 
+                                                    : "bg-sky-50 dark:bg-sky-900/20"
+                                                }`}
+                                                onMouseEnter={() => setHoveredInsightId(insight.id)}
+                                                onMouseLeave={() => setHoveredInsightId(null)}
+                                            >
+                                                {/* Control buttons that appear on hover */}
+                                                <div 
+                                                    className="absolute right-2 top-2 z-10 flex flex-col gap-1"
+                                                    style={{ 
+                                                        opacity: hoveredInsightId === insight.id ? 1 : 0,
+                                                        transition: 'opacity 0.15s ease-in-out'
+                                                    }}
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleAddKeyInsight(insight);
+                                                        }}
+                                                        className={`p-1 rounded-full bg-sky-100 hover:bg-sky-200 dark:bg-sky-800/20 dark:hover:bg-sky-700 text-sky-600 dark:text-sky-300 ${
+                                                            insight.visible ? 'opacity-50' : 'opacity-100'
+                                                        }`}
+                                                        title="Show in mindmap"
+                                                        disabled={insight.visible}
+                                                    >
+                                                        <Plus className="h-3 w-3" weight="bold" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            console.log("Minus button clicked for insight:", index, insight);
+                                                            console.log("Event target:", e.target);
+                                                            console.log("Event currentTarget:", e.currentTarget);
+                                                            console.log("Insight visible status:", insight.visible);
+                                                            if (node) {
+                                                                console.log("Node ID:", node.id);
+                                                                handleRemoveKeyInsight(index);
+                                                            }
+                                                        }}
+                                                        className={`p-1 rounded-full bg-sky-200 hover:bg-sky-300 dark:bg-sky-700 dark:hover:bg-sky-600 text-sky-600 dark:text-sky-300 ${
+                                                            !insight.visible ? 'opacity-50' : 'opacity-100'
+                                                        }`}
+                                                        title="Hide from mindmap"
+                                                    >
+                                                        <Minus className="h-3 w-3" weight="bold" />
+                                                    </button>
                                                 </div>
+                                                
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex-1 pr-8">
+                                                        <p className="text-xs text-sky-700 dark:text-sky-300">
+                                                            {insight.content}
+                                                        </p>
+
+                                                        <p className="mt-1 text-xs text-sky-600 dark:text-sky-400 italic">
+                                                            {insight.implications}
+                                                        </p>
+
+                                                        {insight.relatedTechnologies && insight.relatedTechnologies.length > 0 && (
+                                                            <div className="mt-2 flex flex-wrap gap-1">
+                                                                {insight.relatedTechnologies.map((tech, techIndex) => (
+                                                                    <span
+                                                                        key={techIndex}
+                                                                        className="inline-block bg-sky-100 dark:bg-sky-900/40 text-[10px] px-1.5 py-0.5 rounded-full text-sky-700 dark:text-sky-300"
+                                                                    >
+                                                                        {tech}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {insight.visible && (
+                                                    <div className="mt-1 text-[10px] text-sky-600 dark:text-sky-400 font-medium flex items-center">
+                                                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-500 mr-1"></span>
+                                                        Visible in mindmap
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                </>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {expandNode && (
+                                <button
+                                    onClick={() => expandNode(node.id)}
+                                    className="mt-3 px-3 py-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 rounded text-xs font-medium hover:bg-sky-200 dark:hover:bg-sky-800/40 transition-colors w-full"
+                                >
+                                    {data.isExpanded ? 'Hide' : 'Show'} Details
+                                </button>
                             )}
                         </div>
                     </div>
@@ -333,17 +415,14 @@ const SidePanel: React.FC<SidePanelProps> = ({
 
                                 <form
                                     onSubmit={handleQuestionSubmit}
-                                    className="flex gap-2"
+                                    className="flex items-center gap-2"
                                 >
                                     <input
                                         type="text"
                                         value={question}
-                                        onChange={(e) =>
-                                            setQuestion(e.target.value)
-                                        }
-                                        placeholder="Ask about this breakthrough..."
-                                        className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                                        disabled={isLoading}
+                                        onChange={(e) => setQuestion(e.target.value)}
+                                        placeholder="Ask a follow-up question..."
+                                        className="flex-1 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-500 focus:border-transparent dark:text-white"
                                     />
                                     <button
                                         type="submit"
