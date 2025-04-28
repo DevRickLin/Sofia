@@ -284,6 +284,8 @@ export const MindMap = () => {
                     elementsSelectable={true}
                     proOptions={{ hideAttribution: true }}
                     onInit={setReactFlowInstance}
+                    panOnScroll={true}
+                    panOnDrag={true}
                 >
                     <Background
                         color={theme === "dark" ? "rgba(55, 65, 81, 0.1)" : "rgba(209, 213, 219, 0.3)"}

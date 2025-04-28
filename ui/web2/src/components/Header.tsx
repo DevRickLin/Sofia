@@ -1,21 +1,33 @@
 import type React from "react";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useTheme } from "../context/ThemeContext";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-    Moon,
-    Sun,
     Calendar as Menu,
     X,
     Export as Share2,
     User,
+    EnvelopeSimple,
+    SignOut,
+    Gear,
 } from "@phosphor-icons/react";
 import SofiaLogo from "../../imgs/sofia_logo.png";
 
 const Header: React.FC = () => {
-    const { theme, toggleTheme } = useTheme();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showShareError, setShowShareError] = useState(false);
+    const [showProfile, setShowProfile] = useState(false);
+    const profileRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+                setShowProfile(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const handleShare = async () => {
         try {
@@ -36,7 +48,7 @@ const Header: React.FC = () => {
     };
 
     return (
-        <header className="bg-white dark:bg-gray-800 shadow-sm relative">
+        <header className="bg-white shadow-sm relative">
             {showShareError && (
                 <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center py-2 px-4 text-sm">
                     Unable to share. Try copying the URL manually.
@@ -66,39 +78,83 @@ const Header: React.FC = () => {
                         <button
                             type="button"
                             onClick={handleShare}
-                            className="p-2 rounded-md text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             aria-label="Share"
                         >
                             <Share2 className="h-5 w-5" />
                         </button>
 
-                        <button
-                            type="button"
-                            className="p-2 rounded-md text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            aria-label="User account"
-                        >
-                            <User className="h-5 w-5" />
-                        </button>
+                        <div className="relative" ref={profileRef}>
+                            <button
+                                type="button"
+                                onClick={() => setShowProfile(!showProfile)}
+                                className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                aria-label="User account"
+                            >
+                                <User className="h-5 w-5" />
+                            </button>
 
-                        <button
-                            type="button"
-                            onClick={toggleTheme}
-                            className="p-2 rounded-md text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            aria-label="Toggle theme"
-                        >
-                            {theme === "dark" ? (
-                                <Sun className="h-5 w-5" />
-                            ) : (
-                                <Moon className="h-5 w-5" />
-                            )}
-                        </button>
+                            <AnimatePresence>
+                                {showProfile && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                                    >
+                                        <div className="p-4 border-b border-gray-200">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="flex-shrink-0">
+                                                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                                                        <User weight="bold" className="w-5 h-5 text-emerald-600" />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        Demo User
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        demo@example.com
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-2">
+                                            <button
+                                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center space-x-2"
+                                                onClick={() => console.log('Settings clicked')}
+                                            >
+                                                <Gear className="w-4 h-4" />
+                                                <span>Settings</span>
+                                            </button>
+                                            <button
+                                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center space-x-2"
+                                                onClick={() => console.log('Support clicked')}
+                                            >
+                                                <EnvelopeSimple className="w-4 h-4" />
+                                                <span>Support</span>
+                                            </button>
+                                            <button
+                                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 rounded-md flex items-center space-x-2"
+                                                onClick={() => console.log('Sign out clicked')}
+                                            >
+                                                <SignOut className="w-4 h-4" />
+                                                <span>Sign out</span>
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
 
                     <div className="-mr-2 flex items-center sm:hidden">
                         <button
                             type="button"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500"
+                            className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500"
                         >
                             {isMenuOpen ? (
                                 <X className="h-6 w-6" />
@@ -117,34 +173,18 @@ const Header: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={handleShare}
-                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-100 rounded-md"
                             >
                                 <Share2 className="h-5 w-5 mr-3" />
                                 Share
                             </button>
                             <button
                                 type="button"
-                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                                onClick={() => setShowProfile(!showProfile)}
+                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-100 rounded-md"
                             >
                                 <User className="h-5 w-5 mr-3" />
                                 Account
-                            </button>
-                            <button
-                                type="button"
-                                onClick={toggleTheme}
-                                className="flex items-center w-full px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                            >
-                                {theme === "dark" ? (
-                                    <>
-                                        <Sun className="h-5 w-5 mr-3" />
-                                        Light Mode
-                                    </>
-                                ) : (
-                                    <>
-                                        <Moon className="h-5 w-5 mr-3" />
-                                        Dark Mode
-                                    </>
-                                )}
                             </button>
                         </div>
                     </div>
