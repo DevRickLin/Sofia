@@ -73,7 +73,7 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
                     hideTooltip,
                     isDetailExpanded,
                     setIsDetailExpanded: () => {
-                        if (toggleDetailExpanded && nodeId) toggleDetailExpanded(nodeId, true);
+                        if (toggleDetailExpanded && nodeId) toggleDetailExpanded(nodeId, !isDetailExpanded);
                     },
                     isChildrenExpanded,
                     setIsChildrenExpanded: () => {},
