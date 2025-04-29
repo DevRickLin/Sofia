@@ -13,6 +13,8 @@ import type { NodeProps, Node } from "@xyflow/react";
 import type { BNBodyTooltipType } from "./BaseNode";
 import { useEdges } from "@xyflow/react";
 import { getColor } from "./utils";
+import { NotificationBadge } from "./NotificationBadge";
+import type { NotificationStatus } from "../types";
 
 export interface CategoryNodeData {
     id: string;
@@ -24,6 +26,11 @@ export interface CategoryNodeData {
     isChildrenExpanded?: boolean;
     expandNode?: (nodeId: string) => void;
     badges?: BNBodyTooltipType[];
+    notification?: {
+        status: NotificationStatus;
+        onNotificationClick?: () => Promise<void>;
+    };
+    parentId?: string;
     [key: string]: unknown;
 }
 
@@ -40,20 +47,8 @@ type CategoryNode = Node<CategoryNodeData, "CategoryNode">;
 export const CategoryNode = memo((props: CategoryNodeProps) => {
     const { data, selected, id, isDetailExpanded = false, isChildrenExpanded = false, toggleDetailExpanded } = props;
     const colors: ColorPattern = getColor(data.color);
-    // const [isDetailExpanded, setIsDetailExpanded] = useState(data.isDetailExpanded || false);
-    // const [isChildrenExpanded, setIsChildrenExpanded] = useState(data.isChildrenExpanded || false);
-
-    // Check if the node has any children
     const edges = useEdges();
     const hasChildren = edges.some(edge => edge.source === id);
-
-    // // Sync with external expanded state changes
-    // useEffect(() => {
-    //     setIsDetailExpanded(data.isDetailExpanded || false);
-    // }, [data.isDetailExpanded]);
-    // useEffect(() => {
-    //     setIsChildrenExpanded(data.isChildrenExpanded || false);
-    // }, [data.isChildrenExpanded]);
 
     const handleExpandNode = (nodeId: string) => {
         if (data.expandNode) {
@@ -61,8 +56,26 @@ export const CategoryNode = memo((props: CategoryNodeProps) => {
         }
     };
 
-    // Combine custom badges with default tools
+    // 只在根节点（没有父节点的节点）显示通知图标
+    const notificationTool = !data.parentId && data.notification ? {
+        icon: (
+            <NotificationBadge
+                status={data.notification.status}
+                onClick={data.notification.onNotificationClick || (async () => {})}
+            />
+        ),
+        forceVisible: true,
+        onClick: (e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (data.notification?.onNotificationClick) {
+                void data.notification.onNotificationClick();
+            }
+        }
+    } : undefined;
+
+    // Combine notification badge with custom badges
     const tools: BNBodyTooltipType[] = [
+        ...(notificationTool ? [notificationTool] : []),
         ...(data.badges || []),
     ];
 

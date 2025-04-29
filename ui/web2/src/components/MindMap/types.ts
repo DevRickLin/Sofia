@@ -22,4 +22,11 @@ export interface NodeData extends Record<string, unknown> {
   keyInsights?: KeyInsight[];
 }
 
-export type NodeWithData = Node<NodeData>; 
+export type NodeWithData = Node<NodeData>;
+
+export type NotificationStatus = 'none' | 'loading' | 'completed';
+
+export interface NodeNotification {
+    status: NotificationStatus;
+    lastUpdated?: string;
+} 
