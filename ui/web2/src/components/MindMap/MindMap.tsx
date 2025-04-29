@@ -1,5 +1,5 @@
 // Runtime imports
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import {
   ReactFlow,
   Controls,
@@ -8,13 +8,13 @@ import {
   useEdgesState,
   BackgroundVariant,
 } from "@xyflow/react";
+import type { NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 // Type-only imports
 import type {
   Node as FlowNode,
   ReactFlowInstance,
-  NodeTypes,
 } from "@xyflow/react";
 import type { MouseEvent } from "react";
 
@@ -27,7 +27,10 @@ import { useTheme } from "../../context/ThemeContext";
 import { useCanvasStore } from "../../store/canvasStore";
 import type { KeyInsight, NodeData } from "./types";
 import type { ChatMessage } from "../../services/mock2";
-import ContextMenu, { ContextMenuItem } from "./Nodes/BaseNode/ContextMenu";
+import type { ContextMenuItem as ContextMenuItemType } from "./Nodes/BaseNode/ContextMenu";
+import ContextMenu from "./Nodes/BaseNode/ContextMenu";
+import type { CategoryNodeProps } from "./Nodes/CategoryNode";
+import type { BreakthroughNodeProps } from "./Nodes/BreakthroughNode";
 
 // Add custom styles for the canvas background
 const canvasBackgroundStyle = {
@@ -132,10 +135,6 @@ export const MindMap = () => {
     nodesRef.current = nodes;
   }, [nodes]);
 
-  // const deleteNode = useCallback((nodeId: string) => {
-  //     console.log('Delete clicked for node:', nodeId);
-  // }, []);
-
   const expandNode = useCallback(
     (nodeId: string, forceExpand?: boolean) => {
       // First update the clicked node's expanded state
@@ -217,25 +216,6 @@ export const MindMap = () => {
       setEdges(currentCanvas.edges);
     }
   }, [currentCanvas, setNodes, setEdges, expandNode]);
-
-  // useEffect(() => {
-  //     const timeoutId = setTimeout(() => {
-  //         if (currentCanvasId && (nodes.length > 0 || edges.length > 0)) {
-  //             // Remove handlers before saving to avoid circular references
-  //             const nodesForSave = nodes.map(node => ({
-  //                 ...node,
-  //                 data: {
-  //                     ...node.data,
-  //                     onDelete: undefined,
-  //                     expandNode: undefined
-  //                 }
-  //             }));
-  //             updateCanvas(currentCanvasId, nodesForSave, edges);
-  //         }
-  //     }, 500);
-
-  //     return () => clearTimeout(timeoutId);
-  // }, [nodes, edges, currentCanvasId, updateCanvas]);
 
   // Effect to check if any nodes are outside viewport and fit view when needed
   useEffect(() => {
@@ -459,6 +439,7 @@ export const MindMap = () => {
       currentCanvasId,
     ]
   );
+
   const handleAddKeyInsight = useCallback(
     (nodeId: string, insight: KeyInsight) => {
       console.log("MindMap handleAddKeyInsight called with:", {
@@ -689,22 +670,28 @@ export const MindMap = () => {
     ? nodes.find((n) => n.id === selectedNodeId) || null
     : null;
 
-  // 新增：详情展开/收起
-  const toggleDetailExpanded = useCallback((nodeId: string) => {
+  // 修改：详情展开/收起
+  const toggleDetailExpandedRef = useRef((nodeId: string, isExpanded: boolean) => {
     setNodes((nds) =>
-      nds.map((node) =>
-        node.id === nodeId
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                isDetailExpanded: !node.data.isDetailExpanded,
-              },
-            }
-          : node
-      )
+      nds.map((node) => {
+        // 如果节点 ID 不匹配或者状态没有变化，直接返回原节点
+        if (node.id !== nodeId || node.data.isDetailExpanded === isExpanded) {
+          return node;
+        }
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            isDetailExpanded: isExpanded,
+          },
+        };
+      })
     );
-  }, [setNodes]);
+  });
+
+  const toggleDetailExpanded = useCallback((nodeId: string, isExpanded: boolean) => {
+    toggleDetailExpandedRef.current(nodeId, isExpanded);
+  }, []); // 现在不再依赖 setNodes
 
   const handleDeleteNode = useCallback((nodeId: string) => {
     // 递归获取所有子节点
@@ -723,10 +710,67 @@ export const MindMap = () => {
     updateCanvas(currentCanvasId, nodes.filter(n => !toDelete.includes(n.id)), edges.filter(e => !toDelete.includes(e.source) && !toDelete.includes(e.target)));
   }, [edges, nodes, setNodes, setEdges, updateCanvas, currentCanvasId]);
 
-  const nodeTypes: NodeTypes = {
-    category: (props) => <CategoryNode {...props} onNodeContextMenu={setContextMenu} />, 
-    breakthrough: (props) => <BreakthroughNode {...props} onNodeContextMenu={setContextMenu} />,
-  };
+  // --- handler ref 优化 ---
+  const addChildNodeRef = useRef(addChildNode);
+  const handleAddKeyInsightRef = useRef(handleAddKeyInsight);
+  const handleRemoveKeyInsightRef = useRef(handleRemoveKeyInsight);
+  const handleAddNodeFromPreviewRef = useRef(handleAddNodeFromPreview);
+
+  useEffect(() => {
+    addChildNodeRef.current = addChildNode;
+  }, [addChildNode]);
+  useEffect(() => {
+    handleAddKeyInsightRef.current = handleAddKeyInsight;
+  }, [handleAddKeyInsight]);
+  useEffect(() => {
+    handleRemoveKeyInsightRef.current = handleRemoveKeyInsight;
+  }, [handleRemoveKeyInsight]);
+  useEffect(() => {
+    handleAddNodeFromPreviewRef.current = handleAddNodeFromPreview;
+  }, [handleAddNodeFromPreview]);
+
+  // 新增：用 useRef 保持 toggleDetailExpanded 和 setContextMenu 的引用
+  const toggleDetailExpandedHandlerRef = useRef(toggleDetailExpanded);
+  const setContextMenuHandlerRef = useRef(setContextMenu);
+  useEffect(() => {
+    toggleDetailExpandedHandlerRef.current = toggleDetailExpanded;
+  }, [toggleDetailExpanded]);
+  useEffect(() => {
+    setContextMenuHandlerRef.current = setContextMenu;
+  }, []);
+
+  // 用 useMemo 创建 nodeTypes，依赖项为空，节点组件通过 ref.current 调用 handler
+  const nodeTypes = useMemo(
+    () => ({
+      category: (props: NodeProps) => (
+        <CategoryNode
+          {...(props as CategoryNodeProps)}
+          isDetailExpanded={!!props.data.isDetailExpanded}
+          isChildrenExpanded={!!props.data.isChildrenExpanded}
+          toggleDetailExpanded={(nodeId, expanded) =>
+            toggleDetailExpandedHandlerRef.current(nodeId, expanded)
+          }
+          onNodeContextMenu={(...args) =>
+            setContextMenuHandlerRef.current(...args)
+          }
+        />
+      ),
+      breakthrough: (props: NodeProps) => (
+        <BreakthroughNode
+          {...(props as BreakthroughNodeProps)}
+          isDetailExpanded={!!props.data.isDetailExpanded}
+          isChildrenExpanded={!!props.data.isChildrenExpanded}
+          toggleDetailExpanded={(nodeId, expanded) =>
+            toggleDetailExpandedHandlerRef.current(nodeId, expanded)
+          }
+          onNodeContextMenu={(...args) =>
+            setContextMenuHandlerRef.current(...args)
+          }
+        />
+      ),
+    }),
+    []
+  );
 
   return (
     <div className="relative flex h-full w-full">
@@ -801,7 +845,7 @@ export const MindMap = () => {
                   label: node.data.isDetailExpanded ? "收起详细信息" : "展开详细信息",
                   onClick: () => {
                     console.log('toggleDetailExpanded', node.id);
-                    toggleDetailExpanded(node.id);
+                    toggleDetailExpanded(node.id, !node.data.isDetailExpanded);
                   },
                 },
                 {
@@ -819,7 +863,7 @@ export const MindMap = () => {
                   },
                 },
               ];
-            })() as ContextMenuItem[]}
+            })() as ContextMenuItemType[]}
           />
         )}
       </div>
@@ -828,9 +872,9 @@ export const MindMap = () => {
         onClose={() => setIsPanelOpen(false)}
         node={selectedNode}
         expandNode={expandNode}
-        onAddKeyInsight={handleAddKeyInsight}
-        onRemoveKeyInsight={handleRemoveKeyInsight}
-        onAddNodeFromPreview={handleAddNodeFromPreview}
+        onAddKeyInsight={(nodeId, insight) => handleAddKeyInsightRef.current(nodeId, insight)}
+        onRemoveKeyInsight={(nodeId, insightIndex) => handleRemoveKeyInsightRef.current(nodeId, insightIndex)}
+        onAddNodeFromPreview={(data) => handleAddNodeFromPreviewRef.current(data)}
         chatHistories={chatHistories}
         setChatHistories={setChatHistories}
         toggleDetailExpanded={toggleDetailExpanded}

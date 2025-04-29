@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import {
     BaseNode,
     BNBody,
@@ -36,15 +36,16 @@ export interface BreakthroughNodeData {
 export interface BreakthroughNodeProps extends NodeProps<BreakthroughNode> {
     onDelete?: (nodeId: string) => void;
     onNodeContextMenu?: (info: { x: number; y: number; nodeId: string }) => void;
+    isDetailExpanded?: boolean;
+    isChildrenExpanded?: boolean;
+    toggleDetailExpanded?: (nodeId: string, isExpanded: boolean) => void;
 }
 
 type BreakthroughNode = Node<BreakthroughNodeData>;
 
-export const BreakthroughNode = memo((props: BreakthroughNodeProps) => {
-    const { data, selected, id } = props;
+export const BreakthroughNode = memo(function BreakthroughNode(props: BreakthroughNodeProps) {
+    const { data, selected, id, isDetailExpanded = false, isChildrenExpanded = false, toggleDetailExpanded } = props;
     let colors: ColorPattern = getColor(data.color);
-    const [isDetailExpanded, setIsDetailExpanded] = useState(data.isDetailExpanded || false);
-    const [isChildrenExpanded, setIsChildrenExpanded] = useState(data.isChildrenExpanded || false);
     const insightsContainerRef = useRef<HTMLDivElement>(null);
     
     colors = {
@@ -56,14 +57,6 @@ export const BreakthroughNode = memo((props: BreakthroughNodeProps) => {
     const edges = useEdges();
     const hasChildren = edges.some(edge => edge.source === id);
 
-    // Sync with external expanded state changes
-    useEffect(() => {
-        setIsDetailExpanded(data.isDetailExpanded || false);
-    }, [data.isDetailExpanded]);
-    useEffect(() => {
-        setIsChildrenExpanded(data.isChildrenExpanded || false);
-    }, [data.isChildrenExpanded]);
-
     // Count visible insights to track when they change
     const visibleInsightsCount = Array.isArray(data.keyInsights) 
         ? data.keyInsights.filter(insight => insight.visible === true).length 
@@ -71,10 +64,16 @@ export const BreakthroughNode = memo((props: BreakthroughNodeProps) => {
 
     // Auto-expand details when insights become visible
     useEffect(() => {
-        if (visibleInsightsCount > 0 && !isDetailExpanded) {
-            setIsDetailExpanded(true);
+        if (visibleInsightsCount > 0 && !isDetailExpanded && toggleDetailExpanded) {
+            const timer = setTimeout(() => {
+                // 再次检查状态，避免在延迟期间状态已改变
+                if (visibleInsightsCount > 0 && !isDetailExpanded && toggleDetailExpanded) {
+                    toggleDetailExpanded(id, true);
+                }
+            }, 100);
+            return () => clearTimeout(timer);
         }
-    }, [visibleInsightsCount, isDetailExpanded]);
+    }, [visibleInsightsCount, isDetailExpanded, toggleDetailExpanded, id]);
 
     const handleExpandNode = (nodeId: string) => {
         if (data.expandNode) {
@@ -88,7 +87,7 @@ export const BreakthroughNode = memo((props: BreakthroughNodeProps) => {
             selected={selected}
             nodeId={id}
             expandNode={handleExpandNode}
-            toggleDetailExpanded={(nodeId) => setIsDetailExpanded((prev) => !prev)}
+            toggleDetailExpanded={toggleDetailExpanded}
             onDelete={props.onDelete}
             isDetailExpanded={isDetailExpanded}
             isChildrenExpanded={isChildrenExpanded}
@@ -155,13 +154,10 @@ export const BreakthroughNode = memo((props: BreakthroughNodeProps) => {
                         </div>
                         <div className="space-y-2.5">
                             {data.keyInsights
-                                .filter(insight => {
-                                    // Only show insights that are explicitly visible
-                                    return insight.visible === true;
-                                })
-                                .map((insight, index) => (
+                                .filter(insight => !!insight.id)
+                                .map((insight) => (
                                     <div 
-                                        key={insight.id || index} 
+                                        key={insight.id} 
                                         style={{
                                             backgroundColor: `${colors.light_background}dd`,
                                             borderLeft: `2px solid ${colors.title_color}40`,
@@ -188,9 +184,9 @@ export const BreakthroughNode = memo((props: BreakthroughNodeProps) => {
                                         
                                         {insight.relatedTechnologies && insight.relatedTechnologies.length > 0 && (
                                             <div className="mt-2 flex flex-wrap gap-1.5">
-                                                {insight.relatedTechnologies.map((tech, techIndex) => (
+                                                {insight.relatedTechnologies.map((tech) => (
                                                     <span 
-                                                        key={techIndex}
+                                                        key={tech}
                                                         style={{
                                                             backgroundColor: `${colors.title_color}10`,
                                                             color: colors.title_color,

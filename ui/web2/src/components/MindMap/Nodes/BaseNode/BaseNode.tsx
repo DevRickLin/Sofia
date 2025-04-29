@@ -4,7 +4,7 @@ import type { HTMLAttributes } from "react";
 import type { ColorPattern } from "../type";
 import { BaseNodeContext } from "./context";
 import "./style.css";
-import ContextMenu, { ContextMenuItem } from "./ContextMenu";
+import ContextMenu, { type ContextMenuItem } from "./ContextMenu";
 
 export type BaseNodeProps = HTMLAttributes<HTMLDivElement> & {
     children: React.ReactNode;
@@ -12,7 +12,7 @@ export type BaseNodeProps = HTMLAttributes<HTMLDivElement> & {
     selected?: boolean;
     nodeId?: string;
     expandNode?: (nodeId: string) => void;
-    toggleDetailExpanded?: (nodeId: string) => void;
+    toggleDetailExpanded?: (nodeId: string, isExpanded: boolean) => void;
     onDelete?: (nodeId: string) => void;
     isDetailExpanded?: boolean;
     isChildrenExpanded?: boolean;
@@ -72,7 +72,9 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
                     showTooltip,
                     hideTooltip,
                     isDetailExpanded,
-                    setIsDetailExpanded: () => {},
+                    setIsDetailExpanded: () => {
+                        if (toggleDetailExpanded && nodeId) toggleDetailExpanded(nodeId, true);
+                    },
                     isChildrenExpanded,
                     setIsChildrenExpanded: () => {},
                 }}
@@ -122,7 +124,7 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
                                 toggleDetailExpanded && nodeId
                                     ? {
                                         label: isDetailExpanded ? "收起详细信息" : "展开详细信息",
-                                        onClick: () => toggleDetailExpanded(nodeId),
+                                        onClick: () => toggleDetailExpanded(nodeId, !isDetailExpanded),
                                     }
                                     : null,
                                 expandNode && nodeId

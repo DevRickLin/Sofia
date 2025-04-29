@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from "react";
+import { memo } from "react";
 import {
     BaseNode,
     BNBody,
@@ -28,27 +28,30 @@ export interface CategoryNodeData {
 export interface CategoryNodeProps extends NodeProps<CategoryNode> {
     onDelete?: (nodeId: string) => void;
     onNodeContextMenu?: (info: { x: number; y: number; nodeId: string }) => void;
+    isDetailExpanded?: boolean;
+    isChildrenExpanded?: boolean;
+    toggleDetailExpanded?: (nodeId: string, isExpanded: boolean) => void;
 }
 
 type CategoryNode = Node<CategoryNodeData, "CategoryNode">;
 
 export const CategoryNode = memo((props: CategoryNodeProps) => {
-    const { data, selected, id } = props;
+    const { data, selected, id, isDetailExpanded = false, isChildrenExpanded = false, toggleDetailExpanded } = props;
     const colors: ColorPattern = getColor(data.color);
-    const [isDetailExpanded, setIsDetailExpanded] = useState(data.isDetailExpanded || false);
-    const [isChildrenExpanded, setIsChildrenExpanded] = useState(data.isChildrenExpanded || false);
+    // const [isDetailExpanded, setIsDetailExpanded] = useState(data.isDetailExpanded || false);
+    // const [isChildrenExpanded, setIsChildrenExpanded] = useState(data.isChildrenExpanded || false);
 
     // Check if the node has any children
     const edges = useEdges();
     const hasChildren = edges.some(edge => edge.source === id);
 
-    // Sync with external expanded state changes
-    useEffect(() => {
-        setIsDetailExpanded(data.isDetailExpanded || false);
-    }, [data.isDetailExpanded]);
-    useEffect(() => {
-        setIsChildrenExpanded(data.isChildrenExpanded || false);
-    }, [data.isChildrenExpanded]);
+    // // Sync with external expanded state changes
+    // useEffect(() => {
+    //     setIsDetailExpanded(data.isDetailExpanded || false);
+    // }, [data.isDetailExpanded]);
+    // useEffect(() => {
+    //     setIsChildrenExpanded(data.isChildrenExpanded || false);
+    // }, [data.isChildrenExpanded]);
 
     const handleExpandNode = (nodeId: string) => {
         if (data.expandNode) {
@@ -62,7 +65,7 @@ export const CategoryNode = memo((props: CategoryNodeProps) => {
             selected={selected}
             nodeId={id}
             expandNode={handleExpandNode}
-            toggleDetailExpanded={(nodeId) => setIsDetailExpanded((prev) => !prev)}
+            toggleDetailExpanded={toggleDetailExpanded}
             onDelete={props.onDelete}
             isDetailExpanded={isDetailExpanded}
             isChildrenExpanded={isChildrenExpanded}
