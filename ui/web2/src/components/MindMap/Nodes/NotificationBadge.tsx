@@ -57,7 +57,7 @@ export const NotificationBadge = ({ status, onClick, size = 16 }: NotificationBa
     return (
         <button
             type="button"
-            className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 rounded-sm p-0.5"
+            className="cursor-pointer focus:outline-none rounded-sm p-0.5"
             onClick={handleClick}
             onKeyPress={handleKeyPress}
             onMouseEnter={() => setIsHovered(true)}
