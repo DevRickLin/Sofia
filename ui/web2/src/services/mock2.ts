@@ -178,6 +178,12 @@ function generateContextualAnswer(query: string, nodeData: NodeData): string {
     answer = `The significance of **${nodeData.title || 'this development'}** lies in its ability to transform how we approach problems in the field. ${nodeData.details || 'The underlying principles represent a paradigm shift in thinking.'}`; 
   } else if (lowercaseQuery.includes('how') || lowercaseQuery.includes('method') || lowercaseQuery.includes('approach')) {
     answer = `The methodology behind **${nodeData.title || 'this advancement'}** involves innovative approaches to problem-solving. ${nodeData.details || 'It combines multiple techniques to achieve breakthrough results.'}`;
+  } else if (lowercaseQuery.includes('tell')) {
+    answer = `Could you please clarify what kind of AI agent updates you're most interested in? For example: **1. Autonomous agents** (e.g., AutoGPT, BabyAGI) 
+    2. **Multi-agent systems**
+    3. **Embodied AI agents** (e.g., robotics)
+    4. **AI assistants for specific domains** (e.g., customer support, healthcare)
+    5. **General research breakthroughs**`;
   } else {
     answer = `Based on the available information about **${nodeData.title || 'this topic'}**, I can provide the following insights: ${nodeData.summary || 'This represents a significant development with wide-ranging implications.'} ${nodeData.details || ''}`;
   }
@@ -196,20 +202,9 @@ function generateResponseCards(answerContent: string): ResponseCard[] {
     {
       id: `card-summary-${Date.now()}`,
       type: 'summary',
-      title: 'Key Summary',
-      content: `### Summary\n\n${answerContent.substring(0, firstThird)}`
+      title: '',
+      content: `Got it. I'll look into major research breakthroughs and updates in AI agents from the past 6 months, focusing on developments in autonomous systems, multi-agent frameworks, embodied agents, and general-purpose assistants.
+I'll gather insights from academic research, major tech company publications, and reputable AI news sources. I'll update you soon with a summary of the most notable advancements.`
     },
-    {
-      id: `card-insight-${Date.now()}`,
-      type: 'insight',
-      title: 'Critical Insight',
-      content: `### Insight\n\n${answerContent.substring(firstThird, secondThird)}\n\n* This insight provides new perspective on the topic\n* Consider how this relates to other developments in the field`
-    },
-    {
-      id: `card-action-${Date.now()}`,
-      type: 'action',
-      title: 'Recommended Action',
-      content: `### Next Steps\n\n1. **Explore** - ${answerContent.substring(secondThird)}\n2. **Connect** - Relate this to other nodes in the mind map\n3. **Extend** - Consider practical applications`
-    }
   ];
 } 
