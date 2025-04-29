@@ -11,6 +11,8 @@ interface ChatHistoryProps {
   isLoading: boolean;
   onSend: (question: string) => void;
   onAddNodeFromPreview?: (data: NodeData) => void;
+  buttonColorClass?: string;
+  messageColorClass?: string;
 }
 
 export default function ChatHistory({
@@ -18,6 +20,8 @@ export default function ChatHistory({
   isLoading,
   onSend,
   onAddNodeFromPreview,
+  buttonColorClass = "bg-sky-500 hover:bg-sky-600",
+  messageColorClass = "bg-[#dbf9fe]",
 }: ChatHistoryProps) {
   const [input, setInput] = React.useState("");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -42,7 +46,7 @@ export default function ChatHistory({
           if (msg.type === "user") {
             return (
               <div key={msg.id} className="flex justify-end">
-                <div className="bg-[#dbf9fe] text-gray-900 rounded px-3 py-1.5 max-w-[80%] text-xs">
+                <div className={`${messageColorClass} text-gray-900 rounded px-3 py-1.5 max-w-[80%] text-xs`}>
                   {msg.content}
                 </div>
               </div>
@@ -142,8 +146,8 @@ export default function ChatHistory({
         />
         <button
           type="submit"
-          className={`px-3 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-            isLoading ? "cursor-not-allowed" : "hover:bg-sky-600 hover:shadow-md"
+          className={`px-3 py-2 ${buttonColorClass} text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+            isLoading ? "cursor-not-allowed" : "hover:shadow-md"
           }`}
           disabled={isLoading}
         >

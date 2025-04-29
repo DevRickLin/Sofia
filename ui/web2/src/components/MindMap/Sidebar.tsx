@@ -667,6 +667,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     isLoading={isLoading}
                                     onSend={handleChat}
                                     onAddNodeFromPreview={onAddNodeFromPreview}
+                                    buttonColorClass="bg-emerald-500 hover:bg-emerald-600"
+                                    messageColorClass="bg-emerald-50"
                                 />
                             )}
                         </div>
