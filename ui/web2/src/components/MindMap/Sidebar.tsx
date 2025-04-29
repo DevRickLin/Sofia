@@ -296,22 +296,38 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                 // 根据响应类型处理
                 if (response.type === 'mindmap') {
-                    // 初始化默认的 mindmap 数据
-                    useCanvasStore.getState().initDefault();
+                    // 添加 AI 的回复到聊天历史
+                    setChatHistories((prev) => ({
+                        ...prev,
+                        [currentCanvas.id]: [
+                            ...(prev[currentCanvas.id] || []),
+                            {
+                                type: "assistant-answer",
+                                content: response.content,
+                                id: `assistant-${Date.now()}`,
+                            } as ChatMessage,
+                        ],
+                    }));
+                    
+                    // 延迟3000ms后初始化思维导图
+                    setTimeout(() => {
+                        // 初始化默认的 mindmap 数据
+                        useCanvasStore.getState().initDefault();
+                    }, 3000);
+                } else {
+                    // 添加 AI 的回复到聊天历史
+                    setChatHistories((prev) => ({
+                        ...prev,
+                        [currentCanvas.id]: [
+                            ...(prev[currentCanvas.id] || []),
+                            {
+                                type: "assistant-answer",
+                                content: response.content,
+                                id: `assistant-${Date.now()}`,
+                            } as ChatMessage,
+                        ],
+                    }));
                 }
-
-                // 添加 AI 的回复到聊天历史
-                setChatHistories((prev) => ({
-                    ...prev,
-                    [currentCanvas.id]: [
-                        ...(prev[currentCanvas.id] || []),
-                        {
-                            type: "assistant-answer",
-                            content: response.content,
-                            id: `assistant-${Date.now()}`,
-                        } as ChatMessage,
-                    ],
-                }));
             }
         } catch (error) {
             console.error('Chat error:', error);

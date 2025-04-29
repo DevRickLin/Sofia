@@ -12,23 +12,28 @@ function* responseGenerator() {
   // First call - clarification questions
   yield {
     type: 'text',
-    content: `To better address your question about recent AI agent technology breakthroughs, I need to clarify a few key aspects:
+    content: `
+Could you please clarify what kind of AI agent updates you're most interested in? For example:
 
-1. **Domain Focus**: Are you interested in a specific application area (e.g., robotics, healthcare, customer service) or general advancements in AI agents?
+**1. Autonomous agents (e.g., AutoGPT, BabyAGI)**
 
-2. **Timeframe**: How recent? The last 6 months, 1 year, or a broader period?
+**2. Multi-agent systems**
 
-3. **Technical Depth**: Do you want high-level summaries (e.g., "AI agents can now do X") or detailed technical insights (e.g., architectures like Mixture of Experts)?
+**3. Embodied AI agents (e.g., robotics)**
 
-4. **Type of Breakthrough**: Are you looking for improvements in capabilities (e.g., planning, tool use), scalability, or real-world deployments?
+**4. AI assistants for specific domains (e.g., customer support, healthcare)**
 
-If you'd prefer not to specify, I'll assume a general scenario—covering notable advances in the past year across capabilities like multi-agent collaboration, memory/context handling, and real-world integration.`
+**5. General research breakthroughs**
+
+Also, would you like updates from a specific time frame (e.g., past 6 months, past year)?`
+  
+    
   };
   
   // Second call - mind map setup
   yield {
     type: 'mindmap',
-    content: 'Setting up a comprehensive mind map about AI agent technology breakthroughs.'
+    content: 'Got it. I will look into major research breakthroughs and updates in AI agents from the past 6 months, focusing on developments in autonomous systems, multi-agent frameworks, embodied agents, and general-purpose assistants. I will gather insights from academic research, major tech company publications, and reputable AI news sources. I will update you soon with a summary of the most notable advancements.'
   };
   
   // Any subsequent calls

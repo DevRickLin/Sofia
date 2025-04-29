@@ -52,27 +52,54 @@ export default function ChatHistory({
             return msg.cards.map((card) => {
               if (card.type === "node" && card.nodeData) {
                 // 定义 mock 数据
-                const mockNodeData: NodeData = {
-                  title: "Mock Breakthrough",
-                  summary: "This is a mock breakthrough node.",
+                const TechnicalOverviewNodeData: NodeData = {
+                  title: "Technical Overview",
+                  summary: "How Claude 3.5 compute use work",
                   color: "orange",
-                  date: "2025-01-01",
+                  date: "2025-04-29",
                   organization: "Mock Org",
-                  details: "This node is added as a mock for testing.",
+                  details: "",
                   keyInsights: [
                     {
                       id: "mock-insight-1",
-                      content: "Mock insight content.",
-                      implications: "Mock implications.",
-                      relatedTechnologies: ["MockTech1", "MockTech2"],
+                      content: "How it works",
+                      implications: "Claude 3.5 Sonnet can operate computers by viewing screens, moving cursors, and typing input. Anthropic achieved this through general computer skills training and a GUI interaction API. Claude interprets screenshots and issues commands, which are executed in a sandboxed environment. It uses predefined tools for GUI actions and can recognize screen coordinates, allowing precise clicking—a key advancement over previous models.",
+                      relatedTechnologies: [],
+                      visible: true,
+                    },
+                    {
+                      id: "mock-insight-2",
+                      content: "Available Tools",
+                      implications: "1. Computer tool - accepts a screenshot and a goal, and returns mouse/keyboard actions to achieve it. laude can ask to move the cursor to specific (x,y) coordinates, perform clicks, type text, and take new screenshotSaws.amazon.com\n 2. Text editor tool - allows file operations: viewing file contents, creating or editing files, replacing text, undoing changes \n3. Bash tool - a shell command interface. Claude can propose terminal commands to run for lower-level control (e.g.installing a package or running ascript)",
+                      relatedTechnologies: [],
                       visible: true,
                     },
                   ],
+                  
+                };
+                const LimitationNodeData: NodeData = {
+                  title: "Limitation",
+                  summary: "How Claude 3.5 compute use work",
+                  color: "orange",
+                  date: "2025-04-29",
+                  organization: "Mock Org",
+                  details: "",
+                  keyInsights: [
+                    {
+                      id: "mock-insight-1",
+                      content: "Current Limitations",
+                      implications: "While promising, the feature is still in public beta and may exhibit: 1. Occasional errors or misclicks\n 2. Difficulty with dynamic or complex interfaces\n 3. Slower execution times compared to human users.",
+                      relatedTechnologies: [],
+                      visible: true,
+                    },
+                  ],
+                  
                 };
                 return (
                   <div key={card.id} className="flex justify-start">
                     <div>
-                      <BreakthroughNodePreview data={mockNodeData} onAddNode={() => onAddNodeFromPreview?.(mockNodeData)} />
+                      <BreakthroughNodePreview data={TechnicalOverviewNodeData} onAddNode={() => onAddNodeFromPreview?.(TechnicalOverviewNodeData)} />
+                      <BreakthroughNodePreview data={LimitationNodeData} onAddNode={() => onAddNodeFromPreview?.(LimitationNodeData)} />
                     </div>
                   </div>
                 );

@@ -196,7 +196,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
                 });
                 
                 // Random delay between 50ms and 300ms
-                const delay = Math.floor(Math.random() * 250) + 50;
+                const delay = Math.floor(Math.random() * 250) + 500;
                 setTimeout(addNextNode, delay);
             };
             

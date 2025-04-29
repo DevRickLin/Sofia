@@ -61,9 +61,11 @@ function* getChatResponseGenerator(nodeData: NodeData, userQuestion: string) {
     type: 'cards',
     cards: generateResponseCards(generateContextualAnswer(userQuestion, nodeData)),
   };
+
+
   // 第三次及以后 yield node 卡片
-  while (true) {
-    const nodeCard: ResponseCard = {
+
+  const nodeCard: ResponseCard = {
       id: `node-card-${Date.now()}`,
       type: 'node',
       title: nodeData.title || 'AI节点',
@@ -81,12 +83,14 @@ function* getChatResponseGenerator(nodeData: NodeData, userQuestion: string) {
         color: nodeData.color || 'blue',
       }
     };
+   
     yield {
       type: 'node',
-      nodeCard
+      nodeCard: nodeCard,
+      // cards: [nodeCard]
     };
   }
-}
+
 
 export const generateChatResponse = async (
   client: A2AClient,
@@ -178,13 +182,25 @@ function generateContextualAnswer(query: string, nodeData: NodeData): string {
     answer = `The significance of **${nodeData.title || 'this development'}** lies in its ability to transform how we approach problems in the field. ${nodeData.details || 'The underlying principles represent a paradigm shift in thinking.'}`; 
   } else if (lowercaseQuery.includes('how') || lowercaseQuery.includes('method') || lowercaseQuery.includes('approach')) {
     answer = `The methodology behind **${nodeData.title || 'this advancement'}** involves innovative approaches to problem-solving. ${nodeData.details || 'It combines multiple techniques to achieve breakthrough results.'}`;
-  } else if (lowercaseQuery.includes('tell')) {
+  } else if (lowercaseQuery.includes('tell me about recent')) {
     answer = `Could you please clarify what kind of AI agent updates you're most interested in? For example: **1. Autonomous agents** (e.g., AutoGPT, BabyAGI) 
     2. **Multi-agent systems**
     3. **Embodied AI agents** (e.g., robotics)
     4. **AI assistants for specific domains** (e.g., customer support, healthcare)
     5. **General research breakthroughs**`;
-  } else {
+  } 
+  else if (lowercaseQuery.includes('claude 3.5')) {
+    answer = `To tailor this better, could you let me know what you're most interested in regarding Claude 3.5's 'computer use'? For example: 1. **Technical implementation details**
+    2. **Real-world applications and use cases**
+    3. **Comparison to similar agents** (like AutoGPT or OpenAI's function calling)
+    4. **Limitations and risks**
+Let me know which areas you'd like me to dig into.
+`;
+  }
+  else if (lowercaseQuery.includes('implementation details')) {
+    answer = `Great, I’ll gather comprehensive information on Technical implementation details and Limitations and risks of Claude 3.5 'Computer Use' feature. Would yould like me to sumarise in key insight boxes or share a report?`;
+  }
+  else {
     answer = `Based on the available information about **${nodeData.title || 'this topic'}**, I can provide the following insights: ${nodeData.summary || 'This represents a significant development with wide-ranging implications.'} ${nodeData.details || ''}`;
   }
   
@@ -203,8 +219,7 @@ function generateResponseCards(answerContent: string): ResponseCard[] {
       id: `card-summary-${Date.now()}`,
       type: 'summary',
       title: '',
-      content: `Got it. I'll look into major research breakthroughs and updates in AI agents from the past 6 months, focusing on developments in autonomous systems, multi-agent frameworks, embodied agents, and general-purpose assistants.
-I'll gather insights from academic research, major tech company publications, and reputable AI news sources. I'll update you soon with a summary of the most notable advancements.`
+      content: `Great, I’ll gather comprehensive information on Technical implementation details and Limitations and risks of Claude 3.5 'Computer Use' feature. Would yould like me to sumarise in key insight boxes or share a report?`
     },
   ];
 } 
