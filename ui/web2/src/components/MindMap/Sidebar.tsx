@@ -16,7 +16,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useCanvasStore } from "../../store/canvasStore";
 import type { A2AClient } from 'a2a-client';
-import { generateChatResponse } from "../../services/mock2";
+import { generateChatResponse } from "../../services/mock";
 import { generateFreeNodeChatResponse } from "../../services/mock3";
 import ChatHistory from "./ChatHistory";
 import type { ChatMessage } from "../../services/mock2";
@@ -220,16 +220,28 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         setIsLoading(true);
         try {
-            // 判断是否是 freeNode 模式
-            const isFreeNode = typeof window !== 'undefined' && (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode;
-            
             // 准备画布数据
             const canvasData = {
                 ...currentCanvas,
                 title: currentCanvas.name,
                 description: `This is a mind map called "${currentCanvas.name}"`,
             };
-            
+
+            // 添加用户消息到历史记录
+            setChatHistories((prev) => ({
+                ...prev,
+                [currentCanvas.id]: [
+                    ...(prev[currentCanvas.id] || []),
+                    {
+                        type: "user",
+                        content: userQuestion,
+                        id: `user-${Date.now()}`,
+                    },
+                ],
+            }));
+
+            const isFreeNode = typeof window !== 'undefined' && (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode;
+
             if (isFreeNode) {
                 // 使用 mock3 的实现
                 const result = await generateFreeNodeChatResponse(
@@ -255,23 +267,54 @@ const Sidebar: React.FC<SidebarProps> = ({
                     }
                 }
             } else {
-                // 使用原有的 mock2 实现
-                await generateChatResponse(
+                // 添加思考中的消息
+                const thinkingId = `thinking-${Date.now()}`;
+                setChatHistories((prev) => ({
+                    ...prev,
+                    [currentCanvas.id]: [
+                        ...(prev[currentCanvas.id] || []),
+                        {
+                            type: "assistant-thinking",
+                            content: "Thinking...",
+                            id: thinkingId,
+                        },
+                    ],
+                }));
+
+                // 使用 mock 的实现
+                const response = await generateChatResponse(
                     {} as A2AClient,
                     canvasData,
-                    userQuestion,
-                    (history) => {
-                        setChatHistories((prev) => ({
-                            ...prev,
-                            [currentCanvas.id]:
-                                typeof history === "function"
-                                    ? history(prev[currentCanvas.id] || [])
-                                    : history,
-                        }));
-                    }
+                    userQuestion
                 );
+
+                // 移除思考中的消息
+                setChatHistories((prev) => ({
+                    ...prev,
+                    [currentCanvas.id]: prev[currentCanvas.id].filter(msg => msg.id !== thinkingId)
+                }));
+
+                // 根据响应类型处理
+                if (response.type === 'mindmap') {
+                    // 初始化默认的 mindmap 数据
+                    useCanvasStore.getState().initDefault();
+                }
+
+                // 添加 AI 的回复到聊天历史
+                setChatHistories((prev) => ({
+                    ...prev,
+                    [currentCanvas.id]: [
+                        ...(prev[currentCanvas.id] || []),
+                        {
+                            type: "assistant-answer",
+                            content: response.content,
+                            id: `assistant-${Date.now()}`,
+                        } as ChatMessage,
+                    ],
+                }));
             }
-        } catch {
+        } catch (error) {
+            console.error('Chat error:', error);
             if (currentCanvas) {
                 setChatHistories((prev) => ({
                     ...prev,
