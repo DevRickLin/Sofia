@@ -10,6 +10,7 @@ import {
 } from "./BaseNode";
 import type { ColorPattern, Color } from "./type";
 import type { NodeProps, Node } from "@xyflow/react";
+import type { BNBodyTooltipType } from "./BaseNode";
 import { useEdges } from "@xyflow/react";
 import { getColor } from "./utils";
 
@@ -22,6 +23,7 @@ export interface CategoryNodeData {
     isDetailExpanded?: boolean;
     isChildrenExpanded?: boolean;
     expandNode?: (nodeId: string) => void;
+    badges?: BNBodyTooltipType[];
     [key: string]: unknown;
 }
 
@@ -59,6 +61,11 @@ export const CategoryNode = memo((props: CategoryNodeProps) => {
         }
     };
 
+    // Combine custom badges with default tools
+    const tools: BNBodyTooltipType[] = [
+        ...(data.badges || []),
+    ];
+
     return (
         <BaseNode
             colors={colors}
@@ -95,6 +102,8 @@ export const CategoryNode = memo((props: CategoryNodeProps) => {
                     enableExpand 
                     enableDelete 
                     nodeId={id}
+                    tools={tools}
+                    onDelete={props.onDelete}
                 />
             </BNBody>
             <BNHandle colors={colors} enableSourceHandle enableTargetHandle />
