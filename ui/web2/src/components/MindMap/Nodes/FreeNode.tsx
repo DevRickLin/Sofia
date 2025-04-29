@@ -5,6 +5,7 @@ import type { ColorPattern } from "./type";
 import type { NodeProps } from "@xyflow/react";
 import { getColor } from "./utils";
 import { Play } from "@phosphor-icons/react";
+import { useCanvasStore } from '../../../store/canvasStore';
 
 export interface FreeNodeData extends Record<string, unknown> {
     content: string;
@@ -17,6 +18,12 @@ export const FreeNode = memo((props: NodeProps) => {
     const colors: ColorPattern = getColor("gray");
     const nodeData = data as FreeNodeData;
     const [isHovered, setIsHovered] = useState(false);
+    const setFreeNodeId = useCanvasStore(s => s.setFreeNodeId);
+
+    // 挂载时自动设置 freeNodeId
+    useState(() => {
+        setFreeNodeId(id);
+    });
 
     const tools: BNBodyTooltipType[] = [
         {
@@ -44,6 +51,7 @@ export const FreeNode = memo((props: NodeProps) => {
                             type="button"
                             onClick={e => {
                                 e.stopPropagation();
+                                setFreeNodeId(id);
                                 nodeData.onSelect?.();
                                 if (typeof window !== 'undefined') {
                                     (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode = true;

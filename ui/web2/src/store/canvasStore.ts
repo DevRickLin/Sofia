@@ -18,6 +18,8 @@ interface CanvasStore {
     updateCanvas: (id: string, nodes: Node[], edges: Edge[]) => void;
     updateCanvasName: (id: string, name: string) => void;
     initDefault: () => void;
+    freeNodeId?: string;
+    setFreeNodeId: (id?: string) => void;
 }
 
 const defaultCanvas: Canvas = {
@@ -31,6 +33,8 @@ const defaultCanvas: Canvas = {
 export const useCanvasStore = create<CanvasStore>((set, get) => ({
     canvases: [defaultCanvas],
     currentCanvasId: defaultCanvas.id,
+    freeNodeId: undefined,
+    setFreeNodeId: (id?: string) => set({ freeNodeId: id }),
 
     addCanvas: () => {
         const newCanvas: Canvas = {

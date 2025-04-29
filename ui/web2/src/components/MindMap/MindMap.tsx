@@ -31,6 +31,7 @@ import type { ContextMenuItem as ContextMenuItemType } from "./Nodes/BaseNode/Co
 import ContextMenu from "./Nodes/BaseNode/ContextMenu";
 import type { CategoryNodeProps } from "./Nodes/CategoryNode";
 import type { BreakthroughNodeProps } from "./Nodes/BreakthroughNode";
+import { FreeNode } from "./Nodes/FreeNode";
 
 // Add custom styles for the canvas background
 const canvasBackgroundStyle = {
@@ -264,48 +265,6 @@ export const MindMap = () => {
     setIsPanelOpen(false);
     setSidebarExpanded(false);
   }, []);
-
-  const createCustomNode = useCallback(() => {
-    if (!reactFlowInstance) return;
-
-    const transform = reactFlowInstance.toObject().viewport;
-    const position = {
-      x: (window.innerWidth / 2 - 100 - transform.x) / transform.zoom,
-      y: (window.innerHeight / 2 - 50 - transform.y) / transform.zoom,
-    };
-
-    const newNodeId = `question-${Date.now()}`;
-    const newNode: FlowNode = {
-      id: newNodeId,
-      type: "breakthrough",
-      position,
-      data: {
-        id: `question-${Date.now()}`,
-        title: "Ask a Question",
-        summary: "Click to start a conversation and explore insights",
-        details: "",
-        date: new Date().toISOString(),
-        organization: "",
-        source: "",
-        keyInsights: [],
-        position,
-        color: "emerald",
-        expandNode: expandNode,
-        onSelect: () => {
-          setSidebarExpanded(true);
-        },
-        isChildrenExpanded: false,
-        isDetailExpanded: false,
-      },
-      draggable: true,
-    };
-
-    setNodes((nds) => [...nds, newNode]);
-    // Only expand the sidebar for chat
-    setSidebarExpanded(true);
-
-    handleNodeSelect(newNode, true);
-  }, [reactFlowInstance, expandNode, setNodes, handleNodeSelect]);
 
   const handleNewCanvas = useCallback(() => {
     addCanvas();
@@ -768,14 +727,45 @@ export const MindMap = () => {
           }
         />
       ),
+      free: (props: NodeProps) => <FreeNode {...props} />,
     }),
     []
   );
 
+  // 新增：添加自由节点
+  const createFreeNode = useCallback(() => {
+    if (!reactFlowInstance) return;
+    const transform = reactFlowInstance.toObject().viewport;
+    const position = {
+      x: (window.innerWidth / 2 - 100 - transform.x) / transform.zoom,
+      y: (window.innerHeight / 2 - 50 - transform.y) / transform.zoom,
+    };
+    const newNodeId = `free-${Date.now()}`;
+    const newNode: FlowNode = {
+      id: newNodeId,
+      type: "free",
+      position,
+      data: {
+        id: newNodeId,
+        content: "Ask a Question",
+        onSelect: () => {
+          setSidebarExpanded(true);
+        },
+        onDelete: (id: string) => {
+          setNodes((nds) => nds.filter((n) => n.id !== id));
+        },
+      },
+      draggable: true,
+    };
+    setNodes((nds) => [...nds, newNode]);
+    setSidebarExpanded(true);
+    handleNodeSelect(newNode, true);
+  }, [reactFlowInstance, setNodes, handleNodeSelect]);
+
   return (
     <div className="relative flex h-full w-full">
       <Sidebar
-        onAddNode={createCustomNode}
+        onAddNode={createFreeNode}
         onNewCanvas={handleNewCanvas}
         isExpanded={sidebarExpanded}
         onToggleExpanded={setSidebarExpanded}

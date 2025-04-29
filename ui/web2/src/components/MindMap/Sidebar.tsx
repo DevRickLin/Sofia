@@ -17,15 +17,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCanvasStore } from "../../store/canvasStore";
 import type { A2AClient } from 'a2a-client';
 import { generateChatResponse } from "../../services/mock2";
+import { generateFreeNodeChatResponse } from "../../services/mock3";
 import ChatHistory from "./ChatHistory";
 import type { ChatMessage } from "../../services/mock2";
+import type { NodeData as MindMapNodeData } from "./types";
 
 interface SidebarProps {
     onAddNode: () => void;
     onNewCanvas: () => void;
     isExpanded: boolean;
     onToggleExpanded: (expanded: boolean) => void;
-    onAddNodeFromPreview?: (data: NodeData) => void;
+    onAddNodeFromPreview?: (data: MindMapNodeData) => void;
     chatHistories: Record<string, ChatMessage[]>;
     setChatHistories: React.Dispatch<React.SetStateAction<Record<string, ChatMessage[]>>>;
 }
@@ -100,7 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     const searchInputRef = useRef<HTMLInputElement>(null);
     const editInputRef = useRef<HTMLInputElement>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
-    const { canvases, currentCanvasId, setCurrentCanvas, updateCanvasName, initDefault } =
+    const { canvases, currentCanvasId, setCurrentCanvas, updateCanvasName } =
         useCanvasStore();
     const currentCanvas = canvases.find((c) => c.id === currentCanvasId);
 
@@ -211,6 +213,92 @@ const Sidebar: React.FC<SidebarProps> = ({
             setEditingName("");
         }
     };
+
+    // 处理对话逻辑
+    const handleChat = async (userQuestion: string) => {
+        if (!currentCanvas) return;
+
+        setIsLoading(true);
+        try {
+            // 判断是否是 freeNode 模式
+            const isFreeNode = typeof window !== 'undefined' && (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode;
+            
+            // 准备画布数据
+            const canvasData = {
+                ...currentCanvas,
+                title: currentCanvas.name,
+                description: `This is a mind map called "${currentCanvas.name}"`,
+            };
+            
+            if (isFreeNode) {
+                // 使用 mock3 的实现
+                const result = await generateFreeNodeChatResponse(
+                    canvasData,
+                    userQuestion,
+                    (history) => {
+                        setChatHistories((prev) => ({
+                            ...prev,
+                            [currentCanvas.id]:
+                                typeof history === "function"
+                                    ? history(prev[currentCanvas.id] || [])
+                                    : history,
+                        }));
+                    }
+                );
+
+                // 如果返回了替换节点的信号，处理节点替换
+                if (result?.type === 'replace-node' && result.nodeData && onAddNodeFromPreview) {
+                    onAddNodeFromPreview(result.nodeData);
+                    // 清除 freeNode 标记
+                    if (typeof window !== 'undefined') {
+                        (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode = false;
+                    }
+                }
+            } else {
+                // 使用原有的 mock2 实现
+                await generateChatResponse(
+                    {} as A2AClient,
+                    canvasData,
+                    userQuestion,
+                    (history) => {
+                        setChatHistories((prev) => ({
+                            ...prev,
+                            [currentCanvas.id]:
+                                typeof history === "function"
+                                    ? history(prev[currentCanvas.id] || [])
+                                    : history,
+                        }));
+                    }
+                );
+            }
+        } catch {
+            if (currentCanvas) {
+                setChatHistories((prev) => ({
+                    ...prev,
+                    [currentCanvas.id]: [
+                        ...(prev[currentCanvas.id] || []),
+                        {
+                            type: "assistant-answer",
+                            content:
+                                "I apologize, but I encountered an error while processing your request.",
+                            id: `error-${Date.now()}`,
+                        },
+                    ],
+                }));
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // 展开 sidebar 时重置 freeNode 标记
+    useEffect(() => {
+        if (isExpanded && typeof window !== 'undefined' && (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode) {
+            setTimeout(() => {
+                (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode = false;
+            }, 0);
+        }
+    }, [isExpanded]);
 
     return (
         <div className="flex h-full" ref={sidebarRef}>
@@ -488,6 +576,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                         transition={{ duration: 0.3 }}
                         className="bg-white border-r border-gray-200 flex flex-col"
                     >
+                        {typeof window !== 'undefined' && (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode && (
+                            <div className="p-4 border-b border-emerald-200 bg-emerald-50">
+                                <div className="text-emerald-700 text-sm font-semibold mb-1">Welcome!</div>
+                                <div className="text-xs text-emerald-800">You just created a free node. Start your exploration by asking a question or adding insights!</div>
+                            </div>
+                        )}
                         <div className="p-4 border-b border-gray-200">
                             <div className="flex items-center space-x-3">
                                 <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100">
@@ -512,50 +606,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 <ChatHistory
                                     history={chatHistory}
                                     isLoading={isLoading}
-                                    onSend={async (userQuestion) => {
-                                        // 判断用户消息数
-                                        const userMsgCount = chatHistoryRef.current.filter(msg => msg.type === "user").length;
-                                        if (userMsgCount === 1 && typeof initDefault === 'function') {
-                                            initDefault();
-                                        }
-                                        setIsLoading(true);
-                                        try {
-                                            const canvasData = {
-                                                ...currentCanvas,
-                                                title: currentCanvas.name,
-                                                description: `This is a mind map called "${currentCanvas.name}"`,
-                                            };
-                                            await generateChatResponse(
-                                                {} as A2AClient,
-                                                canvasData,
-                                                userQuestion,
-                                                (history) => {
-                                                    setChatHistories((prev) => ({
-                                                        ...prev,
-                                                        [currentCanvas.id]:
-                                                            typeof history === "function"
-                                                                ? history(prev[currentCanvas.id] || [])
-                                                                : history,
-                                                    }));
-                                                }
-                                            );
-                                        } catch {
-                                            setChatHistories((prev) => ({
-                                                ...prev,
-                                                [currentCanvas.id]: [
-                                                    ...(prev[currentCanvas.id] || []),
-                                                    {
-                                                        type: "assistant-answer",
-                                                        content:
-                                                            "I apologize, but I encountered an error while processing your request.",
-                                                        id: `error-${Date.now()}`,
-                                                    },
-                                                ],
-                                            }));
-                                        } finally {
-                                            setIsLoading(false);
-                                        }
-                                    }}
+                                    onSend={handleChat}
                                     onAddNodeFromPreview={onAddNodeFromPreview}
                                 />
                             )}
