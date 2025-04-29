@@ -73,6 +73,15 @@ export const CategoryNode = memo((props: CategoryNodeProps) => {
         }
     } : undefined;
 
+    // Debug logs
+    console.log('CategoryNode render:', {
+        nodeId: id,
+        parentId: data.parentId,
+        hasNotification: !!data.notification,
+        notificationStatus: data.notification?.status,
+        willShowBadge: !data.parentId && !!data.notification
+    });
+
     // Combine notification badge with custom badges
     const tools: BNBodyTooltipType[] = [
         ...(notificationTool ? [notificationTool] : []),

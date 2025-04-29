@@ -1,5 +1,6 @@
 import { ThemeProvider } from "./context/ThemeContext";
 import { A2AClientProvider } from "./context/A2AClientContext";
+import { AutoFocusProvider } from "./context/AutoFocusContext";
 import { A2AClient } from 'a2a-client';
 import { useEffect, useState } from "react";
 import Header from "./components/Header";
@@ -31,15 +32,17 @@ function App() {
     return (
         <ThemeProvider>
             <A2AClientProvider client={client}>
-                <div className="flex flex-col h-screen dark:bg-[#242424]">
-                    <header className="h-16 flex-shrink-0">
-                        <Header />
-                    </header>
+                <AutoFocusProvider>
+                    <div className="flex flex-col h-screen dark:bg-[#242424]">
+                        <header className="h-16 flex-shrink-0">
+                            <Header />
+                        </header>
 
-                    <main className="flex-1 w-full mx-auto overflow-auto">
-                        <MindMap />
-                    </main>
-                </div>
+                        <main className="flex-1 w-full mx-auto overflow-auto">
+                            <MindMap />
+                        </main>
+                    </div>
+                </AutoFocusProvider>
             </A2AClientProvider>
         </ThemeProvider>
     );

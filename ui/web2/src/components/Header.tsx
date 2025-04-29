@@ -9,14 +9,17 @@ import {
     EnvelopeSimple,
     SignOut,
     Gear,
+    Target,
 } from "@phosphor-icons/react";
 import SofiaLogo from "../../imgs/sofia_logo.png";
+import { useAutoFocus } from "../context/AutoFocusContext";
 
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showShareError, setShowShareError] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
+    const { isAutoFocusEnabled, toggleAutoFocus } = useAutoFocus();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -74,9 +77,21 @@ const Header: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex-1"></div>
+                    <div className="flex-1" />
 
                     <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
+                        <button
+                            type="button"
+                            onClick={toggleAutoFocus}
+                            className={`p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                                isAutoFocusEnabled ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                            aria-label="Toggle auto focus"
+                            title={`${isAutoFocusEnabled ? 'Disable' : 'Enable'} auto focus`}
+                        >
+                            <Target className="h-5 w-5" />
+                        </button>
+
                         <button
                             type="button"
                             onClick={handleShare}

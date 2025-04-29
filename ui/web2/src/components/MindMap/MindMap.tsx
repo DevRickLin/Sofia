@@ -33,6 +33,7 @@ import ContextMenu from "./Nodes/BaseNode/ContextMenu";
 import type { CategoryNodeProps } from "./Nodes/CategoryNode";
 import type { BreakthroughNodeProps } from "./Nodes/BreakthroughNode";
 import { FreeNode } from "./Nodes/FreeNode";
+import type { CategoryNodeData } from "./Nodes/CategoryNode";
 
 // Add custom styles for the canvas background
 const canvasBackgroundStyle = {
@@ -215,14 +216,60 @@ export const MindMap = () => {
 
   useEffect(() => {
     if (currentCanvas) {
-      // Add expand handler to all nodes
-      const nodesWithHandlers = currentCanvas.nodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          expandNode: expandNode,
-        },
-      }));
+      // Add expand handler and notification data to nodes
+      const nodesWithHandlers = currentCanvas.nodes.map((node) => {
+        const isRootNode = currentCanvas.edges.every(edge => edge.target !== node.id);
+        const notificationData = isRootNode ? {
+          notification: {
+            status: 'none' as const,
+            onNotificationClick: async () => {
+              // Update node data to show loading state
+              setNodes(nodes => nodes.map(n => 
+                n.id === node.id 
+                  ? {
+                      ...n,
+                      data: {
+                        ...(n.data as CategoryNodeData),
+                        notification: { 
+                          ...(n.data as CategoryNodeData).notification,
+                          status: 'loading' as const 
+                        }
+                      }
+                    }
+                  : n
+              ));
+
+              // Simulate some async work
+              await new Promise(resolve => setTimeout(resolve, 1500));
+
+              // Update to completed state
+              setNodes(nodes => nodes.map(n => 
+                n.id === node.id 
+                  ? {
+                      ...n,
+                      data: {
+                        ...(n.data as CategoryNodeData),
+                        notification: { 
+                          ...(n.data as CategoryNodeData).notification,
+                          status: 'completed' as const 
+                        }
+                      }
+                    }
+                  : n
+              ));
+            }
+          }
+        } : {};
+
+        return {
+          ...node,
+          data: {
+            ...(node.data as CategoryNodeData),
+            expandNode: expandNode,
+            ...notificationData
+          },
+        };
+      });
       setNodes(nodesWithHandlers);
       setEdges(currentCanvas.edges);
     }
@@ -573,12 +620,12 @@ export const MindMap = () => {
       // 优先用 selectedNodeId，否则用 lastSelectedNodeIdRef.current
       const parentId = selectedNodeId || lastSelectedNodeIdRef.current;
       if (!parentId) {
-        alert("请先在画布上选择一个父节点");
+        alert("Please select a parent node on the canvas first");
         return;
       }
       const parent = nodes.find((n) => n.id === parentId);
       if (!parent) {
-        alert("父节点未找到");
+        alert("Parent node not found");
         return;
       }
       // 组装 childData
@@ -738,7 +785,7 @@ export const MindMap = () => {
       position,
       data: {
         id: newNodeId,
-        content: "Ask a Question",
+        content: "Ask a new question",
         onSelect: () => {
           setSidebarExpanded(true);
         },
@@ -823,21 +870,21 @@ export const MindMap = () => {
               if (!node) return [];
               return [
                 {
-                  label: node.data.isDetailExpanded ? "收起详细信息" : "展开详细信息",
+                  label: node.data.isDetailExpanded ? "Collapse details" : "Expand details",
                   onClick: () => {
                     console.log('toggleDetailExpanded', node.id);
                     toggleDetailExpanded(node.id, !node.data.isDetailExpanded);
                   },
                 },
                 {
-                  label: node.data.isChildrenExpanded ? "收起子节点" : "展开子节点",
+                  label: node.data.isChildrenExpanded ? "Collapse child nodes" : "Expand child nodes",
                   onClick: () => {
                     console.log('expandNode', node.id);
                     expandNode(node.id);
                   },
                 },
                 {
-                  label: "删除节点",
+                  label: "Delete node",
                   onClick: () => {
                     console.log('handleDeleteNode', node.id);
                     handleDeleteNode(node.id);

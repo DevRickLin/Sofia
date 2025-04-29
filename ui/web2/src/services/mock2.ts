@@ -27,22 +27,22 @@ function* getChatResponseGenerator(nodeData: NodeData, userQuestion: string) {
   const mockKeyInsights = [
     {
       id: 'insight-1',
-      content: '模型能自我反思，提升推理能力',
-      implications: '有助于复杂问题的分步求解和自我修正',
+      content: 'The model can self-reflect and improve its reasoning ability',
+      implications: 'Helps with step-by-step problem solving and self-correction for complex issues',
       relatedTechnologies: ['Reinforcement Learning', 'Knowledge Graphs'],
       visible: true,
     },
     {
       id: 'insight-2',
-      content: '小模型多步推理能力强',
-      implications: '提升AI系统效率，降低算力消耗',
+      content: 'Small models have strong multi-step reasoning ability',
+      implications: 'Improves AI system efficiency and reduces computational cost',
       relatedTechnologies: ['Model Compression', 'Efficient AI'],
       visible: true,
     },
     {
       id: 'insight-3',
-      content: '自监督与符号知识图谱结合',
-      implications: '实现更强的自洽性和泛化能力',
+      content: 'Combination of self-supervision and symbolic knowledge graphs',
+      implications: 'Achieves stronger consistency and generalization',
       relatedTechnologies: ['Self-supervision', 'Chain-of-Thought'],
       visible: true,
     },
@@ -68,12 +68,12 @@ function* getChatResponseGenerator(nodeData: NodeData, userQuestion: string) {
   const nodeCard: ResponseCard = {
       id: `node-card-${Date.now()}`,
       type: 'node',
-      title: nodeData.title || 'AI节点',
-      content: nodeData.summary || 'AI生成的节点内容',
+      title: nodeData.title || 'AI Node',
+      content: nodeData.summary || 'AI-generated node content',
       nodeData: {
         id: `ai-node-${Date.now()}`,
-        title: nodeData.title || 'AI节点',
-        summary: nodeData.summary || 'AI生成的节点内容',
+        title: nodeData.title || 'AI Node',
+        summary: nodeData.summary || 'AI-generated node content',
         details: nodeData.details || '',
         date: nodeData.date || '',
         organization: nodeData.organization || '',
@@ -153,7 +153,7 @@ export const generateChatResponse = async (
       ...prev,
       {
         type: "assistant-answer",
-        content: '以下是对你的问题的结构化解答：',
+        content: 'Here is a structured answer to your question:',
         id: `answer-${Date.now()}`,
         cards: value.cards
       }
@@ -163,7 +163,7 @@ export const generateChatResponse = async (
       ...prev,
       {
         type: "assistant-answer",
-        content: '我为你生成了一个新节点，可以拖拽到画布中。',
+        content: 'I have generated a new node for you, which can be dragged onto the canvas.',
         id: `answer-${Date.now()}`,
         cards: value.nodeCard ? [value.nodeCard] : []
       }
@@ -198,7 +198,7 @@ Let me know which areas you'd like me to dig into.
 `;
   }
   else if (lowercaseQuery.includes('implementation details')) {
-    answer = `Great, I’ll gather comprehensive information on Technical implementation details and Limitations and risks of Claude 3.5 'Computer Use' feature. Would yould like me to sumarise in key insight boxes or share a report?`;
+    answer = `Great, I'll gather comprehensive information on Technical implementation details and Limitations and risks of Claude 3.5 'Computer Use' feature. Would yould like me to sumarise in key insight boxes or share a report?`;
   }
   else {
     answer = `Based on the available information about **${nodeData.title || 'this topic'}**, I can provide the following insights: ${nodeData.summary || 'This represents a significant development with wide-ranging implications.'} ${nodeData.details || ''}`;
@@ -219,7 +219,7 @@ function generateResponseCards(answerContent: string): ResponseCard[] {
       id: `card-summary-${Date.now()}`,
       type: 'summary',
       title: '',
-      content: `Great, I’ll gather comprehensive information on Technical implementation details and Limitations and risks of Claude 3.5 'Computer Use' feature. Would yould like me to sumarise in key insight boxes or share a report?`
+      content: `Great, I'll gather comprehensive information on Technical implementation details and Limitations and risks of Claude 3.5 'Computer Use' feature. Would yould like me to sumarise in key insight boxes or share a report?`
     },
   ];
-} 
+}

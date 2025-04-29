@@ -21,7 +21,7 @@ export function* getFreeNodeChatResponseGenerator(nodeData: NodeData, userQuesti
     nodeData: {
       ...nodeData,
       type: 'breakthrough',
-      title: userQuestion || 'AI主题',
+      title: userQuestion || 'AI Topic',
       summary: 'This is an auto-generated breakthrough node based on your input.',
       details: 'You can now continue the conversation as a regular node.',
       color: 'emerald',

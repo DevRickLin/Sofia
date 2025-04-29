@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useRef } from "react";
 import {
     BaseNode,
     BNBody,
@@ -57,23 +57,6 @@ export const BreakthroughNode = memo(function BreakthroughNode(props: Breakthrou
     const edges = useEdges();
     const hasChildren = edges.some(edge => edge.source === id);
 
-    // Count visible insights to track when they change
-    const visibleInsightsCount = Array.isArray(data.keyInsights) 
-        ? data.keyInsights.filter(insight => insight.visible === true).length 
-        : 0;
-
-    // Auto-expand details when insights become visible
-    useEffect(() => {
-        if (visibleInsightsCount > 0 && !isDetailExpanded && toggleDetailExpanded) {
-            const timer = setTimeout(() => {
-                // 再次检查状态，避免在延迟期间状态已改变
-                if (visibleInsightsCount > 0 && !isDetailExpanded && toggleDetailExpanded) {
-                    toggleDetailExpanded(id, true);
-                }
-            }, 100);
-            return () => clearTimeout(timer);
-        }
-    }, [visibleInsightsCount, isDetailExpanded, toggleDetailExpanded, id]);
 
     const handleExpandNode = (nodeId: string) => {
         if (data.expandNode) {
@@ -130,7 +113,7 @@ export const BreakthroughNode = memo(function BreakthroughNode(props: Breakthrou
                 <div className="text-[#757575] p-2">
                     {data.details}
                 </div>
-                {data.keyInsights && data.keyInsights.length > 0 && (
+                {data.keyInsights && data.keyInsights.filter(insight => insight.visible).length > 0 && (
                     <div className="mt-4 mx-2 mb-4" ref={insightsContainerRef}>
                         <div className="flex items-center pl-3 mb-2.5">
                             <div 
@@ -154,7 +137,7 @@ export const BreakthroughNode = memo(function BreakthroughNode(props: Breakthrou
                         </div>
                         <div className="space-y-2.5">
                             {data.keyInsights
-                                .filter(insight => !!insight.id)
+                                .filter(insight => !!insight.id && insight.visible)
                                 .map((insight) => (
                                     <div 
                                         key={insight.id} 

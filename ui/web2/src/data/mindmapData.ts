@@ -104,6 +104,7 @@ const baseNodes: Node[] = [
             details: "A major update allowed the Claude 3.5 model to operate a computer GUI like a human user. In public beta, developers can direct Claude to observe a virtual screen, move the cursor, click buttons, and type input.",
             keyInsights: [
                 {
+                    id: "ki-break1_1-1",
                     content: "Claude 3.5 can observe a virtual screen, move the cursor, click buttons, and type input to operate a computer like a human user.",
                     implications: "This enables agents to perform workflows like scheduling meetings or configuring software by simulating user actions on interfaces",
                     relatedTechnologies: [
@@ -113,6 +114,7 @@ const baseNodes: Node[] = [
                     ],
                 },
                 {
+                    id: "ki-break1_1-2",
                     content: "Early adopters like Replit used it to let an AI agent carry out multi-step tasks (dozens of UI actions) automatically.",
                     implications: "This bridges AI with everyday software tools, allowing automation of tasks that previously required human intervention",
                     relatedTechnologies: [
@@ -140,6 +142,7 @@ const baseNodes: Node[] = [
             details: "Agent K can handle an entire data science project autonomously. Given a Kaggle competition URL, it downloads data, analyzes it, engineers features, trains models, and iteratively improves via an internal memory system.",
             keyInsights: [
                 {
+                    id: "ki-break1_2-1",
                     content: "Agent K achieved a 92.5% task success rate, earning results comparable to a top 5% Kaggle competitor (multiple gold medals).",
                     implications: "AI can now perform at expert human level in complex data science competitions without human guidance",
                     relatedTechnologies: [
@@ -149,6 +152,7 @@ const baseNodes: Node[] = [
                     ],
                 },
                 {
+                    id: "ki-break1_2-2",
                     content: "Agent K uses a flexible reasoning loop with short-term and long-term memory, updating its strategy based on past outcomes.",
                     implications: "This memory-driven approach allows continuous improvement without model retraining",
                     relatedTechnologies: [
@@ -336,6 +340,7 @@ const baseNodes: Node[] = [
             details: 'PRefLexOR builds a dynamic knowledge graph as it reads text: it will pose questions about the text and retrieve relevant facts, organizing them into a structured graph it can use for reasoning. It also uses a "thinking token" strategy where the model has dedicated tokens to reflect.',
             keyInsights: [
                 {
+                    id: "ki-break5_1-1",
                     content: "During training, the model generates intermediate reasoning steps for a problem, then learns to prefer trajectories that lead to correct answers.",
                     implications: "This approach marries reinforcement learning from self-consistency with symbolic knowledge graphs",
                     relatedTechnologies: [
@@ -345,6 +350,7 @@ const baseNodes: Node[] = [
                     ],
                 },
                 {
+                    id: "ki-break5_1-2",
                     content: "Even a 3B parameter model trained with PRefLexOR can outperform much larger models on tasks requiring multi-step reasoning.",
                     implications: "This could dramatically increase the efficiency of AI systems, allowing smaller models to achieve better results",
                     relatedTechnologies: [

@@ -123,19 +123,19 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
                             items={[
                                 toggleDetailExpanded && nodeId
                                     ? {
-                                        label: isDetailExpanded ? "收起详细信息" : "展开详细信息",
+                                        label: isDetailExpanded ? "Collapse details" : "Expand details",
                                         onClick: () => toggleDetailExpanded(nodeId, !isDetailExpanded),
                                     }
                                     : null,
                                 expandNode && nodeId
                                     ? {
-                                        label: isChildrenExpanded ? "收起子节点" : "展开子节点",
+                                        label: isChildrenExpanded ? "Collapse child nodes" : "Expand child nodes",
                                         onClick: () => expandNode(nodeId),
                                     }
                                     : null,
                                 onDelete && nodeId
                                     ? {
-                                        label: "删除节点",
+                                        label: "Delete node",
                                         onClick: () => onDelete(nodeId),
                                     }
                                     : null,

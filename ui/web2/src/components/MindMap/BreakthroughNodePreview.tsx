@@ -41,7 +41,7 @@ const BreakthroughNodePreview: React.FC<BreakthroughNodePreviewProps> = ({ data,
   return (
     <div
       className="rounded-xl border border-sky-200 bg-sky-50 p-3 w-64 shadow-sm hover:shadow-lg transition text-left relative"
-      title="点击添加到画布"
+      title="Click to add to canvas"
       style={{ cursor: isAdded ? "default" : "pointer" }}
       onClick={handleClick}
       onKeyDown={handleKeyDown}

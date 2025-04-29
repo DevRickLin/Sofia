@@ -23,7 +23,7 @@ const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyIn
                 type="button"
                 className="w-6 h-6 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold hover:bg-blue-300 disabled:opacity-50"
                 onClick={e => onRemoveKeyInsight?.(insight, e)}
-                title="移除此 insight"
+                title="Remove this insight"
               >
                 -
               </button>
@@ -32,7 +32,7 @@ const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyIn
                 type="button"
                 className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold hover:bg-blue-200 disabled:opacity-50"
                 onClick={e => onAddKeyInsight?.(insight, e)}
-                title="添加此 insight"
+                title="Add this insight"
               >
                 +
               </button>
