@@ -24,6 +24,7 @@ import Sidebar from "./Sidebar";
 import SidePanel from "./SidePanel";
 import type { NodeChildData } from "./SidePanel";
 import { useTheme } from "../../context/ThemeContext";
+import { useAutoFocus } from "../../context/AutoFocusContext";
 import { useCanvasStore } from "../../store/canvasStore";
 import type { KeyInsight, NodeData } from "./types";
 import type { ChatMessage } from "../../services/mock2";
@@ -58,54 +59,61 @@ interface FocusNodeEvent extends CustomEvent {
   };
 }
 
-// 工具函数：让节点居中并占据画布 30% 以上空间
-function focusNodeWithScale({
-  node,
-  reactFlowInstance,
-  duration = 800,
-  minPercent = 0.3,
-}: {
-  node: FlowNode;
-  reactFlowInstance: ReactFlowInstance;
-  duration?: number;
-  minPercent?: number;
-}) {
-  if (!node || !reactFlowInstance) return;
-  // 获取画布容器尺寸
-  const container = document.querySelector(".react-flow");
-  if (!container) return;
-  const containerRect = container.getBoundingClientRect();
-  const canvasWidth = containerRect.width;
-  const canvasHeight = containerRect.height;
+// Hook: useFocusNodeWithScale
+function useFocusNodeWithScale() {
+  const { isAutoFocusEnabled } = useAutoFocus();
+  return useCallback(({
+    node,
+    reactFlowInstance,
+    duration = 800,
+    minPercent = 0.3,
+    force = false,
+  }: {
+    node: FlowNode;
+    reactFlowInstance: ReactFlowInstance;
+    duration?: number;
+    minPercent?: number;
+    force?: boolean;
+  }) => {
+    if (!node || !reactFlowInstance) return;
+    if (!isAutoFocusEnabled && !force) return;
+    // 获取画布容器尺寸
+    const container = document.querySelector(".react-flow");
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const canvasWidth = containerRect.width;
+    const canvasHeight = containerRect.height;
 
-  // 获取节点 DOM 尺寸
-  const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
-  // 默认宽高
-  let nodeWidth = 256;
-  let nodeHeight = 120;
-  if (nodeElement) {
-    const rect = nodeElement.getBoundingClientRect();
-    nodeWidth = rect.width;
-    nodeHeight = rect.height;
-  }
-  // 计算缩放比例
-  const scaleX = canvasWidth / nodeWidth;
-  const scaleY = canvasHeight / nodeHeight;
-  // 目标缩放比例，使节点占据 minPercent 画布
-  const zoom = Math.min(scaleX, scaleY) * minPercent;
-  // 限制最大最小缩放
-  const minZoom = 0.2;
-  const maxZoom = 1.5;
-  const finalZoom = Math.max(minZoom, Math.min(zoom, maxZoom));
-  // 居中
-  reactFlowInstance.setCenter(node.position.x, node.position.y, {
-    zoom: finalZoom,
-    duration,
-  });
+    // 获取节点 DOM 尺寸
+    const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
+    // 默认宽高
+    let nodeWidth = 256;
+    let nodeHeight = 120;
+    if (nodeElement) {
+      const rect = nodeElement.getBoundingClientRect();
+      nodeWidth = rect.width;
+      nodeHeight = rect.height;
+    }
+    // 计算缩放比例
+    const scaleX = canvasWidth / nodeWidth;
+    const scaleY = canvasHeight / nodeHeight;
+    // 目标缩放比例，使节点占据 minPercent 画布
+    const zoom = Math.min(scaleX, scaleY) * minPercent;
+    // 限制最大最小缩放
+    const minZoom = 0.2;
+    const maxZoom = 1.5;
+    const finalZoom = Math.max(minZoom, Math.min(zoom, maxZoom));
+    // 居中
+    reactFlowInstance.setCenter(node.position.x, node.position.y, {
+      zoom: finalZoom,
+      duration,
+    });
+  }, [isAutoFocusEnabled]);
 }
 
 export const MindMap = () => {
   const { theme } = useTheme();
+  const { isAutoFocusEnabled } = useAutoFocus();
   const { canvases, currentCanvasId, addCanvas, updateCanvas } =
     useCanvasStore();
   const currentCanvas = canvases.find((c) => c.id === currentCanvasId);
@@ -131,6 +139,8 @@ export const MindMap = () => {
     y: number;
     nodeId: string;
   } | null>(null);
+
+  const focusNodeWithScale = useFocusNodeWithScale();
 
   useEffect(() => {
     nodesRef.current = nodes;
@@ -235,11 +245,12 @@ export const MindMap = () => {
     setSelectedNodeId(node ? node.id : null);
     if (node) {
       lastSelectedNodeIdRef.current = node.id;
-      if (autoFocus && reactFlowInstance) {
-        focusNodeWithScale({ node, reactFlowInstance, duration: 600 });
+      // Only auto focus if enabled in settings or explicitly requested
+      if ((isAutoFocusEnabled || autoFocus) && reactFlowInstance) {
+        focusNodeWithScale({ node, reactFlowInstance, duration: 600, force: autoFocus });
       }
     }
-  }, [reactFlowInstance]);
+  }, [reactFlowInstance, isAutoFocusEnabled, focusNodeWithScale]);
 
   const onNodeClick = useCallback(
     (event: MouseEvent, node: FlowNode) => {
@@ -250,7 +261,7 @@ export const MindMap = () => {
         node.data.summary !==
           "Click to start a conversation and explore insights"
       ) {
-        handleNodeSelect(node, true);
+        handleNodeSelect(node, false);
         setIsPanelOpen(true);
         setSidebarExpanded(false);
       } else if (node.type === "breakthrough" && !node.data.summary) {
@@ -480,7 +491,7 @@ export const MindMap = () => {
         return newNodes;
       });
     },
-    [expandNode, reactFlowInstance, setNodes]
+    [expandNode, reactFlowInstance, setNodes, focusNodeWithScale]
   );
 
   const handleRemoveKeyInsight = useCallback(
@@ -593,7 +604,7 @@ export const MindMap = () => {
 
       if (node) {
         // --- 修改为 focusNodeWithScale ---
-        focusNodeWithScale({ node, reactFlowInstance, duration: 800 });
+        focusNodeWithScale({ node, reactFlowInstance, duration: 800, force: true });
         handleNodeSelect(node, true);
         setIsPanelOpen(true);
       }
@@ -602,7 +613,7 @@ export const MindMap = () => {
     window.addEventListener("focusNode", handleFocusNode as EventListener);
     return () =>
       window.removeEventListener("focusNode", handleFocusNode as EventListener);
-  }, [reactFlowInstance, nodes, handleNodeSelect]);
+  }, [reactFlowInstance, nodes, handleNodeSelect, focusNodeWithScale]);
 
   // 渲染时获取最新 node
   const selectedNode = selectedNodeId
