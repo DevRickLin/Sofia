@@ -485,59 +485,39 @@ export const MindMap = () => {
 
   const handleRemoveKeyInsight = useCallback(
     (nodeId: string, insightIndex: number) => {
-      console.log("MindMap handleRemoveKeyInsight called with:", {
-        nodeId,
-        insightIndex,
-      });
       setNodes((nds) => {
         const newNodes = nds.map((node) => {
           if (node.id === nodeId) {
             const nodeData = node.data;
-            const keyInsights: KeyInsight[] = Array.isArray(
-              nodeData.keyInsights
-            )
+            const keyInsights: KeyInsight[] = Array.isArray(nodeData.keyInsights)
               ? nodeData.keyInsights
               : [];
-            console.log("Current keyInsights:", keyInsights);
-            console.log(
-              "Insight at index:",
-              insightIndex,
-              keyInsights[insightIndex]
-            );
 
-            // Make sure the index exists
             if (keyInsights[insightIndex]) {
               const updatedInsights = [...keyInsights];
               updatedInsights[insightIndex] = {
                 ...updatedInsights[insightIndex],
                 visible: false,
               };
-              console.log("Updated insight:", updatedInsights[insightIndex]);
+
+              // 判断是否还有 visible 的 insight
+              const hasVisible = updatedInsights.some(i => i.visible);
 
               const updatedNode = {
                 ...node,
                 data: {
                   ...nodeData,
                   keyInsights: updatedInsights,
-                  isChildrenExpanded: false,
-                  isDetailExpanded: false,
+                  // 只有全部不可见时才收起
+                  isChildrenExpanded: hasVisible ? nodeData.isChildrenExpanded : false,
+                  isDetailExpanded: hasVisible ? nodeData.isDetailExpanded : false,
                 },
               };
-              console.log("Updated node:", updatedNode);
               return updatedNode;
             }
-
-            console.error(
-              "Invalid insight index:",
-              insightIndex,
-              "for keyInsights:",
-              keyInsights
-            );
           }
           return node;
         });
-
-        console.log("New nodes state:", newNodes);
         return newNodes;
       });
     },
