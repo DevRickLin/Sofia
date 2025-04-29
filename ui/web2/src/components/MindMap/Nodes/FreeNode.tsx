@@ -4,7 +4,7 @@ import type { BNBodyTooltipType } from "./BaseNode";
 import type { ColorPattern } from "./type";
 import type { NodeProps } from "@xyflow/react";
 import { getColor } from "./utils";
-import { Play } from "@phosphor-icons/react";
+import { SidebarSimple } from "@phosphor-icons/react";
 import { useCanvasStore } from '../../../store/canvasStore';
 
 export interface FreeNodeData extends Record<string, unknown> {
@@ -45,8 +45,8 @@ export const FreeNode = memo((props: NodeProps) => {
                             </div>
                         </div>
                         <button
-                            className={`mt-3 flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 ${
-                                isHovered ? "bg-emerald-200" : "hover:bg-emerald-200"
+                            className={`mt-3 flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
+                                isHovered ? "bg-emerald-100" : "hover:bg-emerald-100"
                             }`}
                             type="button"
                             onClick={e => {
@@ -59,9 +59,9 @@ export const FreeNode = memo((props: NodeProps) => {
                             }}
                             onMouseEnter={() => setIsHovered(true)}
                             onMouseLeave={() => setIsHovered(false)}
-                            aria-label="Start"
+                            aria-label="Open sidebar"
                         >
-                            <Play size={18} weight="fill" className="text-emerald-700" />
+                            <SidebarSimple size={16} weight="bold" className="text-emerald-600" />
                         </button>
                     </div>
                 </BNBodyContent>
