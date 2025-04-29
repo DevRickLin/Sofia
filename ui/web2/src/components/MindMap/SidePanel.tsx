@@ -10,7 +10,7 @@ import {
   ArrowRight,
   Lightbulb,
   ChatTeardropDots as MessageSquare,
-  CaretUp,
+  CaretDown,
 } from "@phosphor-icons/react";
 import { generateChatResponse } from "../../services/mock2";
 import type { ChatMessage } from "../../services/mock2";
@@ -110,10 +110,10 @@ export default function SidePanel({
             x: window.innerWidth - 400,
             y: 60,
             width: 360,
-            height: 600,
+            height: "auto",
           }}
           minWidth={320}
-          minHeight={300}
+          minHeight={isChatOpen ? 600 : 300}
           bounds="window"
           dragHandleClassName="drag-handle"
           enableResizing={{
@@ -128,8 +128,8 @@ export default function SidePanel({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 300, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="absolute top-0 right-0 w-full sm:w-80 h-full bg-white shadow-xl rounded-l-xl flex flex-col z-50"
-            style={{ height: "100%" }}
+            className="absolute top-0 right-0 w-full sm:w-80 bg-white shadow-xl rounded-l-xl flex flex-col z-50"
+            style={{ height: isChatOpen ? "600px" : "auto", minHeight: "300px" }}
           >
             <div className="p-4 overflow-y-auto drag-handle" style={{ minHeight: 220, maxHeight: 320, cursor: "move" }}>
               <div className="flex justify-between items-start">
@@ -300,7 +300,7 @@ export default function SidePanel({
                     className="h-4 w-4 text-gray-400 hover:text-gray-600 transition-colors"
                   />
                 ) : (
-                  <CaretUp
+                  <CaretDown
                     weight="bold"
                     className="h-4 w-4 text-gray-400 hover:text-gray-600 transition-colors"
                   />
