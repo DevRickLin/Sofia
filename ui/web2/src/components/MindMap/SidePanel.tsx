@@ -53,7 +53,7 @@ export default function SidePanel({
   setChatHistories,
   toggleDetailExpanded,
 }: SidePanelProps) {
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [upperSectionHeight, setUpperSectionHeight] = useState(60); // Percentage height for upper section
   const containerRef = useRef<HTMLDivElement>(null);
@@ -400,7 +400,12 @@ export default function SidePanel({
                           setIsLoading(false);
                         }
                       }}
-                      onAddNodeFromPreview={onAddNodeFromPreview}
+                      onAddNodeFromPreview={(nodeData) => {
+                        if (onAddNodeFromPreview) {
+                          onAddNodeFromPreview(nodeData);
+                          setIsChatOpen(false); // Close chat panel after adding a node
+                        }
+                      }}
                     />
                   </div>
                 </motion.div>
