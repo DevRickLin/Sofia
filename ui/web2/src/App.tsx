@@ -33,7 +33,7 @@ function App() {
         <ThemeProvider>
             <A2AClientProvider client={client}>
                 <AutoFocusProvider>
-                    <div className="flex flex-col h-screen dark:bg-[#242424]">
+                    <div className="flex flex-col h-screen  ">
                         <header className="h-16 flex-shrink-0">
                             <Header />
                         </header>

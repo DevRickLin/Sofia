@@ -30,19 +30,19 @@ export const BNExpandButton: React.FC<BNExpandButtonProps> = ({
             }}
             data-testid="node-expand-button"
         >
-            <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center cursor-pointer transition-colors duration-200 shadow-sm">
+            <div className="w-5 h-5 rounded-full bg-gray-100   hover:bg-gray-200   flex items-center justify-center cursor-pointer transition-colors duration-200 shadow-sm">
                 {isExpanded ? (
                     useCaretIcons ? (
                         <CaretUp
                             weight="bold"
                             size={12}
-                            className="text-gray-500 dark:text-gray-400"
+                            className="text-gray-500  "
                         />
                     ) : (
                         <Minus
                             weight="bold"
                             size={12}
-                            className="text-gray-500 dark:text-gray-400"
+                            className="text-gray-500  "
                         />
                     )
                 ) : (
@@ -50,13 +50,13 @@ export const BNExpandButton: React.FC<BNExpandButtonProps> = ({
                         <CaretDown
                             weight="bold"
                             size={12}
-                            className="text-gray-500 dark:text-gray-400"
+                            className="text-gray-500  "
                         />
                     ) : (
                         <Plus
                             weight="bold"
                             size={12}
-                            className="text-gray-500 dark:text-gray-400"
+                            className="text-gray-500  "
                         />
                     )
                 )}

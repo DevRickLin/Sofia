@@ -40,7 +40,7 @@ export const FreeNode = memo((props: NodeProps) => {
                 <BNBodyContent>
                     <div className="flex flex-col w-full items-center">
                         <div className="p-[2px] w-full">
-                            <div className="text-sm text-gray-600 dark:text-gray-300 cursor-pointer text-center">
+                            <div className="text-sm text-gray-600   cursor-pointer text-center">
                                 {nodeData.content || "Click to ask another question"}
                             </div>
                         </div>

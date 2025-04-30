@@ -45,7 +45,7 @@ const MindMapNode = ({ data }: { data: NodeData }) => {
         const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
         return parts.map((part, i) => 
             part.toLowerCase() === searchTerm.toLowerCase() ? 
-                <span key={i} className="bg-yellow-200 dark:bg-yellow-500/50">{part}</span> : 
+                <span key={i} className="bg-yellow-200  ">{part}</span> : 
                 part
         );
     };
@@ -53,18 +53,18 @@ const MindMapNode = ({ data }: { data: NodeData }) => {
     return (
         <div 
             ref={nodeRef} 
-            className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-200 dark:border-gray-700 transition-all duration-300
-                ${isHighlighted ? 'ring-4 ring-yellow-400 dark:ring-yellow-500/50 animate-pulse-gentle' : ''}`}
+            className={`relative bg-white   rounded-lg shadow-lg p-4 border border-gray-200   transition-all duration-300
+                ${isHighlighted ? 'ring-4 ring-yellow-400   animate-pulse-gentle' : ''}`}
         >
             <Handle type="target" position={Position.Top} className="w-3 h-3" />
             <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
             
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <div className="text-sm font-medium text-gray-900  ">
                 {highlightText(data.title || data.label || '')}
             </div>
             
             {data.description && (
-                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <div className="mt-1 text-xs text-gray-500  ">
                     {highlightText(data.description)}
                 </div>
             )}

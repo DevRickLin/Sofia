@@ -12,10 +12,7 @@ import type { NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 // Type-only imports
-import type {
-  Node as FlowNode,
-  ReactFlowInstance,
-} from "@xyflow/react";
+import type { Node as FlowNode, ReactFlowInstance } from "@xyflow/react";
 import type { MouseEvent } from "react";
 
 import { CategoryNode } from "./Nodes/CategoryNode";
@@ -44,13 +41,6 @@ const canvasBackgroundStyle = {
     backgroundSize: "20px 20px, 24px 24px",
     backgroundPosition: "0 0, 12px 12px",
   },
-  dark: {
-    backgroundColor: "#1F2937",
-    backgroundImage:
-      "radial-gradient(rgba(55, 65, 81, 0.15) 1px, transparent 1px), radial-gradient(rgba(55, 65, 81, 0.1) 1px, transparent 1px)",
-    backgroundSize: "20px 20px, 24px 24px",
-    backgroundPosition: "0 0, 12px 12px",
-  },
 };
 
 // Define the structure for the custom event
@@ -63,53 +53,56 @@ interface FocusNodeEvent extends CustomEvent {
 // Hook: useFocusNodeWithScale
 function useFocusNodeWithScale() {
   const { isAutoFocusEnabled } = useAutoFocus();
-  return useCallback(({
-    node,
-    reactFlowInstance,
-    duration = 800,
-    minPercent = 0.3,
-    force = false,
-  }: {
-    node: FlowNode;
-    reactFlowInstance: ReactFlowInstance;
-    duration?: number;
-    minPercent?: number;
-    force?: boolean;
-  }) => {
-    if (!node || !reactFlowInstance) return;
-    if (!isAutoFocusEnabled && !force) return;
-    // 获取画布容器尺寸
-    const container = document.querySelector(".react-flow");
-    if (!container) return;
-    const containerRect = container.getBoundingClientRect();
-    const canvasWidth = containerRect.width;
-    const canvasHeight = containerRect.height;
+  return useCallback(
+    ({
+      node,
+      reactFlowInstance,
+      duration = 800,
+      minPercent = 0.3,
+      force = false,
+    }: {
+      node: FlowNode;
+      reactFlowInstance: ReactFlowInstance;
+      duration?: number;
+      minPercent?: number;
+      force?: boolean;
+    }) => {
+      if (!node || !reactFlowInstance) return;
+      if (!isAutoFocusEnabled && !force) return;
+      // 获取画布容器尺寸
+      const container = document.querySelector(".react-flow");
+      if (!container) return;
+      const containerRect = container.getBoundingClientRect();
+      const canvasWidth = containerRect.width;
+      const canvasHeight = containerRect.height;
 
-    // 获取节点 DOM 尺寸
-    const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
-    // 默认宽高
-    let nodeWidth = 256;
-    let nodeHeight = 120;
-    if (nodeElement) {
-      const rect = nodeElement.getBoundingClientRect();
-      nodeWidth = rect.width;
-      nodeHeight = rect.height;
-    }
-    // 计算缩放比例
-    const scaleX = canvasWidth / nodeWidth;
-    const scaleY = canvasHeight / nodeHeight;
-    // 目标缩放比例，使节点占据 minPercent 画布
-    const zoom = Math.min(scaleX, scaleY) * minPercent;
-    // 限制最大最小缩放
-    const minZoom = 0.2;
-    const maxZoom = 1.5;
-    const finalZoom = Math.max(minZoom, Math.min(zoom, maxZoom));
-    // 居中
-    reactFlowInstance.setCenter(node.position.x, node.position.y, {
-      zoom: finalZoom,
-      duration,
-    });
-  }, [isAutoFocusEnabled]);
+      // 获取节点 DOM 尺寸
+      const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
+      // 默认宽高
+      let nodeWidth = 256;
+      let nodeHeight = 120;
+      if (nodeElement) {
+        const rect = nodeElement.getBoundingClientRect();
+        nodeWidth = rect.width;
+        nodeHeight = rect.height;
+      }
+      // 计算缩放比例
+      const scaleX = canvasWidth / nodeWidth;
+      const scaleY = canvasHeight / nodeHeight;
+      // 目标缩放比例，使节点占据 minPercent 画布
+      const zoom = Math.min(scaleX, scaleY) * minPercent;
+      // 限制最大最小缩放
+      const minZoom = 0.2;
+      const maxZoom = 1.5;
+      const finalZoom = Math.max(minZoom, Math.min(zoom, maxZoom));
+      // 居中
+      reactFlowInstance.setCenter(node.position.x, node.position.y, {
+        zoom: finalZoom,
+        duration,
+      });
+    },
+    [isAutoFocusEnabled]
+  );
 }
 
 export const MindMap = () => {
@@ -156,7 +149,9 @@ export const MindMap = () => {
           if (node.id === nodeId) {
             // If forceExpand is provided, use that value; otherwise toggle the current state
             newExpandedState =
-              forceExpand !== undefined ? forceExpand : !node.data.isChildrenExpanded;
+              forceExpand !== undefined
+                ? forceExpand
+                : !node.data.isChildrenExpanded;
             return {
               ...node,
               data: {
@@ -218,55 +213,63 @@ export const MindMap = () => {
     if (currentCanvas) {
       // Add expand handler and notification data to nodes
       const nodesWithHandlers = currentCanvas.nodes.map((node) => {
-        const isRootNode = currentCanvas.edges.every(edge => edge.target !== node.id);
-        const notificationData = isRootNode ? {
-          notification: {
-            status: 'none' as const,
-            onNotificationClick: async () => {
-              // Update node data to show loading state
-              setNodes(nodes => nodes.map(n => 
-                n.id === node.id 
-                  ? {
-                      ...n,
-                      data: {
-                        ...(n.data as CategoryNodeData),
-                        notification: { 
-                          ...(n.data as CategoryNodeData).notification,
-                          status: 'loading' as const 
-                        }
-                      }
-                    }
-                  : n
-              ));
+        const isRootNode = currentCanvas.edges.every(
+          (edge) => edge.target !== node.id
+        );
+        const notificationData = isRootNode
+          ? {
+              notification: {
+                status: "none" as const,
+                onNotificationClick: async () => {
+                  // Update node data to show loading state
+                  setNodes((nodes) =>
+                    nodes.map((n) =>
+                      n.id === node.id
+                        ? {
+                            ...n,
+                            data: {
+                              ...(n.data as CategoryNodeData),
+                              notification: {
+                                ...(n.data as CategoryNodeData).notification,
+                                status: "loading" as const,
+                              },
+                            },
+                          }
+                        : n
+                    )
+                  );
 
-              // Simulate some async work
-              await new Promise(resolve => setTimeout(resolve, 1500));
+                  // Simulate some async work
+                  await new Promise((resolve) => setTimeout(resolve, 1500));
 
-              // Update to completed state
-              setNodes(nodes => nodes.map(n => 
-                n.id === node.id 
-                  ? {
-                      ...n,
-                      data: {
-                        ...(n.data as CategoryNodeData),
-                        notification: { 
-                          ...(n.data as CategoryNodeData).notification,
-                          status: 'completed' as const 
-                        }
-                      }
-                    }
-                  : n
-              ));
+                  // Update to completed state
+                  setNodes((nodes) =>
+                    nodes.map((n) =>
+                      n.id === node.id
+                        ? {
+                            ...n,
+                            data: {
+                              ...(n.data as CategoryNodeData),
+                              notification: {
+                                ...(n.data as CategoryNodeData).notification,
+                                status: "completed" as const,
+                              },
+                            },
+                          }
+                        : n
+                    )
+                  );
+                },
+              },
             }
-          }
-        } : {};
+          : {};
 
         return {
           ...node,
           data: {
             ...(node.data as CategoryNodeData),
             expandNode: expandNode,
-            ...notificationData
+            ...notificationData,
           },
         };
       });
@@ -288,16 +291,24 @@ export const MindMap = () => {
     return () => clearTimeout(timeoutId);
   }, [reactFlowInstance, nodes.length]);
 
-  const handleNodeSelect = useCallback((node: FlowNode | null, autoFocus = false) => {
-    setSelectedNodeId(node ? node.id : null);
-    if (node) {
-      lastSelectedNodeIdRef.current = node.id;
-      // Only auto focus if enabled in settings or explicitly requested
-      if ((isAutoFocusEnabled || autoFocus) && reactFlowInstance) {
-        focusNodeWithScale({ node, reactFlowInstance, duration: 600, force: autoFocus });
+  const handleNodeSelect = useCallback(
+    (node: FlowNode | null, autoFocus = false) => {
+      setSelectedNodeId(node ? node.id : null);
+      if (node) {
+        lastSelectedNodeIdRef.current = node.id;
+        // Only auto focus if enabled in settings or explicitly requested
+        if ((isAutoFocusEnabled || autoFocus) && reactFlowInstance) {
+          focusNodeWithScale({
+            node,
+            reactFlowInstance,
+            duration: 600,
+            force: autoFocus,
+          });
+        }
       }
-    }
-  }, [reactFlowInstance, isAutoFocusEnabled, focusNodeWithScale]);
+    },
+    [reactFlowInstance, isAutoFocusEnabled, focusNodeWithScale]
+  );
 
   const onNodeClick = useCallback(
     (event: MouseEvent, node: FlowNode) => {
@@ -547,7 +558,9 @@ export const MindMap = () => {
         const newNodes = nds.map((node) => {
           if (node.id === nodeId) {
             const nodeData = node.data;
-            const keyInsights: KeyInsight[] = Array.isArray(nodeData.keyInsights)
+            const keyInsights: KeyInsight[] = Array.isArray(
+              nodeData.keyInsights
+            )
               ? nodeData.keyInsights
               : [];
 
@@ -559,7 +572,7 @@ export const MindMap = () => {
               };
 
               // 判断是否还有 visible 的 insight
-              const hasVisible = updatedInsights.some(i => i.visible);
+              const hasVisible = updatedInsights.some((i) => i.visible);
 
               const updatedNode = {
                 ...node,
@@ -567,8 +580,12 @@ export const MindMap = () => {
                   ...nodeData,
                   keyInsights: updatedInsights,
                   // 只有全部不可见时才收起
-                  isChildrenExpanded: hasVisible ? nodeData.isChildrenExpanded : false,
-                  isDetailExpanded: hasVisible ? nodeData.isDetailExpanded : false,
+                  isChildrenExpanded: hasVisible
+                    ? nodeData.isChildrenExpanded
+                    : false,
+                  isDetailExpanded: hasVisible
+                    ? nodeData.isDetailExpanded
+                    : false,
                 },
               };
               return updatedNode;
@@ -651,7 +668,11 @@ export const MindMap = () => {
 
       if (node) {
         // --- 修改为 focusNodeWithScale ---
-        focusNodeWithScale({ node, reactFlowInstance, duration: 800, force: true });
+        focusNodeWithScale({
+          node,
+          reactFlowInstance,
+          duration: 800,
+        });
         handleNodeSelect(node, true);
         setIsPanelOpen(true);
       }
@@ -668,44 +689,67 @@ export const MindMap = () => {
     : null;
 
   // 修改：详情展开/收起
-  const toggleDetailExpandedRef = useRef((nodeId: string, isExpanded: boolean) => {
-    setNodes((nds) =>
-      nds.map((node) => {
-        // 如果节点 ID 不匹配或者状态没有变化，直接返回原节点
-        if (node.id !== nodeId || node.data.isDetailExpanded === isExpanded) {
-          return node;
+  const toggleDetailExpandedRef = useRef(
+    (nodeId: string, isExpanded: boolean) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          // 如果节点 ID 不匹配或者状态没有变化，直接返回原节点
+          if (node.id !== nodeId || node.data.isDetailExpanded === isExpanded) {
+            return node;
+          }
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              isDetailExpanded: isExpanded,
+            },
+          };
+        })
+      );
+    }
+  );
+
+  const toggleDetailExpanded = useCallback(
+    (nodeId: string, isExpanded: boolean) => {
+      toggleDetailExpandedRef.current(nodeId, isExpanded);
+    },
+    []
+  ); // 现在不再依赖 setNodes
+
+  const handleDeleteNode = useCallback(
+    (nodeId: string) => {
+      // 递归获取所有子节点
+      const getAllDescendants = (
+        id: string,
+        allEdges: typeof edges
+      ): string[] => {
+        const directChildren = allEdges
+          .filter((e) => e.source === id)
+          .map((e) => e.target);
+        let all = [...directChildren];
+        for (const child of directChildren) {
+          all = all.concat(getAllDescendants(child, allEdges));
         }
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            isDetailExpanded: isExpanded,
-          },
-        };
-      })
-    );
-  });
-
-  const toggleDetailExpanded = useCallback((nodeId: string, isExpanded: boolean) => {
-    toggleDetailExpandedRef.current(nodeId, isExpanded);
-  }, []); // 现在不再依赖 setNodes
-
-  const handleDeleteNode = useCallback((nodeId: string) => {
-    // 递归获取所有子节点
-    const getAllDescendants = (id: string, allEdges: typeof edges): string[] => {
-      const directChildren = allEdges.filter(e => e.source === id).map(e => e.target);
-      let all = [...directChildren];
-      for (const child of directChildren) {
-        all = all.concat(getAllDescendants(child, allEdges));
-      }
-      return all;
-    };
-    const toDelete = [nodeId, ...getAllDescendants(nodeId, edges)];
-    setNodes(nds => nds.filter(n => !toDelete.includes(n.id)));
-    setEdges(eds => eds.filter(e => !toDelete.includes(e.source) && !toDelete.includes(e.target)));
-    // 同步到 store
-    updateCanvas(currentCanvasId, nodes.filter(n => !toDelete.includes(n.id)), edges.filter(e => !toDelete.includes(e.source) && !toDelete.includes(e.target)));
-  }, [edges, nodes, setNodes, setEdges, updateCanvas, currentCanvasId]);
+        return all;
+      };
+      const toDelete = [nodeId, ...getAllDescendants(nodeId, edges)];
+      setNodes((nds) => nds.filter((n) => !toDelete.includes(n.id)));
+      setEdges((eds) =>
+        eds.filter(
+          (e) => !toDelete.includes(e.source) && !toDelete.includes(e.target)
+        )
+      );
+      // 同步到 store
+      updateCanvas(
+        currentCanvasId,
+        nodes.filter((n) => !toDelete.includes(n.id)),
+        edges.filter(
+          (e) => !toDelete.includes(e.source) && !toDelete.includes(e.target)
+        )
+      );
+    },
+    [edges, nodes, setNodes, setEdges, updateCanvas, currentCanvasId]
+  );
 
   // --- handler ref 优化 ---
   const addChildNodeRef = useRef(addChildNode);
@@ -821,14 +865,7 @@ export const MindMap = () => {
         chatHistories={chatHistories}
         setChatHistories={setChatHistories}
       />
-      <div
-        className="flex-1"
-        style={
-          theme === "dark"
-            ? canvasBackgroundStyle.dark
-            : canvasBackgroundStyle.light
-        }
-      >
+      <div className="flex-1" style={canvasBackgroundStyle.light}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -858,40 +895,49 @@ export const MindMap = () => {
             size={1}
             variant={BackgroundVariant.Dots}
           />
-          <Controls className="m-2 text-gray-500 dark:text-gray-100" />
+          <Controls className="m-2 text-gray-500  " />
         </ReactFlow>
         {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
             y={contextMenu.y}
             onClose={() => setContextMenu(null)}
-            items={(() => {
-              const node = nodes.find(n => n.id === contextMenu.nodeId);
-              if (!node) return [];
-              return [
-                {
-                  label: node.data.isDetailExpanded ? "Collapse details" : "Expand details",
-                  onClick: () => {
-                    console.log('toggleDetailExpanded', node.id);
-                    toggleDetailExpanded(node.id, !node.data.isDetailExpanded);
+            items={
+              (() => {
+                const node = nodes.find((n) => n.id === contextMenu.nodeId);
+                if (!node) return [];
+                return [
+                  {
+                    label: node.data.isDetailExpanded
+                      ? "Collapse details"
+                      : "Expand details",
+                    onClick: () => {
+                      console.log("toggleDetailExpanded", node.id);
+                      toggleDetailExpanded(
+                        node.id,
+                        !node.data.isDetailExpanded
+                      );
+                    },
                   },
-                },
-                {
-                  label: node.data.isChildrenExpanded ? "Collapse child nodes" : "Expand child nodes",
-                  onClick: () => {
-                    console.log('expandNode', node.id);
-                    expandNode(node.id);
+                  {
+                    label: node.data.isChildrenExpanded
+                      ? "Collapse child nodes"
+                      : "Expand child nodes",
+                    onClick: () => {
+                      console.log("expandNode", node.id);
+                      expandNode(node.id);
+                    },
                   },
-                },
-                {
-                  label: "Delete node",
-                  onClick: () => {
-                    console.log('handleDeleteNode', node.id);
-                    handleDeleteNode(node.id);
+                  {
+                    label: "Delete node",
+                    onClick: () => {
+                      console.log("handleDeleteNode", node.id);
+                      handleDeleteNode(node.id);
+                    },
                   },
-                },
-              ];
-            })() as ContextMenuItemType[]}
+                ];
+              })() as ContextMenuItemType[]
+            }
           />
         )}
       </div>
@@ -900,9 +946,15 @@ export const MindMap = () => {
         onClose={() => setIsPanelOpen(false)}
         node={selectedNode}
         expandNode={expandNode}
-        onAddKeyInsight={(nodeId, insight) => handleAddKeyInsightRef.current(nodeId, insight)}
-        onRemoveKeyInsight={(nodeId, insightIndex) => handleRemoveKeyInsightRef.current(nodeId, insightIndex)}
-        onAddNodeFromPreview={(data) => handleAddNodeFromPreviewRef.current(data)}
+        onAddKeyInsight={(nodeId, insight) =>
+          handleAddKeyInsightRef.current(nodeId, insight)
+        }
+        onRemoveKeyInsight={(nodeId, insightIndex) =>
+          handleRemoveKeyInsightRef.current(nodeId, insightIndex)
+        }
+        onAddNodeFromPreview={(data) =>
+          handleAddNodeFromPreviewRef.current(data)
+        }
         chatHistories={chatHistories}
         setChatHistories={setChatHistories}
         toggleDetailExpanded={toggleDetailExpanded}
