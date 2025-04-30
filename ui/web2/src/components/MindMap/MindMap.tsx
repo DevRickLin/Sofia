@@ -313,6 +313,17 @@ export const MindMap = () => {
   const onNodeClick = useCallback(
     (event: MouseEvent, node: FlowNode) => {
       event.stopPropagation();
+      
+      // For FreeNode type, always expand sidebar and don't open side panel
+      if (node.type === "free") {
+        setSidebarExpanded(true);
+        setIsPanelOpen(false);
+        if (typeof window !== 'undefined') {
+          (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode = true;
+        }
+        return;
+      }
+      
       // Only show right panel for nodes that have been populated with insights
       if (
         node.data.summary &&

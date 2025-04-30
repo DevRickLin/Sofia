@@ -4,7 +4,6 @@ import type { BNBodyTooltipType } from "./BaseNode";
 import type { ColorPattern } from "./type";
 import type { NodeProps } from "@xyflow/react";
 import { getColor } from "./utils";
-import { SidebarSimple } from "@phosphor-icons/react";
 import { useCanvasStore } from '../../../store/canvasStore';
 
 export interface FreeNodeData extends Record<string, unknown> {
@@ -17,7 +16,6 @@ export const FreeNode = memo((props: NodeProps) => {
     const { data, id } = props;
     const colors: ColorPattern = getColor("gray");
     const nodeData = data as FreeNodeData;
-    const [isHovered, setIsHovered] = useState(false);
     const setFreeNodeId = useCanvasStore(s => s.setFreeNodeId);
 
     // 挂载时自动设置 freeNodeId
@@ -34,36 +32,34 @@ export const FreeNode = memo((props: NodeProps) => {
         },
     ];
 
+    const handleActivate = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setFreeNodeId(id);
+        nodeData.onSelect?.();
+        if (typeof window !== 'undefined') {
+            (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode = true;
+        }
+    };
+
     return (
         <BaseNode colors={colors} selected={true}>
             <BNBody>
                 <BNBodyContent>
-                    <div className="flex flex-col w-full items-center">
+                    <button 
+                        className="flex flex-col w-full items-center cursor-pointer bg-transparent border-0 p-0 m-0"
+                        onClick={handleActivate}
+                        aria-label="Open sidebar to ask a question"
+                        type="button"
+                    >
                         <div className="p-[2px] w-full">
-                            <div className="text-sm text-gray-600 cursor-pointer text-center">
-                                {nodeData.content || "Click to ask another question"}
+                            <div className="text-sm text-gray-600 text-center">
+                                {nodeData.content || "Ask a new question"}
+                            </div>
+                            <div className="text-xs text-gray-400 text-center mt-1">
+                                click to add more questions in the same canvas
                             </div>
                         </div>
-                        <button
-                            className={`mt-3 flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
-                                isHovered ? "bg-emerald-100" : "hover:bg-emerald-100"
-                            }`}
-                            type="button"
-                            onClick={e => {
-                                e.stopPropagation();
-                                setFreeNodeId(id);
-                                nodeData.onSelect?.();
-                                if (typeof window !== 'undefined') {
-                                    (window as Window & { __fromFreeNode?: boolean }).__fromFreeNode = true;
-                                }
-                            }}
-                            onMouseEnter={() => setIsHovered(true)}
-                            onMouseLeave={() => setIsHovered(false)}
-                            aria-label="Open sidebar"
-                        >
-                            <SidebarSimple size={16} weight="bold" className="text-emerald-600" />
-                        </button>
-                    </div>
+                    </button>
                 </BNBodyContent>
                 <BNBodyTooltip enableDelete tools={tools} />
             </BNBody>
