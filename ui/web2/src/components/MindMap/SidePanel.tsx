@@ -341,12 +341,12 @@ export default function SidePanel({
                 </div>
               </div>
               {isChatOpen ? (
-                <CaretUp
+                <CaretDown
                   weight="bold"
                   className="h-4 w-4 text-gray-400 hover:text-gray-600 transition-colors"
                 />
               ) : (
-                <CaretDown
+                <CaretUp
                   weight="bold"
                   className="h-4 w-4 text-gray-400 hover:text-gray-600 transition-colors"
                 />
