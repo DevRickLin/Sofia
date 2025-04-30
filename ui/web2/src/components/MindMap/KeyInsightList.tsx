@@ -1,4 +1,4 @@
-import type React from "react";
+import React from "react";
 import type { KeyInsight } from "./types";
 
 interface KeyInsightListProps {
@@ -9,51 +9,81 @@ interface KeyInsightListProps {
 }
 
 const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyInsight, onRemoveKeyInsight }) => {
+  const [hoveredInsightId, setHoveredInsightId] = React.useState<string | null>(null);
+
   return (
     <div className="space-y-3 mt-2">
       {keyInsights.map((insight) => (
         <div
           key={insight.id}
-          className="relative rounded-lg p-3 bg-blue-50 border border-blue-200 shadow-sm flex flex-col"
+          className={`relative rounded p-2 ${
+            insight.visible 
+              ? "bg-sky-100 border-l-2 border-sky-500" 
+              : "bg-sky-50"
+          }`}
+          onMouseEnter={() => setHoveredInsightId(insight.id)}
+          onMouseLeave={() => setHoveredInsightId(null)}
         >
-          {/* + / - 按钮 */}
-          <div className="absolute top-2 right-2 flex gap-1">
-            {insight.visible ? (
-              <button
-                type="button"
-                className="w-6 h-6 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold hover:bg-blue-300 disabled:opacity-50"
-                onClick={e => onRemoveKeyInsight?.(insight, e)}
-                title="Remove this insight"
-              >
-                -
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold hover:bg-blue-200 disabled:opacity-50"
-                onClick={e => onAddKeyInsight?.(insight, e)}
-                title="Add this insight"
-              >
-                +
-              </button>
-            )}
+          {/* Control buttons */}
+          <div 
+            className="absolute right-2 top-2 z-10 flex flex-col gap-1"
+            style={{ 
+              opacity: hoveredInsightId === insight.id ? 1 : 0, 
+              transition: 'opacity 0.15s ease-in-out' 
+            }}
+          >
+            <button
+              type="button"
+              className={`p-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 ${
+                insight.visible ? 'opacity-50' : 'opacity-100'
+              }`}
+              onClick={e => onAddKeyInsight?.(insight, e)}
+              title="Show in mindmap"
+            >
+              <span className="h-3 w-3 font-bold flex items-center justify-center">+</span>
+            </button>
+            <button
+              type="button"
+              className={`p-1 rounded-full bg-sky-200 hover:bg-sky-300 text-sky-600 ${
+                !insight.visible ? 'opacity-50' : 'opacity-100'
+              }`}
+              onClick={e => onRemoveKeyInsight?.(insight, e)}
+              title="Hide from mindmap"
+            >
+              <span className="h-3 w-3 font-bold flex items-center justify-center">-</span>
+            </button>
           </div>
-          {/* 内容 */}
-          <div className="font-bold text-blue-900 text-sm mb-1">{insight.content}</div>
-          {insight.implications && (
-            <div className="italic text-xs text-blue-800 mb-1">{insight.implications}</div>
-          )}
-          {insight.relatedTechnologies && insight.relatedTechnologies.length > 0 && (
-            <div className="flex flex-wrap gap-2 text-xs text-blue-700 mb-1">
-              {insight.relatedTechnologies.map((tech) => (
-                <span key={tech} className="bg-blue-100 rounded px-2 py-0.5">{tech}</span>
-              ))}
+          
+          {/* Content */}
+          <div className="flex justify-between items-start">
+            <div className="flex-1 pr-8">
+              <p className="text-xs text-sky-700 font-bold">
+                {insight.content}
+              </p>
+              {insight.implications && (
+                <p className="mt-1 text-xs text-sky-600 italic">
+                  {insight.implications}
+                </p>
+              )}
+              {insight.relatedTechnologies && insight.relatedTechnologies.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {insight.relatedTechnologies.map((tech) => (
+                    <span 
+                      key={tech} 
+                      className="inline-block bg-sky-100 text-[10px] px-1.5 py-0.5 rounded-full text-sky-700"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-          {/* Visible 状态 */}
+          </div>
+          
+          {/* Visible status */}
           {insight.visible && (
-            <div className="flex items-center text-xs text-blue-700 mt-1">
-              <span className="w-2 h-2 rounded-full bg-blue-500 inline-block mr-1" />
+            <div className="mt-1 text-[10px] text-sky-600 font-medium flex items-center">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-500 mr-1" />
               Visible in mindmap
             </div>
           )}
