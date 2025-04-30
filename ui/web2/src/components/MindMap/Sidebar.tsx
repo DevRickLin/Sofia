@@ -22,6 +22,16 @@ import ChatHistory from "./ChatHistory";
 import type { ChatMessage } from "../../services/mock2";
 import type { NodeData as MindMapNodeData } from "./types";
 
+// Define theme for Sidebar (green theme)
+const sidebarTheme = {
+    buttonColorClass: "bg-emerald-500 hover:bg-emerald-600",
+    messageColorClass: "bg-emerald-50",
+    inputBorderColorClass: "border-gray-300",
+    inputFocusRingColorClass: "focus:ring-emerald-500",
+};
+
+// Note: We can create specific themes for other components as needed
+
 interface SidebarProps {
     onAddNode: () => void;
     onNewCanvas: () => void;
@@ -667,8 +677,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     isLoading={isLoading}
                                     onSend={handleChat}
                                     onAddNodeFromPreview={onAddNodeFromPreview}
-                                    buttonColorClass="bg-emerald-500 hover:bg-emerald-600"
-                                    messageColorClass="bg-emerald-50"
+                                    theme={sidebarTheme}
                                 />
                             )}
                         </div>
