@@ -313,7 +313,7 @@ export default function SidePanel({
             </div>
           )}
 
-          <div className={`${isChatOpen ? 'flex flex-col flex-1' : ''} border-t border-gray-200`}>
+          <div className={`${isChatOpen ? 'flex flex-col' : ''} border-t border-gray-200`} style={isChatOpen ? { height: `calc(${100 - upperSectionHeight}% - 2px)` } : {}}>
             <button
               ref={buttonRef}
               type="button"
@@ -356,50 +356,53 @@ export default function SidePanel({
               {isChatOpen && node && (
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
+                  animate={{ opacity: 1, height: `calc(100% - ${buttonHeight}px)` }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="p-4 border-t border-gray-200 bg-gray-50 overflow-y-auto flex-1"
+                  className="border-t border-gray-200 bg-gray-50 overflow-hidden flex flex-col"
+                  style={{ height: `calc(100% - ${buttonHeight}px)` }}
                 >
-                  <ChatHistory
-                    history={currentChatHistory}
-                    isLoading={isLoading}
-                    onSend={async (userQuestion) => {
-                      setIsLoading(true);
-                      try {
-                        await generateChatResponse(
-                          {} as A2AClient,
-                          data,
-                          userQuestion,
-                          (history) => {
-                            setChatHistories((prev) => ({
-                              ...prev,
-                              [node.id]:
-                                typeof history === "function"
-                                  ? history(prev[node.id] || [])
-                                  : history,
-                            }));
-                          }
-                        );
-                      } catch {
-                        setChatHistories((prev) => ({
-                          ...prev,
-                          [node.id]: [
-                            ...(prev[node.id] || []),
-                            {
-                              type: "assistant-answer",
-                              content:
-                                "I apologize, but I encountered an error while processing your request.",
-                              id: `error-${Date.now()}`,
-                            },
-                          ],
-                        }));
-                      } finally {
-                        setIsLoading(false);
-                      }
-                    }}
-                    onAddNodeFromPreview={onAddNodeFromPreview}
-                  />
+                  <div className="p-4 overflow-y-auto h-full">
+                    <ChatHistory
+                      history={currentChatHistory}
+                      isLoading={isLoading}
+                      onSend={async (userQuestion) => {
+                        setIsLoading(true);
+                        try {
+                          await generateChatResponse(
+                            {} as A2AClient,
+                            data,
+                            userQuestion,
+                            (history) => {
+                              setChatHistories((prev) => ({
+                                ...prev,
+                                [node.id]:
+                                  typeof history === "function"
+                                    ? history(prev[node.id] || [])
+                                    : history,
+                              }));
+                            }
+                          );
+                        } catch {
+                          setChatHistories((prev) => ({
+                            ...prev,
+                            [node.id]: [
+                              ...(prev[node.id] || []),
+                              {
+                                type: "assistant-answer",
+                                content:
+                                  "I apologize, but I encountered an error while processing your request.",
+                                id: `error-${Date.now()}`,
+                              },
+                            ],
+                          }));
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }}
+                      onAddNodeFromPreview={onAddNodeFromPreview}
+                    />
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
