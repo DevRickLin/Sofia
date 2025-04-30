@@ -282,14 +282,17 @@ export const MindMap = () => {
   useEffect(() => {
     if (!reactFlowInstance || nodes.length === 0) return;
 
-    // Auto-fit nodes when they might be outside the viewport
-    // We add a small delay to ensure the nodes have been rendered
-    const timeoutId = setTimeout(() => {
-      reactFlowInstance.fitView({ padding: 0.1, duration: 400 });
-    }, 100);
+    // Only auto-fit if auto-focus is enabled
+    if (isAutoFocusEnabled) {
+      // Auto-fit nodes when they might be outside the viewport
+      // We add a small delay to ensure the nodes have been rendered
+      const timeoutId = setTimeout(() => {
+        reactFlowInstance.fitView({ padding: 0.1, duration: 400 });
+      }, 100);
 
-    return () => clearTimeout(timeoutId);
-  }, [reactFlowInstance, nodes.length]);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [reactFlowInstance, nodes.length, isAutoFocusEnabled]);
 
   const handleNodeSelect = useCallback(
     (node: FlowNode | null, autoFocus = false) => {
@@ -463,7 +466,7 @@ export const MindMap = () => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setTimeout(() => {
-            handleNodeSelect(newNode, true);
+            handleNodeSelect(newNode, false);
           }, 50);
         });
       });
@@ -539,8 +542,8 @@ export const MindMap = () => {
               // This helps with dynamic content that may still be rendering
               setTimeout(() => {
                 expandNode(nodeId, true);
-                // --- 修改为 focusNodeWithScale ---
-                if (reactFlowInstance) {
+                // Only focus if auto-focus is enabled
+                if (reactFlowInstance && isAutoFocusEnabled) {
                   focusNodeWithScale({
                     node,
                     reactFlowInstance,
@@ -560,7 +563,7 @@ export const MindMap = () => {
         return newNodes;
       });
     },
-    [expandNode, reactFlowInstance, setNodes, focusNodeWithScale]
+    [expandNode, reactFlowInstance, setNodes, focusNodeWithScale, isAutoFocusEnabled]
   );
 
   const handleRemoveKeyInsight = useCallback(
@@ -678,13 +681,15 @@ export const MindMap = () => {
       const node = nodes.find((n) => n.id === nodeId);
 
       if (node) {
-        // --- 修改为 focusNodeWithScale ---
-        focusNodeWithScale({
-          node,
-          reactFlowInstance,
-          duration: 800,
-        });
-        handleNodeSelect(node, true);
+        // Only focus the node if auto-focus is enabled
+        if (isAutoFocusEnabled) {
+          focusNodeWithScale({
+            node,
+            reactFlowInstance,
+            duration: 800,
+          });
+        }
+        handleNodeSelect(node, false);
         setIsPanelOpen(true);
       }
     };
@@ -692,7 +697,7 @@ export const MindMap = () => {
     window.addEventListener("focusNode", handleFocusNode as EventListener);
     return () =>
       window.removeEventListener("focusNode", handleFocusNode as EventListener);
-  }, [reactFlowInstance, nodes, handleNodeSelect, focusNodeWithScale]);
+  }, [reactFlowInstance, nodes, handleNodeSelect, focusNodeWithScale, isAutoFocusEnabled]);
 
   // 渲染时获取最新 node
   const selectedNode = selectedNodeId
@@ -852,7 +857,7 @@ export const MindMap = () => {
     };
     setNodes((nds) => [...nds, newNode]);
     setSidebarExpanded(true);
-    handleNodeSelect(newNode, true);
+    handleNodeSelect(newNode, false);
   }, [reactFlowInstance, setNodes, handleNodeSelect]);
 
   return (
@@ -885,7 +890,7 @@ export const MindMap = () => {
           onNodeClick={onNodeClick}
           onPaneClick={handleBackgroundClick}
           nodeTypes={nodeTypes}
-          fitView
+          fitView={isAutoFocusEnabled}
           attributionPosition="bottom-right"
           minZoom={0.2}
           maxZoom={1.5}
