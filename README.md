@@ -1,64 +1,71 @@
-# 🌐 S.O.F.I.A.
+# S.O.F.I.A.
+
+<p align="center">
+  <img src="ui/web2/imgs/sofia_logo.png" alt="Sofia Logo" width="400">
+</p>
+
 **Search-Oriented Functional Intelligence Agent**
 
 > A modular, search-centric AI agent framework designed to integrate structured information flow and intelligent decision-making.
 
-## 搜索功能说明
+## Search Functionality Description
 
-S.O.F.I.A. 现在包含使用SerpApi进行Google搜索的功能，可以基于用户输入的关键词进行网络搜索，获取实时信息。
+S.O.F.I.A. now includes Google search functionality using SerpApi, which can perform web searches based on user input keywords to obtain real-time information.
 
-### 搜索功能特点
+### Search Features
 
-1. 支持Google搜索：通过SerpApi提供的API进行Google搜索，获取实时网络信息
-2. 提取结构化结果：自动提取搜索结果的标题、链接和摘要等信息
-3. 支持知识图谱：提取Google知识图谱中的相关信息
-4. 灵活的参数配置：支持自定义结果数量、搜索位置等参数
+1. Google Search Support: Perform Google searches through SerpApi's API to obtain real-time web information
+2. Structured Results Extraction: Automatically extract structured information such as titles, links, and summaries from search results
+3. Knowledge Graph Support: Extract relevant information from Google Knowledge Graph
+4. Flexible Parameter Configuration: Support for customizing result quantity, search location, and other parameters
 
-### 使用方法
+### Usage Instructions
 
-1. 首先需要在 `.env` 文件中配置SerpApi的API密钥：
+1. First, you need to configure the SerpApi API key in the `.env` file:
+
    ```
    SERPAPI_KEY=your_serpapi_key_here
    ```
+2. Using search functionality in code:
 
-2. 在代码中使用搜索功能：
    ```python
    from mcp_tools.arithmetic_tool.algorithm.queryTree import Spider
-   
-   # 创建Spider实例
+
+   # Create Spider instance
    spider = Spider()
-   
-   # 进行搜索
-   search_results = spider.google_search("人工智能最新技术")
-   
-   # 提取结构化结果
+
+   # Perform search
+   search_results = spider.google_search("latest artificial intelligence technologies")
+
+   # Extract structured results
    structured_results = spider.extract_search_results(search_results)
-   
-   # 处理搜索结果
+
+   # Process search results
    for result in structured_results:
-       print(f"标题: {result['title']}")
-       print(f"链接: {result['link']}")
-       print(f"摘要: {result['snippet']}")
+       print(f"Title: {result['title']}")
+       print(f"Link: {result['link']}")
+       print(f"Summary: {result['snippet']}")
        print("---")
    ```
+3. Or use the `crawl_node` method to directly get node information:
 
-3. 或者使用`crawl_node`方法直接获取节点信息：
    ```python
-   node = spider.crawl_node("人工智能最新技术")
+   node = spider.crawl_node("latest artificial intelligence technologies")
    if node:
        print(f"URL: {node.node_url}")
-       print(f"摘要: {node.node_abstract}")
+       print(f"Abstract: {node.node_abstract}")
    ```
 
-### 注意事项
+### Important Notes
 
-- 使用前必须设置有效的SerpApi API密钥
-- SerpApi是一个付费服务，请注意API使用配额
-- 搜索结果可能受到地区和语言设置的影响
+- A valid SerpApi API key must be set before use
+- SerpApi is a paid service, please be aware of API usage quotas
+- Search results may be affected by region and language settings
 
 ## Overview
 
 S.O.F.I.A. is a agent system built with the following technologies:
+
 - [LangGraph](https://github.com/langchain-ai/langgraph) for agent workflow
 - [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol) for tool management
 - [Agent2Agent Protocol (A2A)](https://github.com/google/A2A) for agent communication and interoperability
@@ -68,35 +75,38 @@ S.O.F.I.A. is a agent system built with the following technologies:
 The system also includes an article quality assessment tool that evaluates text content using advanced LLM prompting. This feature:
 
 1. Uses sophisticated prompts to analyze articles on 12 different dimensions:
-   - 文本连贯性 (Text coherence)
-   - 论点完整性 (Argument completeness)
-   - 语言质量 (Language quality)
-   - 信息密度 (Information density)
-   - 结构合理性 (Structural reasonability)
-   - 术语使用 (Terminology usage)
-   - 内容独特性 (Content uniqueness)
-   - 深度分析 (Depth of analysis)
-   - 内部一致性 (Internal consistency)
-   - 推理质量 (Reasoning quality)
-   - 上下文理解 (Contextual understanding)
-   - 文本复杂度平衡 (Text complexity balance)
 
+   - Text Coherence
+   - Argument Completeness
+   - Language Quality
+   - Information Density
+   - Structural Reasonability
+   - Terminology Usage
+   - Content Uniqueness
+   - Depth of Analysis
+   - Internal Consistency
+   - Reasoning Quality
+   - Contextual Understanding
+   - Text Complexity Balance
 2. Provides comprehensive evaluation including:
+
    - Detailed scores for each dimension
    - Analysis of the article's strengths and weaknesses
    - General evaluation of the content quality
-
 3. Environment Requirements:
+
    - The feature requires an OpenAI API key to be set in your environment
    - Uses the LLM model specified in your .env file (defaults to gpt-3.5-turbo)
 
 ## Setup
 
 1. Clone this repository
-2. **Install Dependencies:** 
+2. **Install Dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
+
    For UI dependencies:
    ```bash
    cd ui/web
@@ -104,10 +114,12 @@ The system also includes an article quality assessment tool that evaluates text 
    cd ../.. # Return to root
    ```
 3. **Configure Environment Variables:** Copy `.env.example` within `services/agent-service` to `.env` and configure it:
+
    ```bash
    cp services/agent-service/.env.example services/agent-service/.env
    # Now edit services/agent-service/.env
    ```
+
    Example structure within `services/agent-service/.env`:
    ```dotenv
    # Agent Service Configuration (Example - Adjust as needed)
@@ -125,8 +137,9 @@ The system also includes an article quality assessment tool that evaluates text 
    # Model Configuration
    LLM_MODEL=gpt-3.5-turbo
    ```
-   *   Ensure ports and service names match your `docker-compose.yml` configuration (e.g., `agent-service` runs on `8001`, `arithmetic-tool` on `5001`).
-   *   Replace `your_openai_api_key_here` with your actual OpenAI API key.
+
+   * Ensure ports and service names match your `docker-compose.yml` configuration (e.g., `agent-service` runs on `8001`, `arithmetic-tool` on `5001`).
+   * Replace `your_openai_api_key_here` with your actual OpenAI API key.
 
 ## Running the Project
 
@@ -148,6 +161,7 @@ python script/start.py --debug
 ## Architecture
 
 This agent uses:
+
 - LangGraph for agent orchestration
 - OpenAI models for language processing
 - A2A protocol for communication
@@ -232,6 +246,7 @@ sofia/
             └── styles/
 
 ```
+
 *(Note: The structure above is simplified.)*
 
 ## Contribution
@@ -245,18 +260,19 @@ We use the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 Each commit message should consist of a header, a body, and a footer.
 
 - **Header**: The header has a special format that includes a **type**, an optional **scope**, and a **description**:
+
   ```
   <type>[optional scope]: <description>
   ```
+
   - **Types**: `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`.
   - **Scope**: Optional, specifies the part of the codebase affected (e.g., `agent`, `ui`, `docker`).
   - **Description**: Concise description of the change in the imperative, present tense ("change" not "changed" nor "changes").
-
 - **Body**: Optional, provides additional context about the code changes. Use the imperative, present tense.
-
 - **Footer**: Optional, used for referencing issue tracker IDs (e.g., `Fixes #123`) or noting breaking changes (`BREAKING CHANGE:`).
 
 **Example:**
+
 ```
 feat(agent): add support for streaming responses
 
@@ -269,13 +285,13 @@ Refs #456
 
 We follow a simple feature branch workflow:
 
-1.  **`main` Branch**: This branch represents the latest stable release. Direct commits to `main` are restricted.
-2.  **Feature Branches**: Create a new branch for each new feature or bug fix.
-    - Name your branch descriptively using the format: `<type>/<short-description>` (e.g., `feat/add-auth-service`, `fix/resolve-arithmetic-bug`).
-    - Branch off from the `main` branch.
-3.  **Pull Requests (PRs)**: Once your feature or fix is complete:
-    - Push your feature branch to the remote repository.
-    - Create a Pull Request targeting the `main` branch.
-    - Ensure your PR includes a clear description of the changes.
-    - Address any feedback or requested changes from reviewers.
-4.  **Merging**: Once the PR is approved and passes checks, it will be merged into `main`. Delete your feature branch after merging.
+1. **`main` Branch**: This branch represents the latest stable release. Direct commits to `main` are restricted.
+2. **Feature Branches**: Create a new branch for each new feature or bug fix.
+   - Name your branch descriptively using the format: `<type>/<short-description>` (e.g., `feat/add-auth-service`, `fix/resolve-arithmetic-bug`).
+   - Branch off from the `main` branch.
+3. **Pull Requests (PRs)**: Once your feature or fix is complete:
+   - Push your feature branch to the remote repository.
+   - Create a Pull Request targeting the `main` branch.
+   - Ensure your PR includes a clear description of the changes.
+   - Address any feedback or requested changes from reviewers.
+4. **Merging**: Once the PR is approved and passes checks, it will be merged into `main`. Delete your feature branch after merging.
