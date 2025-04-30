@@ -41,11 +41,17 @@ export default function ChatHistory({
   // Merge the provided theme with the default theme
   const currentTheme: ChatTheme = { ...defaultTheme, ...theme };
 
-  React.useEffect(() => {
+  // Function to scroll to bottom
+  const scrollToBottom = React.useCallback(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only need to update on history length changes
+  React.useEffect(() => {
+    scrollToBottom();
+  }, [history.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +74,7 @@ export default function ChatHistory({
             );
           }
           if (msg.type === "assistant-answer" && msg.cards && msg.cards.length > 0) {
-            return msg.cards.map((card) => {
+            return msg.cards.map((card, index) => {
               if (card.type === "node" && card.nodeData) {
                 // 定义 mock 数据
                 const TechnicalOverviewNodeData: NodeData = {
@@ -115,8 +121,8 @@ export default function ChatHistory({
                   
                 };
                 return (
-                  <div key={card.id} className="flex justify-start">
-                    <div>
+                  <div key={card.id} className={`flex justify-start ${index > 0 ? 'mt-4' : ''}`}>
+                    <div className="space-y-4">
                       <BreakthroughNodePreview data={TechnicalOverviewNodeData} onAddNode={() => onAddNodeFromPreview?.(TechnicalOverviewNodeData)} />
                       <BreakthroughNodePreview data={LimitationNodeData} onAddNode={() => onAddNodeFromPreview?.(LimitationNodeData)} />
                     </div>
@@ -124,7 +130,7 @@ export default function ChatHistory({
                 );
               }
               return (
-                <div key={card.id} className="flex justify-start">
+                <div key={card.id} className={`flex justify-start ${index > 0 ? 'mt-4' : ''}`}>
                   <div className="bg-gray-100 text-gray-900 rounded px-3 py-1.5 max-w-[80%] text-xs">
                     <strong>{card.title}</strong>
                     <div>{card.content}</div>
