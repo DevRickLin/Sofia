@@ -52,7 +52,7 @@ export const FreeNode = memo((props: NodeProps) => {
                         type="button"
                     >
                         <div className="p-[2px] w-full">
-                            <div className="text-sm text-gray-600 text-center">
+                            <div className="text-sm text-gray-600 text-center font-bold">
                                 {nodeData.content || "Ask a new question"}
                             </div>
                             <div className="text-xs text-gray-400 text-center mt-1">
