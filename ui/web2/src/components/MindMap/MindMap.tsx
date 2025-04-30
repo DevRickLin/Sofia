@@ -6,13 +6,13 @@ import {
   Background,
   useNodesState,
   useEdgesState,
-  BackgroundVariant,
+  type Node as FlowNode,
+  type ReactFlowInstance,
 } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 // Type-only imports
-import type { Node as FlowNode, ReactFlowInstance } from "@xyflow/react";
 import type { MouseEvent } from "react";
 
 import { CategoryNode } from "./Nodes/CategoryNode";
@@ -33,7 +33,7 @@ import { FreeNode } from "./Nodes/FreeNode";
 import type { CategoryNodeData } from "./Nodes/CategoryNode";
 
 // Add custom styles for the canvas background
-const canvasBackgroundStyle = {
+const reactFlowStyles = {
   light: {
     backgroundColor: "#ffffff",
     backgroundImage:
@@ -845,7 +845,7 @@ export const MindMap = () => {
   }, [reactFlowInstance, setNodes, handleNodeSelect]);
 
   return (
-    <div className="relative flex h-full w-full">
+    <div className="flex flex-col md:flex-row h-full relative">
       <Sidebar
         onAddNode={createFreeNode}
         onNewCanvas={handleNewCanvas}
@@ -865,7 +865,7 @@ export const MindMap = () => {
         chatHistories={chatHistories}
         setChatHistories={setChatHistories}
       />
-      <div className="flex-1" style={canvasBackgroundStyle.light}>
+      <div className="relative flex-1 h-full">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -884,62 +884,55 @@ export const MindMap = () => {
           onInit={setReactFlowInstance}
           panOnScroll={true}
           panOnDrag={true}
+          style={reactFlowStyles.light}
+          zoomOnDoubleClick={false}
         >
-          <Background
-            color={
-              theme === "dark"
-                ? "rgba(55, 65, 81, 0.1)"
-                : "rgba(209, 213, 219, 0.3)"
-            }
-            gap={24}
-            size={1}
-            variant={BackgroundVariant.Dots}
-          />
-          <Controls className="m-2 text-gray-500  " />
+          <Background />
+          <Controls className="m-2 text-gray-500" />
+          {contextMenu && (
+            <ContextMenu
+              x={contextMenu.x}
+              y={contextMenu.y}
+              onClose={() => setContextMenu(null)}
+              items={
+                (() => {
+                  const node = nodes.find((n) => n.id === contextMenu.nodeId);
+                  if (!node) return [];
+                  return [
+                    {
+                      label: node.data.isDetailExpanded
+                        ? "Collapse details"
+                        : "Expand details",
+                      onClick: () => {
+                        console.log("toggleDetailExpanded", node.id);
+                        toggleDetailExpanded(
+                          node.id,
+                          !node.data.isDetailExpanded
+                        );
+                      },
+                    },
+                    {
+                      label: node.data.isChildrenExpanded
+                        ? "Collapse child nodes"
+                        : "Expand child nodes",
+                      onClick: () => {
+                        console.log("expandNode", node.id);
+                        expandNode(node.id);
+                      },
+                    },
+                    {
+                      label: "Delete node",
+                      onClick: () => {
+                        console.log("handleDeleteNode", node.id);
+                        handleDeleteNode(node.id);
+                      },
+                    },
+                  ];
+                })() as ContextMenuItemType[]
+              }
+            />
+          )}
         </ReactFlow>
-        {contextMenu && (
-          <ContextMenu
-            x={contextMenu.x}
-            y={contextMenu.y}
-            onClose={() => setContextMenu(null)}
-            items={
-              (() => {
-                const node = nodes.find((n) => n.id === contextMenu.nodeId);
-                if (!node) return [];
-                return [
-                  {
-                    label: node.data.isDetailExpanded
-                      ? "Collapse details"
-                      : "Expand details",
-                    onClick: () => {
-                      console.log("toggleDetailExpanded", node.id);
-                      toggleDetailExpanded(
-                        node.id,
-                        !node.data.isDetailExpanded
-                      );
-                    },
-                  },
-                  {
-                    label: node.data.isChildrenExpanded
-                      ? "Collapse child nodes"
-                      : "Expand child nodes",
-                    onClick: () => {
-                      console.log("expandNode", node.id);
-                      expandNode(node.id);
-                    },
-                  },
-                  {
-                    label: "Delete node",
-                    onClick: () => {
-                      console.log("handleDeleteNode", node.id);
-                      handleDeleteNode(node.id);
-                    },
-                  },
-                ];
-              })() as ContextMenuItemType[]
-            }
-          />
-        )}
       </div>
       <SidePanel
         isOpen={isPanelOpen}
