@@ -121,7 +121,7 @@ export const generateChatResponse = async (
     }
   ]);
   // Simulate AI thinking with a delay
-  await new Promise(resolve => setTimeout(resolve, 800));
+  await new Promise(resolve => setTimeout(resolve, 1000));
   // Generate a thinking message based on user question
   const thinkingContent = `*I'm analyzing your question about* **"${userQuestion.substring(0, 30)}${userQuestion.length > 30 ? '...' : ''}"**\n\n_Let me process this in the context of the current node information..._`;
   // Add thinking message to history

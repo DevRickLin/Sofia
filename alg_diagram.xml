@@ -1,0 +1,131 @@
+<mxCell id="XFK2erzewz39Rjy_n4-n-4" value="MultiMCPTools" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;fontSize=14;" vertex="1" parent="1">
+  <mxGeometry x="640" y="380" width="120" height="60" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-5" value="SqliteMemoryDb" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="260" y="370" width="100" height="40" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-6" value="SqliteStorage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="450" y="370" width="100" height="40" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-10" value="planQuery" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="590" y="515" width="160" height="30" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-11" value="searchWeb" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="790" y="515" width="120" height="30" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-34" value="understandQuery" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="420" y="515" width="120" height="30" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-36" value="LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;fontSize=14;" vertex="1" parent="1">
+  <mxGeometry x="490" y="620" width="120" height="30" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-37" value="searchAPI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="790" y="620" width="120" height="30" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-38" value="Google Search" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="700" y="695" width="120" height="35" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-39" value="Exa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="840" y="695" width="120" height="35" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-40" value="OpenAI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="300" y="695" width="120" height="35" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-41" value="DeepSeek" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="430" y="695" width="120" height="35" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-42" value="Anthropic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;fontSize=13;" vertex="1" parent="1">
+  <mxGeometry x="567" y="695" width="120" height="35" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-53" value="Plan System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;fontSize=14;" vertex="1" parent="1">
+  <mxGeometry x="910" y="250" width="120" height="60" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-58" value="Plan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;fontSize=14;" vertex="1" parent="1">
+  <mxGeometry x="1160" y="250" width="120" height="60" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-68" value="User Query" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;fontSize=14;" vertex="1" parent="1">
+  <mxGeometry x="80" y="50" width="120" height="60" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-69" value="A2A Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;fontSize=14;" vertex="1" parent="1">
+  <mxGeometry x="330" y="50" width="120" height="60" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-84" value="Quantum-Enhanced&lt;br&gt;Neural Core" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;gradientColor=#7ea6e0;gradientDirection=north;fontSize=14;fontStyle=1;shadow=1;" vertex="1" parent="1">
+  <mxGeometry x="490" y="350" width="120" height="120" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-85" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;" vertex="1" parent="1">
+  <mxGeometry x="170" y="130" width="760" height="100" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-87" value="AR/VR Interface" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;gradientColor=#ea6b66;shadow=1;" vertex="1" parent="1">
+  <mxGeometry x="200" y="170" width="120" height="40" as="geometry" />
+</mxCell>
+<mxCell id="annotation3" value="查询理解模块" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontStyle=2" vertex="1" parent="1">
+  <mxGeometry x="420" y="490" width="120" height="20" as="geometry" />
+</mxCell>
+<mxCell id="annotation4" value="多模态交互层" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontStyle=2" vertex="1" parent="1">
+  <mxGeometry x="740" y="140" width="120" height="20" as="geometry" />
+</mxCell>
+<mxCell id="annotation5" value="核心规划系统" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontStyle=2" vertex="1" parent="1">
+  <mxGeometry x="910" y="230" width="120" height="20" as="geometry" />
+</mxCell>
+<mxCell id="annotation6" value="内存储存系统" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontStyle=2" vertex="1" parent="1">
+  <mxGeometry x="360" y="230" width="120" height="20" as="geometry" />
+</mxCell>
+<mxCell id="annotation7" value="大语言模型引擎" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontStyle=2" vertex="1" parent="1">
+  <mxGeometry x="490" y="600" width="120" height="20" as="geometry" />
+</mxCell>
+<mxCell id="annotation8" value="多工具模块" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontStyle=2" vertex="1" parent="1">
+  <mxGeometry x="640" y="360" width="120" height="20" as="geometry" />
+</mxCell>
+<mxCell id="annotation9" value="搜索引擎API" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontStyle=2" vertex="1" parent="1">
+  <mxGeometry x="790" y="600" width="120" height="20" as="geometry" />
+</mxCell>
+<mxCell id="annotation10" value="数据流" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=1 4;strokeColor=#666666;strokeWidth=1.5;fontSize=10;fontColor=#666666;" edge="1" parent="1">
+  <mxGeometry x="-0.2" y="10" relative="1" as="geometry">
+    <mxPoint x="550" y="310" as="sourcePoint" />
+    <mxPoint x="550" y="350" as="targetPoint" />
+    <mxPoint as="offset" />
+  </mxGeometry>
+</mxCell>
+<mxCell id="annotation11" value="智能体调用链路" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#0066CC;strokeWidth=1.5;fontSize=10;fontColor=#0066CC;" edge="1" parent="1">
+  <mxGeometry x="-0.2" y="15" relative="1" as="geometry">
+    <mxPoint x="820" y="110" as="sourcePoint" />
+    <mxPoint x="820" y="160" as="targetPoint" />
+    <mxPoint as="offset" />
+  </mxGeometry>
+</mxCell>
+<mxCell id="decorative1" value="" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/phosphor-thin-vol-3/256/brain-thin-128.png;imageBackground=none;imageBorder=none;" vertex="1" parent="1">
+  <mxGeometry x="530" y="770" width="40" height="40" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-127" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#3333FF;" vertex="1" parent="1">
+  <mxGeometry x="890" y="610" width="60" height="20" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-128" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;gradientColor=#7ea6e0;shadow=1;" vertex="1" parent="1">
+  <mxGeometry x="850" y="640" width="20" height="20" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-130" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;gradientColor=#97d077;shadow=1;" vertex="1" parent="1">
+  <mxGeometry x="850" y="670" width="20" height="20" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-132" value="" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=5;fillColor=#fff2cc;strokeColor=#d6b656;gradientColor=#ffd966;shadow=1;" vertex="1" parent="1">
+  <mxGeometry x="850" y="700" width="20" height="20" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-134" value="" style="endArrow=classic;html=1;rounded=0;dashed=1;strokeColor=#0066CC;strokeWidth=1.5;" vertex="1" parent="1">
+  <mxGeometry width="50" height="50" relative="1" as="geometry">
+    <mxPoint x="850" y="730" as="sourcePoint" />
+    <mxPoint x="870" y="730" as="targetPoint" />
+  </mxGeometry>
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-135" value="Data Flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#0066CC;" vertex="1" parent="1">
+  <mxGeometry x="880" y="720" width="120" height="20" as="geometry" />
+</mxCell>
+<mxCell id="XFK2erzewz39Rjy_n4-n-136" value="Next-Generation AI Architecture with Quantum Computing, Federated Learning, &lt;br&gt;Neural-Symbolic Integration, and Hyperdimensional Computing" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#3333FF;fontStyle=1" vertex="1" parent="1">
+  <mxGeometry x="295" y="760" width="510" height="30" as="geometry" />
+</mxCell>
+<mxCell id="decorative2" value="" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0.6;dx=40;direction=north;notch=0;fillColor=#dae8fc;strokeColor=#6c8ebf;gradientColor=#7ea6e0;opacity=50;" vertex="1" parent="1">
+  <mxGeometry x="870" y="250" width="30" height="100" as="geometry" />
+</mxCell>
+<mxCell id="frame1" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#3333FF;strokeWidth=2;fillColor=none;dashed=1;dashPattern=1 4;opacity=50;" vertex="1" parent="1">
+  <mxGeometry x="40" y="30" width="1290" height="810" as="geometry" />
+</mxCell>
+<mxCell id="watermark" value="© Sofia AI" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;fontStyle=1;fontColor=#E6E6E6;opacity=10;" vertex="1" parent="1">
+  <mxGeometry x="400" y="430" width="300" height="30" as="geometry" />
+</mxCell>
