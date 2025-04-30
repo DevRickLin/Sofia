@@ -71,9 +71,9 @@ S.O.F.I.A. now includes Google search functionality using SerpApi, which can per
 
 ## Overview
 
-S.O.F.I.A. is a agent system built with the following technologies:
+S.O.F.I.A. is an agent system built with the following technologies:
 
-- [LangGraph](https://github.com/langchain-ai/langgraph) for agent workflow
+- [Agno](https://github.com/agnostack/agno) for agent workflow and orchestration
 - [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol) for tool management
 - [Agent2Agent Protocol (A2A)](https://github.com/google/A2A) for agent communication and interoperability
 
@@ -169,7 +169,7 @@ python script/start.py --debug
 
 This agent uses:
 
-- LangGraph for agent orchestration
+- Agno for agent orchestration and workflow management
 - OpenAI models for language processing
 - A2A protocol for communication
 - Environment variables for configuration
@@ -178,7 +178,7 @@ This agent uses:
 
 The system consists of the following main parts within their respective directories:
 
-- **Agent Service (`services/agent-service/agent`)**: A LangGraph-based intelligent agent.
+- **Agent Service (`services/agent-service/agent`)**: An Agno-based intelligent agent.
 - **MCP Tools (`services/agent-service/mcp_tools`)**: Contains tools like the Arithmetic Tool.
 - **Common Utilities (`common/`)**: Includes shared code, such as the A2A protocol implementation.
 - **CLI Client (`ui/cli`)**: Example command-line client for interacting with services.
@@ -203,7 +203,7 @@ Located in `services/agent-service/mcp_tools/arithmetic_tool`. A simple MCP tool
 
 ### Agent
 
-Located in `services/agent-service/agent`. A simple agent built with LangGraph that can process messages and use the arithmetic tool to perform calculations.
+Located in `services/agent-service/agent`. A simple agent built with Agno that can process messages and use the arithmetic tool to perform calculations.
 
 ### Client
 

@@ -26,7 +26,7 @@
 
 S.O.F.I.A. (Search-Oriented Functional Intelligence Agent) is a modular, search-centric AI agent framework designed to integrate structured information flow and intelligent decision-making. The system is built on the following key technologies:
 
-- **LangGraph**: For agent workflow orchestration
+- **Agno**: For agent workflow orchestration
 - **Model Context Protocol (MCP)**: For tool management
 - **Agent2Agent Protocol (A2A)**: For agent communication and interoperability
 
@@ -43,129 +43,78 @@ The system provides various functionalities, including but not limited to:
 
 S.O.F.I.A. is designed with a microservices architecture, consisting of the following main components:
 
-```
-┌─────────────┐       ┌───────────────┐       ┌────────────────┐
-│             │       │               │       │                │
-│   Client    │◄─────►│  Agent Service │◄─────►│  MCP Tool Services │
-│  (Web/CLI)  │       │               │       │                │
-│             │       │               │       │                │
-└─────────────┘       └───────────────┘       └────────────────┘
-                           ▲                        ▲
-                           │                        │
-                           ▼                        │
-                      ┌───────────┐                 │
-                      │           │                 │
-                      │   Memory  │                 │
-                      │  Storage  │                 │
-                      │           │                 │
-                      └───────────┘                 │
-                                                    │
-                                                    ▼
-                                            ┌─────────────────┐
-                                            │                 │
-                                            │  External APIs  │
-                                            │ (OpenAI/SerpApi)│
-                                            │                 │
-                                            └─────────────────┘
+```mermaid
+graph TD
+    Client[Client<br/>(Web/CLI)] <--> AgentService[Agent Service]
+    AgentService <--> MCPToolServices[MCP Tool Services]
+    AgentService <--> MemoryStorage[Memory Storage]
+    MCPToolServices <--> ExternalAPIs[External APIs<br/>(OpenAI/SerpApi)]
 ```
 
 ### Layered Architecture Diagram
 
 S.O.F.I.A. system adopts a clear layered architecture, ensuring separation of concerns and maintainability:
 
-```
-┌───────────────────────────────────────────────────────────────┐
-│                    Presentation Layer                          │
-│                                                               │
-│  ┌─────────────┐                             ┌─────────────┐  │
-│  │  Web Interface  │                             │  CLI Interface  │  │
-│  └─────────────┘                             └─────────────┘  │
-└───────────────────────────────────────────────────────────────┘
-                           ▲
-                           │
-                           ▼
-┌───────────────────────────────────────────────────────────────┐
-│                    Communication Layer                         │
-│                                                               │
-│                 ┌─────────────────────────────┐               │
-│                 │      A2A Protocol Implementation            │               │
-│                 └─────────────────────────────┘               │
-└───────────────────────────────────────────────────────────────┘
-                           ▲
-                           │
-                           ▼
-┌───────────────────────────────────────────────────────────────┐
-│                     Business Layer                             │
-│                                                               │
-│  ┌─────────────┐     ┌───────────────┐     ┌─────────────┐    │
-│  │ Agent Service │◄───►│  Tool Management System  │◄───►│  Tool Services   │    │
-│  └─────────────┘     └───────────────┘     └─────────────┘    │
-└───────────────────────────────────────────────────────────────┘
-                           ▲
-                           │
-                           ▼
-┌───────────────────────────────────────────────────────────────┐
-│                      Data Layer                                │
-│                                                               │
-│  ┌─────────────────┐                    ┌────────────────┐    │
-│  │   Memory Storage System   │                    │  External API Integration    │    │
-│  └─────────────────┘                    └────────────────┘    │
-└───────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph "Presentation Layer"
+        WebUI[Web Interface]
+        CLI[CLI Interface]
+    end
+
+    subgraph "Communication Layer"
+        A2A[A2A Protocol Implementation]
+    end
+
+    subgraph "Business Layer"
+        AgentService[Agent Service]
+        ToolManagement[Tool Management System]
+        ToolServices[Tool Services]
+        AgentService <--> ToolManagement
+        ToolManagement <--> ToolServices
+    end
+
+    subgraph "Data Layer"
+        MemoryStorage[Memory Storage System]
+        ExternalAPI[External API Integration]
+    end
+
+    WebUI --- A2A
+    CLI --- A2A
+    A2A --- AgentService
+    MemoryStorage --- AgentService
+    ExternalAPI --- ToolServices
 ```
 
 ### Swimlane Diagram
 
 Below is a swimlane diagram of the user request processing flow, showing the interactions between system components:
 
-```
-┌──────────┐          ┌──────────┐          ┌───────────┐          ┌───────────┐          ┌──────────┐
-│  Client   │          │  A2A Service  │          │  Agent    │          │  MCP Tool   │          │  External API  │
-└────┬─────┘          └────┬─────┘          └─────┬─────┘          └─────┬─────┘          └────┬─────┘
-     │                     │                      │                      │                     │
-     │ Send Query Request         │                      │                      │                     │
-     │ ─────────────────►  │                      │                      │                     │
-     │                     │                      │                      │                     │
-     │                     │ Parse Request and            │                      │                     │
-     │                     │ Forward to Agent          │                      │                     │
-     │                     │ ─────────────────►   │                      │                     │
-     │                     │                      │                      │                     │
-     │                     │                      │ Process Request             │                      │
-     │                     │                      │ ──────┐              │                     │
-     │                     │                      │       │              │                     │
-     │                     │                      │ ◄─────┘              │                     │
-     │                     │                      │                      │                     │
-     │                     │                      │ Need Tool Support          │                     │
-     │                     │                      │ ─────────────────►   │                     │
-     │                     │                      │                      │                     │
-     │                     │                      │                      │ Process Tool Request         │
-     │                     │                      │                      │ ──────┐             │
-     │                     │                      │                      │       │             │
-     │                     │                      │                      │ ◄─────┘             │
-     │                     │                      │                      │                     │
-     │                     │                      │                      │ Call External API          │
-     │                     │                      │                      │ ─────────────────►  │
-     │                     │                      │                      │                     │ Process API Request
-     │                     │                      │                      │                     │ ──────┐
-     │                     │                      │                      │                     │       │
-     │                     │                      │                      │                     │ ◄─────┘
-     │                     │                      │                      │                     │
-     │                     │                      │                      │ ◄─────────────────  │
-     │                     │                      │                      │ Return API Results          │
-     │                     │                      │                      │                     │
-     │                     │                      │ ◄─────────────────   │                     │
-     │                     │                      │ Return Tool Results          │                     │
-     │                     │                      │                      │                     │
-     │                     │                      │ Generate Final Response          │                     │
-     │                     │                      │ ──────┐              │                     │
-     │                     │                      │       │              │                     │
-     │                     │                      │ ◄─────┘              │                     │
-     │                     │                      │                      │                     │
-     │                     │ ◄─────────────────   │                      │                     │
-     │                     │ Return Agent Response        │                      │                     │
-     │                     │                      │                      │                     │
-     │ ◄─────────────────  │                      │                      │                     │
-     │ Display Response to User        │                      │                      │                     │
-     │                     │                      │                      │                     │
+```mermaid
+sequenceDiagram
+    participant Client
+    participant A2AService as A2A Service
+    participant Agent
+    participant MCPTool as MCP Tool
+    participant ExternalAPI as External API
+    
+    Client->>A2AService: Send Query Request
+    A2AService->>Agent: Parse Request and Forward to Agent
+    
+    Agent->>Agent: Process Request
+    
+    Agent->>MCPTool: Need Tool Support
+    MCPTool->>MCPTool: Process Tool Request
+    
+    MCPTool->>ExternalAPI: Call External API
+    ExternalAPI->>ExternalAPI: Process API Request
+    
+    ExternalAPI->>MCPTool: Return API Results
+    MCPTool->>Agent: Return Tool Results
+    
+    Agent->>Agent: Generate Final Response
+    Agent->>A2AService: Return Agent Response
+    A2AService->>Client: Display Response to User
 ```
 
 ## Key Protocols
@@ -212,7 +161,7 @@ Agent Service is the core component of the S.O.F.I.A. system, responsible for pr
 - Coordinate MCP tool calls
 - Generate responses to user queries
 
-The Agent Service is built on LangGraph, using LLMs (typically OpenAI's GPT models) to understand queries, execute tool calls, and synthesize responses.
+The Agent Service is built on Agno, using LLMs (typically OpenAI's GPT models) to understand queries, execute tool calls, and synthesize responses.
 
 ### MCP Tool Services
 
@@ -272,7 +221,7 @@ The main technology stack used by the S.O.F.I.A. system includes:
 **Backend**:
 
 - Python
-- LangGraph: Agent workflow orchestration
+- Agno: Agent workflow orchestration
 - FastMCP: MCP tool implementation
 - SQLite: Memory storage
 - OpenAI API: LLM integration
