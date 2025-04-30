@@ -45,10 +45,10 @@ S.O.F.I.A. is designed with a microservices architecture, consisting of the foll
 
 ```mermaid
 graph TD
-    Client[Client<br/>(Web/CLI)] <--> AgentService[Agent Service]
-    AgentService <--> MCPToolServices[MCP Tool Services]
-    AgentService <--> MemoryStorage[Memory Storage]
-    MCPToolServices <--> ExternalAPIs[External APIs<br/>(OpenAI/SerpApi)]
+    Client["Client (Web/CLI)"] --- AgentService["Agent Service"]
+    AgentService --- MCPToolServices["MCP Tool Services"]
+    AgentService --- MemoryStorage["Memory Storage"]
+    MCPToolServices --- ExternalAPIs["External APIs (OpenAI/SerpApi)"]
 ```
 
 ### Layered Architecture Diagram
@@ -58,25 +58,25 @@ S.O.F.I.A. system adopts a clear layered architecture, ensuring separation of co
 ```mermaid
 graph TD
     subgraph "Presentation Layer"
-        WebUI[Web Interface]
-        CLI[CLI Interface]
+        WebUI["Web Interface"]
+        CLI["CLI Interface"]
     end
 
     subgraph "Communication Layer"
-        A2A[A2A Protocol Implementation]
+        A2A["A2A Protocol Implementation"]
     end
 
     subgraph "Business Layer"
-        AgentService[Agent Service]
-        ToolManagement[Tool Management System]
-        ToolServices[Tool Services]
-        AgentService <--> ToolManagement
-        ToolManagement <--> ToolServices
+        AgentService["Agent Service"]
+        ToolManagement["Tool Management System"]
+        ToolServices["Tool Services"]
+        AgentService --- ToolManagement
+        ToolManagement --- ToolServices
     end
 
     subgraph "Data Layer"
-        MemoryStorage[Memory Storage System]
-        ExternalAPI[External API Integration]
+        MemoryStorage["Memory Storage System"]
+        ExternalAPI["External API Integration"]
     end
 
     WebUI --- A2A
