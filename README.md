@@ -4,9 +4,16 @@
   <img src="ui/web2/imgs/sofia_logo.png" alt="Sofia Logo" width="400">
 </p>
 
-**Search-Oriented Functional Intelligence Agent**
+**Sofia: Turn Chaos into Clarity in Just a Few Clicks**
 
-> A modular, search-centric AI agent framework designed to integrate structured information flow and intelligent decision-making.
+Sofia transforms how you research, learn, and organize information by turning scattered content into visual knowledge maps that make sense.
+
+## What Makes Sofia Different
+
+- **Smart Visual Maps:** Turns complex information into interactive knowledge maps instead of endless text
+- **Organized Conversations:** Each topic gets its own thread - no more scrolling through mixed conversations
+- **Automatic Updates:** Tracks topics you care about and adds new information to your maps automatically
+- **Focused Insights:** Quickly see what matters with AI-generated summaries for each information node
 
 ## Search Functionality Description
 
