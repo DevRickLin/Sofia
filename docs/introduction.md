@@ -42,34 +42,80 @@ S.O.F.I.A. (Search-Oriented Functional Intelligence Agent) is an advanced AI-pow
 
 ## Technical Architecture:
 - **Agent Service**: Core component using Agno for agent orchestration.
-- **MCP Tool Services**: Specialized tools including Arithmetic Tool and Search Tool.
+- **MCP Tool Services**: Specialized tools including Search Tool.
 - **A2A Protocol Implementation**: Enables seamless communication between agents.
 - **Multiple User Interfaces**: CLI for quick testing and development, Web interface for rich graphical interaction.
 
 ## Workflow Diagram:
 ```mermaid
 sequenceDiagram
-    participant Client
+    participant User
+    participant WebUI as Web Interface
     participant A2AService as A2A Service
-    participant Agent
-    participant MCPTool as MCP Tool
-    participant ExternalAPI as External API
+    participant Sofia as SOFIA Agent
+    participant SearchTool as Search Tool
+    participant ExaAPI as Exa API
+    participant OpenAI as OpenAI API
     
-    Client->>A2AService: Send Query Request
-    A2AService->>Agent: Parse Request and Forward to Agent
+    User->>WebUI: "I need to understand NFT market trends for digital art"
+    WebUI->>A2AService: Send research query
+    A2AService->>Sofia: Forward query to agent
     
-    Agent->>Agent: Process Request
+    Sofia->>Sofia: Analyze initial query
+    Sofia->>SearchTool: Call guide_user_detail(query="NFT market trends for digital art")
+    SearchTool->>OpenAI: Process prompt with specific guidance questions
+    OpenAI->>SearchTool: Return generated guidance
+    SearchTool->>Sofia: Return specific questions for clarification
     
-    Agent->>MCPTool: Need Tool Support
-    MCPTool->>MCPTool: Process Tool Request
+    Sofia->>A2AService: Ask for specific details about the query
+    A2AService->>WebUI: Display clarification questions
+    WebUI->>User: "Could you specify: 1) Time period of interest? 2) Geographic regions? 3) Price ranges? 4) Specific art styles or categories?"
     
-    MCPTool->>ExternalAPI: Call External API
-    ExternalAPI->>ExternalAPI: Process API Request
+    User->>WebUI: "Last 6 months, global market, focusing on generative AI art"
+    WebUI->>A2AService: Send refined query
+    A2AService->>Sofia: Forward refined details
     
-    ExternalAPI->>MCPTool: Return API Results
-    MCPTool->>Agent: Return Tool Results
+    Sofia->>SearchTool: Call split_query_to_dimension(query="NFT market trends for digital art, last 6 months, global market, generative AI art")
+    SearchTool->>OpenAI: Process prompt with dimensional analysis
+    OpenAI->>SearchTool: Return JSON with multiple dimensions
+    SearchTool->>Sofia: Return structured dimensions for search
+    Note over Sofia,SearchTool: Dimensions: Market statistics, Pricing trends, Popular platforms, Artist success factors, Technological innovations
     
-    Agent->>Agent: Generate Final Response
-    Agent->>A2AService: Return Agent Response
-    A2AService->>Client: Display Response to User
+    par Search across multiple dimensions
+        Sofia->>SearchTool: search_web("NFT market statistics generative AI art last 6 months")
+        SearchTool->>ExaAPI: Execute search request
+        ExaAPI->>SearchTool: Return search results with full text
+        SearchTool->>OpenAI: Generate summary for each result
+        OpenAI->>SearchTool: Return concise 3-5 sentence summaries
+        SearchTool->>Sofia: Return structured search data with summaries
+    and
+        Sofia->>SearchTool: search_web("NFT pricing trends generative AI art global market")
+        SearchTool->>ExaAPI: Execute search request
+        ExaAPI->>SearchTool: Return search results with full text
+        SearchTool->>OpenAI: Generate summary for each result
+        OpenAI->>SearchTool: Return concise 3-5 sentence summaries
+        SearchTool->>Sofia: Return structured search data with summaries
+    and
+        Sofia->>SearchTool: search_web("Popular NFT platforms for generative AI art")
+        SearchTool->>ExaAPI: Execute search request
+        ExaAPI->>SearchTool: Return search results with full text
+        SearchTool->>OpenAI: Generate summary for each result
+        OpenAI->>SearchTool: Return concise 3-5 sentence summaries
+        SearchTool->>Sofia: Return structured search data with summaries
+    end
+    
+    Sofia->>Sofia: Process, filter and organize information
+    Sofia->>Sofia: Create structured knowledge map with links between concepts
+    
+    Sofia->>A2AService: Return comprehensive research results with visual map
+    A2AService->>WebUI: Display interactive knowledge map
+    WebUI->>User: Present interactive knowledge map showing:
+    Note over WebUI,User: 1. Market size and growth statistics with sources
+    Note over WebUI,User: 2. Price trend visualization by platform and art category
+    Note over WebUI,User: 3. Platform comparison with pros/cons for generative AI art
+    Note over WebUI,User: 4. Notable generative AI artists and their success patterns
+    Note over WebUI,User: 5. Technical innovations driving the market
+    
+    User->>WebUI: Click on "Platform comparison" node
+    WebUI->>User: Expand detailed platform data with source links
 ```
