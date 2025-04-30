@@ -55,8 +55,10 @@ export default function SidePanel({
 }: SidePanelProps) {
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [upperSectionHeight, setUpperSectionHeight] = useState(60); // Percentage height for upper section
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const isDraggingRef = useRef(false);
 
   // Get current chat history for the selected node
   const currentChatHistory = node ? chatHistories[node.id] || [] : [];
@@ -73,6 +75,33 @@ export default function SidePanel({
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // Handle resize drag
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDraggingRef.current || !containerRef.current) return;
+      
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const containerHeight = containerRect.height;
+      const relativeY = moveEvent.clientY - containerRect.top;
+      
+      // Calculate percentage (clamped between 20% and 80%)
+      const percentage = Math.max(20, Math.min(80, (relativeY / containerHeight) * 100));
+      setUpperSectionHeight(percentage);
+    };
+    
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
   if (!node) return null;
 
@@ -132,8 +161,8 @@ export default function SidePanel({
           <motion.div 
             className="p-4 overflow-y-auto"
             style={{
-              height: isChatOpen ? undefined : `calc(100% - ${buttonHeight}px)`,
-              flex: isChatOpen ? 1 : undefined
+              height: isChatOpen ? `${upperSectionHeight}%` : `calc(100% - ${buttonHeight}px)`,
+              flex: isChatOpen ? undefined : undefined
             }}
             transition={{ duration: 0.3 }}
           >
@@ -273,7 +302,18 @@ export default function SidePanel({
               )}
             </div>
           </motion.div>
-          <div className={`border-t border-gray-200 ${isChatOpen ? 'flex flex-col' : ''}`}>
+          
+          {/* Resizable handle */}
+          {isChatOpen && (
+            <div 
+              className="h-2 bg-gray-100 hover:bg-gray-300 cursor-ns-resize flex items-center justify-center"
+              onMouseDown={handleResizeStart}
+            >
+              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            </div>
+          )}
+
+          <div className={`${isChatOpen ? 'flex flex-col flex-1' : ''} border-t border-gray-200`}>
             <button
               ref={buttonRef}
               type="button"
@@ -316,10 +356,10 @@ export default function SidePanel({
               {isChatOpen && node && (
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "300px" }}
+                  animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="p-4 border-t border-gray-200 bg-gray-50 overflow-y-auto"
+                  className="p-4 border-t border-gray-200 bg-gray-50 overflow-y-auto flex-1"
                 >
                   <ChatHistory
                     history={currentChatHistory}
