@@ -1,385 +1,385 @@
-# S.O.F.I.A. 组件设计文档
+# S.O.F.I.A. Component Design Document
 
-## 目录
-1. [概述](#概述)
-2. [前端组件](#前端组件)
-   - [Web界面](#web界面)
-   - [CLI界面](#cli界面)
-3. [服务层组件](#服务层组件)
-   - [Agent服务](#agent服务)
-   - [A2A服务器](#a2a服务器)
-   - [任务管理器](#任务管理器)
-4. [工具组件](#工具组件)
-   - [算术工具](#算术工具)
-   - [搜索工具](#搜索工具)
-5. [数据存储组件](#数据存储组件)
-   - [记忆存储](#记忆存储)
-   - [会话存储](#会话存储)
-6. [通用组件](#通用组件)
-   - [A2A协议实现](#a2a协议实现)
-   - [MCP配置管理](#mcp配置管理)
-7. [组件间交互](#组件间交互)
+## Table of Contents
+1. [Overview](#overview)
+2. [Frontend Components](#frontend-components)
+   - [Web Interface](#web-interface)
+   - [CLI Interface](#cli-interface)
+3. [Service Layer Components](#service-layer-components)
+   - [Agent Service](#agent-service)
+   - [A2A Server](#a2a-server)
+   - [Task Manager](#task-manager)
+4. [Tool Components](#tool-components)
+   - [Arithmetic Tool](#arithmetic-tool)
+   - [Search Tool](#search-tool)
+5. [Data Storage Components](#data-storage-components)
+   - [Memory Storage](#memory-storage)
+   - [Session Storage](#session-storage)
+6. [Common Components](#common-components)
+   - [A2A Protocol Implementation](#a2a-protocol-implementation)
+   - [MCP Configuration Management](#mcp-configuration-management)
+7. [Component Interactions](#component-interactions)
 
-## 概述
+## Overview
 
-S.O.F.I.A.系统采用模块化设计，由多个独立组件组成，每个组件负责特定的功能。组件之间通过定义良好的接口进行通信，确保松耦合、可维护和可扩展。
+The S.O.F.I.A. system adopts a modular design, composed of multiple independent components, each responsible for specific functions. Components communicate through well-defined interfaces, ensuring loose coupling, maintainability, and extensibility.
 
-## 前端组件
+## Frontend Components
 
-### Web界面
+### Web Interface
 
-**位置**: `ui/web`
+**Location**: `ui/web`
 
-**技术栈**: Next.js, React, TypeScript, Tailwind CSS
+**Technology Stack**: Next.js, React, TypeScript, Tailwind CSS
 
-**主要职责**:
-- 提供用户友好的图形界面
-- 处理用户输入
-- 显示代理响应
-- 管理用户会话
+**Main Responsibilities**:
+- Provide a user-friendly graphical interface
+- Handle user input
+- Display agent responses
+- Manage user sessions
 
-**主要组件**:
+**Key Components**:
 
 1. **ChatInterface** (`src/components/Chat/`):
-   - 处理消息输入和显示
-   - 支持流式响应
-   - 管理聊天历史记录
+   - Handle message input and display
+   - Support streaming responses
+   - Manage chat history
 
 2. **A2AClient** (`src/api/a2aClient.ts`):
-   - 实现A2A协议客户端
-   - 处理与代理服务的通信
+   - Implement A2A protocol client
+   - Handle communication with agent services
 
-3. **状态管理** (`src/stores/`):
-   - 使用状态管理库维护应用状态
-   - 管理会话、消息和用户偏好
+3. **State Management** (`src/stores/`):
+   - Maintain application state using state management libraries
+   - Manage sessions, messages, and user preferences
 
-**设计考量**:
-- 响应式设计，适应不同设备
-- 组件化架构，便于重用和测试
-- 支持流式响应，提高用户体验
-- 清晰的状态管理，确保UI一致性
+**Design Considerations**:
+- Responsive design, adapting to different devices
+- Component-based architecture for reuse and testing
+- Support for streaming responses to improve user experience
+- Clear state management to ensure UI consistency
 
-### CLI界面
+### CLI Interface
 
-**位置**: `ui/cli`
+**Location**: `ui/cli`
 
-**技术栈**: Python
+**Technology Stack**: Python
 
-**主要职责**:
-- 提供命令行接口
-- 处理用户命令和查询
-- 显示代理响应
-- 支持简单的脚本自动化
+**Main Responsibilities**:
+- Provide command-line interface
+- Handle user commands and queries
+- Display agent responses
+- Support simple script automation
 
-**主要组件**:
+**Key Components**:
 
-1. **Client类** (`src/client.py`):
-   - 处理命令行参数
-   - 实现A2A协议客户端
-   - 处理与代理服务的通信
+1. **Client Class** (`src/client.py`):
+   - Handle command-line arguments
+   - Implement A2A protocol client
+   - Handle communication with agent services
 
 2. **CommandProcessor**:
-   - 解析用户命令
-   - 调用相应的A2A客户端方法
-   - 处理命令行输出格式
+   - Parse user commands
+   - Call corresponding A2A client methods
+   - Handle command-line output formatting
 
-**设计考量**:
-- 简单直观的命令格式
-- 良好的错误处理和用户反馈
-- 支持交互式和批处理模式
-- 最小依赖，易于安装和使用
+**Design Considerations**:
+- Simple and intuitive command format
+- Good error handling and user feedback
+- Support for interactive and batch processing modes
+- Minimal dependencies, easy to install and use
 
-## 服务层组件
+## Service Layer Components
 
-### Agent服务
+### Agent Service
 
-**位置**: `services/agent-service/agent`
+**Location**: `services/agent-service/agent`
 
-**技术栈**: Python, LangGraph, OpenAI API
+**Technology Stack**: Python, LangGraph, OpenAI API
 
-**主要职责**:
-- 处理和理解用户查询
-- 管理用户记忆和历史
-- 协调和调用MCP工具
-- 生成响应
+**Main Responsibilities**:
+- Process and understand user queries
+- Manage user memories and history
+- Coordinate and call MCP tools
+- Generate responses
 
-**主要组件**:
+**Key Components**:
 
-1. **SofiaAgent类** (`src/main.py`):
-   - 初始化和管理LLM模型
-   - 处理用户消息
-   - 协调工具调用
-   - 管理记忆存储
-   - 生成回复
+1. **SofiaAgent Class** (`src/main.py`):
+   - Initialize and manage LLM models
+   - Process user messages
+   - Coordinate tool calls
+   - Manage memory storage
+   - Generate replies
 
-2. **记忆管理方法**:
+2. **Memory Management Methods**:
    - `add_user_memory`
    - `delete_user_memory`
    - `replace_user_memory`
    - `search_user_memories`
    - `clear_all_memories`
 
-3. **响应处理方法**:
-   - `invoke`: 处理单一响应
-   - `stream`: 处理流式响应
+3. **Response Processing Methods**:
+   - `invoke`: Handle single responses
+   - `stream`: Handle streaming responses
 
-**设计考量**:
-- 可配置的LLM模型选择
-- 健壮的错误处理
-- 灵活的工具集成
-- 高效的记忆管理
-- 支持流式处理
+**Design Considerations**:
+- Configurable LLM model selection
+- Robust error handling
+- Flexible tool integration
+- Efficient memory management
+- Support for streaming processing
 
-### A2A服务器
+### A2A Server
 
-**位置**: `common/server/server.py`
+**Location**: `common/server/server.py`
 
-**技术栈**: Python, FastAPI, SSE
+**Technology Stack**: Python, FastAPI, SSE
 
-**主要职责**:
-- 处理来自客户端的A2A请求
-- 将请求转发给Agent处理
-- 管理SSE连接
-- 处理任务生命周期
+**Main Responsibilities**:
+- Handle A2A requests from clients
+- Forward requests to Agent for processing
+- Manage SSE connections
+- Handle task lifecycle
 
-**主要组件**:
+**Key Components**:
 
-1. **A2AServer类**:
-   - 设置FastAPI应用
-   - 注册请求处理路由
-   - 管理SSE连接
-   - 处理A2A协议消息
+1. **A2AServer Class**:
+   - Set up FastAPI application
+   - Register request handling routes
+   - Manage SSE connections
+   - Handle A2A protocol messages
 
-2. **路由处理器**:
-   - `/agent-card`: 返回代理卡片信息
-   - `/tasks/send`: 处理任务请求
-   - `/tasks/send/stream`: 处理流式任务请求
-   - `/tasks/{task_id}`: 获取任务状态
+2. **Route Handlers**:
+   - `/agent-card`: Return agent card information
+   - `/tasks/send`: Handle task requests
+   - `/tasks/send/stream`: Handle streaming task requests
+   - `/tasks/{task_id}`: Get task status
 
-**设计考量**:
-- 符合A2A协议规范
-- 高效的异步处理
-- 健壮的错误处理
-- 支持长连接和SSE
+**Design Considerations**:
+- Compliance with A2A protocol specifications
+- Efficient asynchronous processing
+- Robust error handling
+- Support for long connections and SSE
 
-### 任务管理器
+### Task Manager
 
-**位置**: `common/server/task_manager.py`
+**Location**: `common/server/task_manager.py`
 
-**技术栈**: Python
+**Technology Stack**: Python
 
-**主要职责**:
-- 创建和跟踪任务
-- 更新任务状态
-- 存储任务历史
-- 管理任务生命周期
+**Main Responsibilities**:
+- Create and track tasks
+- Update task status
+- Store task history
+- Manage task lifecycle
 
-**主要组件**:
+**Key Components**:
 
-1. **TaskManager类**:
-   - `create_task`: 创建新任务
-   - `update_task_status`: 更新任务状态
-   - `get_task`: 获取任务信息
-   - `add_artifact`: 添加任务产物
-   - `add_message_to_history`: 更新任务历史
+1. **TaskManager Class**:
+   - `create_task`: Create new tasks
+   - `update_task_status`: Update task status
+   - `get_task`: Get task information
+   - `add_artifact`: Add task artifacts
+   - `add_message_to_history`: Update task history
 
-2. **内部存储**:
-   - 使用内存或持久化存储任务信息
-   - 维护任务索引和查询能力
+2. **Internal Storage**:
+   - Use memory or persistent storage for task information
+   - Maintain task indexing and query capabilities
 
-**设计考量**:
-- 线程安全的操作
-- 高效的任务查询
-- 支持持久化存储选项
-- 清晰的错误处理
+**Design Considerations**:
+- Thread-safe operations
+- Efficient task querying
+- Support for persistent storage options
+- Clear error handling
 
-## 工具组件
+## Tool Components
 
-### 算术工具
+### Arithmetic Tool
 
-**位置**: `services/mcp-service/arithmetic/arithmetic_server.py`
+**Location**: `services/mcp-service/arithmetic/arithmetic_server.py`
 
-**技术栈**: Python, FastMCP
+**Technology Stack**: Python, FastMCP
 
-**主要职责**:
-- 解析算术表达式
-- 执行基本数学运算
-- 返回结构化结果
+**Main Responsibilities**:
+- Parse arithmetic expressions
+- Perform basic mathematical operations
+- Return structured results
 
-**主要组件**:
+**Key Components**:
 
-1. **计算函数**:
-   - `calculate`: 解析和计算表达式
-   - `parse_arithmetic_expression`: 从文本提取操作和数字
+1. **Calculation Functions**:
+   - `calculate`: Parse and calculate expressions
+   - `parse_arithmetic_expression`: Extract operations and numbers from text
 
-**设计考量**:
-- 支持自然语言表达式
-- 健壮的错误处理
-- 结构化的结果输出
-- 支持多种运算类型
+**Design Considerations**:
+- Support for natural language expressions
+- Robust error handling
+- Structured result output
+- Support for various operation types
 
-### 搜索工具
+### Search Tool
 
-**位置**: `services/mcp-service/search/search_server.py`
+**Location**: `services/mcp-service/search/search_server.py`
 
-**技术栈**: Python, FastMCP, Exa/SerpApi
+**Technology Stack**: Python, FastMCP, Exa/SerpApi
 
-**主要职责**:
-- 执行网络搜索
-- 提取和结构化搜索结果
-- 生成结果摘要
-- 引导用户提供详细信息
+**Main Responsibilities**:
+- Perform web searches
+- Extract and structure search results
+- Generate result summaries
+- Guide users to provide detailed information
 
-**主要组件**:
+**Key Components**:
 
-1. **搜索函数**:
-   - `search_web`: 执行网络搜索
-   - `guide_user_detail`: 引导用户提供详细信息
-   - `split_query_to_dimension`: 将查询分解为多个维度
+1. **Search Functions**:
+   - `search_web`: Perform web searches
+   - `guide_user_detail`: Guide users to provide detailed information
+   - `split_query_to_dimension`: Split queries into multiple dimensions
 
-2. **结果处理函数**:
-   - `_get_summary`: 生成搜索结果摘要
-   - `talk_llm`: 与LLM交互
+2. **Result Processing Functions**:
+   - `_get_summary`: Generate search result summaries
+   - `talk_llm`: Interact with LLM
 
-**设计考量**:
-- 支持多种搜索提供商
-- 结构化的结果格式
-- 智能摘要生成
-- 用户查询引导和优化
+**Design Considerations**:
+- Support for multiple search providers
+- Structured result format
+- Intelligent summary generation
+- User query guidance and optimization
 
-## 数据存储组件
+## Data Storage Components
 
-### 记忆存储
+### Memory Storage
 
-**技术栈**: SQLite, Agno Memory
+**Technology Stack**: SQLite, Agno Memory
 
-**主要职责**:
-- 存储用户记忆
-- 提供语义搜索
-- 管理记忆的生命周期
-- 支持记忆的更新和删除
+**Main Responsibilities**:
+- Store user memories
+- Provide semantic search
+- Manage memory lifecycle
+- Support memory updates and deletions
 
-**主要组件**:
+**Key Components**:
 
-1. **Memory类**:
-   - 基于SQLite的持久化存储
-   - 支持语义搜索和按主题查询
-   - 提供记忆的CRUD操作
+1. **Memory Class**:
+   - SQLite-based persistent storage
+   - Support for semantic search and topic-based queries
+   - Provide CRUD operations for memories
 
-2. **UserMemory模型**:
-   - 存储记忆内容
-   - 关联主题标签
-   - 维护元数据
+2. **UserMemory Model**:
+   - Store memory content
+   - Associate topic tags
+   - Maintain metadata
 
-**设计考量**:
-- 高效的语义搜索
-- 支持持久化存储
-- 灵活的查询能力
-- 清晰的数据模型
+**Design Considerations**:
+- Efficient semantic search
+- Support for persistent storage
+- Flexible query capabilities
+- Clear data model
 
-### 会话存储
+### Session Storage
 
-**技术栈**: SQLite
+**Technology Stack**: SQLite
 
-**主要职责**:
-- 存储会话状态
-- 维护会话历史
-- 支持会话恢复
+**Main Responsibilities**:
+- Store session state
+- Maintain session history
+- Support session recovery
 
-**主要组件**:
+**Key Components**:
 
-1. **SqliteStorage类**:
-   - 提供会话的存储和检索
-   - 支持会话状态的更新
-   - 维护会话历史记录
+1. **SqliteStorage Class**:
+   - Provide session storage and retrieval
+   - Support session state updates
+   - Maintain session history records
 
-**设计考量**:
-- 高效的存储和检索
-- 支持大量会话
-- 会话数据一致性
-- 安全的数据处理
+**Design Considerations**:
+- Efficient storage and retrieval
+- Support for large numbers of sessions
+- Session data consistency
+- Secure data handling
 
-## 通用组件
+## Common Components
 
-### A2A协议实现
+### A2A Protocol Implementation
 
-**位置**: `common/a2a/protocol.py`
+**Location**: `common/a2a/protocol.py`
 
-**技术栈**: Python, Pydantic
+**Technology Stack**: Python, Pydantic
 
-**主要职责**:
-- 定义A2A协议数据模型
-- 提供序列化和反序列化功能
-- 支持协议验证
+**Main Responsibilities**:
+- Define A2A protocol data models
+- Provide serialization and deserialization functionality
+- Support protocol validation
 
-**主要组件**:
+**Key Components**:
 
-1. **协议数据模型**:
-   - `Message`: 代理之间交换的消息
-   - `Task`: 任务表示
-   - `TaskStatus`: 任务状态
-   - `AgentCard`: 代理元数据
-   - `AgentSkill`: 代理能力
+1. **Protocol Data Models**:
+   - `Message`: Messages exchanged between agents
+   - `Task`: Task representation
+   - `TaskStatus`: Task status
+   - `AgentCard`: Agent metadata
+   - `AgentSkill`: Agent capabilities
 
-2. **JSON-RPC模型**:
-   - `JSONRPCRequest`: JSON-RPC请求
-   - `JSONRPCResponse`: JSON-RPC响应
-   - `JSONRPCError`: 错误处理
+2. **JSON-RPC Models**:
+   - `JSONRPCRequest`: JSON-RPC request
+   - `JSONRPCResponse`: JSON-RPC response
+   - `JSONRPCError`: Error handling
 
-**设计考量**:
-- 符合A2A协议规范
-- 强类型验证
-- 易于扩展
-- 良好的错误处理
+**Design Considerations**:
+- Compliance with A2A protocol specifications
+- Strong type validation
+- Easy to extend
+- Good error handling
 
-### MCP配置管理
+### MCP Configuration Management
 
-**位置**: `common/mcp_config.py`
+**Location**: `common/mcp_config.py`
 
-**技术栈**: Python
+**Technology Stack**: Python
 
-**主要职责**:
-- 管理MCP服务器配置
-- 提供工具命令生成
-- 支持工具发现
+**Main Responsibilities**:
+- Manage MCP server configurations
+- Provide tool command generation
+- Support tool discovery
 
-**主要组件**:
+**Key Components**:
 
-1. **配置字典**:
-   - `MCP_SERVERS`: 存储服务器配置
-   - 包括工具命令、参数和传输类型
+1. **Configuration Dictionary**:
+   - `MCP_SERVERS`: Store server configurations
+   - Include tool commands, parameters, and transport types
 
-**设计考量**:
-- 集中式配置管理
-- 灵活的工具定义
-- 支持多种工具类型
-- 易于扩展新工具
+**Design Considerations**:
+- Centralized configuration management
+- Flexible tool definitions
+- Support for multiple tool types
+- Easy to extend with new tools
 
-## 组件间交互
+## Component Interactions
 
-1. **用户-前端交互**:
-   - 用户通过Web或CLI界面输入查询
-   - 前端组件处理输入并创建A2A任务
-   - 前端接收响应并展示给用户
+1. **User-Frontend Interaction**:
+   - Users input queries through Web or CLI interfaces
+   - Frontend components process input and create A2A tasks
+   - Frontend receives responses and displays them to users
 
-2. **前端-服务层交互**:
-   - 前端通过A2A协议发送任务请求
-   - A2A服务器接收请求并转发给Agent
-   - Agent处理请求并返回响应
-   - 任务管理器跟踪任务状态和生命周期
+2. **Frontend-Service Layer Interaction**:
+   - Frontend sends task requests via A2A protocol
+   - A2A server receives requests and forwards them to Agent
+   - Agent processes requests and returns responses
+   - Task manager tracks task status and lifecycle
 
-3. **Agent-工具交互**:
-   - Agent决定需要调用工具
-   - 通过MCP协议调用相应工具
-   - 工具执行操作并返回结果
-   - Agent整合工具结果生成响应
+3. **Agent-Tool Interaction**:
+   - Agent decides it needs to call a tool
+   - Calls the appropriate tool via MCP protocol
+   - Tool executes operations and returns results
+   - Agent integrates tool results to generate responses
 
-4. **Agent-存储交互**:
-   - Agent查询记忆存储获取相关信息
-   - Agent更新记忆存储添加新记忆
-   - 会话存储维护会话状态和历史
+4. **Agent-Storage Interaction**:
+   - Agent queries memory storage for relevant information
+   - Agent updates memory storage to add new memories
+   - Session storage maintains session state and history
 
-5. **工具-外部服务交互**:
-   - 搜索工具调用外部搜索API
-   - 工具处理和转换外部API结果
-   - 工具返回结构化数据给Agent 
+5. **Tool-External Service Interaction**:
+   - Search tool calls external search APIs
+   - Tool processes and transforms external API results
+   - Tool returns structured data to Agent 

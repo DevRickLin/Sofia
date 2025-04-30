@@ -1,28 +1,28 @@
-# S.O.F.I.A. API接口文档
+# S.O.F.I.A. API Documentation
 
-## 目录
-1. [A2A协议接口](#a2a协议接口)
-   - [任务管理接口](#任务管理接口)
-   - [代理发现接口](#代理发现接口)
-2. [MCP工具接口](#mcp工具接口)
-   - [算术工具接口](#算术工具接口)
-   - [搜索工具接口](#搜索工具接口)
-3. [内存管理接口](#内存管理接口)
-4. [错误处理](#错误处理)
+## Table of Contents
+1. [A2A Protocol Interfaces](#a2a-protocol-interfaces)
+   - [Task Management Interfaces](#task-management-interfaces)
+   - [Agent Discovery Interfaces](#agent-discovery-interfaces)
+2. [MCP Tool Interfaces](#mcp-tool-interfaces)
+   - [Arithmetic Tool Interface](#arithmetic-tool-interface)
+   - [Search Tool Interface](#search-tool-interface)
+3. [Memory Management Interfaces](#memory-management-interfaces)
+4. [Error Handling](#error-handling)
 
-## A2A协议接口
+## A2A Protocol Interfaces
 
-Agent2Agent (A2A) 协议提供了标准化的接口，用于不同代理之间的通信。这些接口基于JSON-RPC 2.0规范。
+The Agent2Agent (A2A) protocol provides standardized interfaces for communication between different agents. These interfaces are based on the JSON-RPC 2.0 specification.
 
-### 任务管理接口
+### Task Management Interfaces
 
-#### 发送任务请求
+#### Send Task Request
 
-**端点**: `/tasks/send`
+**Endpoint**: `/tasks/send`
 
-**方法**: POST
+**Method**: POST
 
-**请求格式**:
+**Request Format**:
 ```json
 {
   "jsonrpc": "2.0",
@@ -36,7 +36,7 @@ Agent2Agent (A2A) 协议提供了标准化的接口，用于不同代理之间�
       "parts": [
         {
           "type": "text",
-          "text": "查询内容"
+          "text": "Query content"
         }
       ]
     },
@@ -46,7 +46,7 @@ Agent2Agent (A2A) 协议提供了标准化的接口，用于不同代理之间�
 }
 ```
 
-**响应格式**:
+**Response Format**:
 ```json
 {
   "jsonrpc": "2.0",
@@ -66,13 +66,13 @@ Agent2Agent (A2A) 协议提供了标准化的接口，用于不同代理之间�
 }
 ```
 
-#### 发送流式任务请求
+#### Send Streaming Task Request
 
-**端点**: `/tasks/send/stream`
+**Endpoint**: `/tasks/send/stream`
 
-**方法**: POST (SSE)
+**Method**: POST (SSE)
 
-**请求格式**:
+**Request Format**:
 ```json
 {
   "jsonrpc": "2.0",
@@ -86,7 +86,7 @@ Agent2Agent (A2A) 协议提供了标准化的接口，用于不同代理之间�
       "parts": [
         {
           "type": "text",
-          "text": "查询内容"
+          "text": "Query content"
         }
       ]
     },
@@ -96,25 +96,25 @@ Agent2Agent (A2A) 协议提供了标准化的接口，用于不同代理之间�
 }
 ```
 
-**响应格式** (SSE事件序列):
+**Response Format** (SSE event sequence):
 ```
 event: status
 data: {"id":"task-id-1","status":{"state":"working","timestamp":"2023-04-01T12:00:01Z"},"final":false}
 
 event: artifact
-data: {"id":"task-id-1","artifact":{"parts":[{"type":"text","text":"处理中..."}]}}
+data: {"id":"task-id-1","artifact":{"parts":[{"type":"text","text":"Processing..."}]}}
 
 event: status
 data: {"id":"task-id-1","status":{"state":"completed","timestamp":"2023-04-01T12:00:10Z"},"final":true}
 ```
 
-#### 获取任务状态
+#### Get Task Status
 
-**端点**: `/tasks/${taskId}`
+**Endpoint**: `/tasks/${taskId}`
 
-**方法**: GET
+**Method**: GET
 
-**响应格式**:
+**Response Format**:
 ```json
 {
   "id": "task-id-1",
@@ -126,7 +126,7 @@ data: {"id":"task-id-1","status":{"state":"completed","timestamp":"2023-04-01T12
       "parts": [
         {
           "type": "text",
-          "text": "计算结果是42。"
+          "text": "The calculation result is 42."
         }
       ]
     },
@@ -138,15 +138,15 @@ data: {"id":"task-id-1","status":{"state":"completed","timestamp":"2023-04-01T12
 }
 ```
 
-### 代理发现接口
+### Agent Discovery Interfaces
 
-#### 获取代理卡片信息
+#### Get Agent Card Information
 
-**端点**: `/agent-card`
+**Endpoint**: `/agent-card`
 
-**方法**: GET
+**Method**: GET
 
-**响应格式**:
+**Response Format**:
 ```json
 {
   "name": "SOFIA General Agent",
@@ -169,24 +169,24 @@ data: {"id":"task-id-1","status":{"state":"completed","timestamp":"2023-04-01T12
 }
 ```
 
-## MCP工具接口
+## MCP Tool Interfaces
 
-MCP（Model Context Protocol）工具通过标准化接口暴露其功能，使代理能够调用这些工具执行特定任务。
+MCP (Model Context Protocol) tools expose their functionality through standardized interfaces, allowing agents to call these tools to perform specific tasks.
 
-### 算术工具接口
+### Arithmetic Tool Interface
 
-#### 计算表达式
+#### Calculate Expression
 
-**工具名称**: `calculate`
+**Tool Name**: `calculate`
 
-**输入**:
+**Input**:
 ```json
 {
   "expression": "add 5 and 10"
 }
 ```
 
-**输出**:
+**Output**:
 ```json
 {
   "result": 15,
@@ -195,152 +195,152 @@ MCP（Model Context Protocol）工具通过标准化接口暴露其功能，使�
 }
 ```
 
-### 搜索工具接口
+### Search Tool Interface
 
-#### 引导用户提供详细信息
+#### Guide User for Detailed Information
 
-**工具名称**: `guide_user_detail`
+**Tool Name**: `guide_user_detail`
 
-**输入**:
+**Input**:
 ```json
 {
-  "query": "人工智能"
+  "query": "artificial intelligence"
 }
 ```
 
-**输出**:
+**Output**:
 ```
-为了更好地帮助您查找关于人工智能的信息，我有几个问题：
-1. 您是想了解人工智能的基本概念还是最新发展？
-2. 您对人工智能的哪个具体领域感兴趣？例如，机器学习、自然语言处理或计算机视觉？
-3. 您是出于学术目的、职业发展还是个人兴趣在了解这个话题？
-4. 您希望获得基础入门级的信息还是深入的技术细节？
+To better help you find information about artificial intelligence, I have a few questions:
+1. Are you looking to understand the basic concepts of AI or its latest developments?
+2. Which specific area of AI are you interested in? For example, machine learning, natural language processing, or computer vision?
+3. Are you exploring this topic for academic purposes, career development, or personal interest?
+4. Would you prefer basic introductory information or in-depth technical details?
 ```
 
-#### 将查询分解为多个维度
+#### Split Query into Multiple Dimensions
 
-**工具名称**: `split_query_to_dimension`
+**Tool Name**: `split_query_to_dimension`
 
-**输入**:
+**Input**:
 ```json
 {
-  "query": "什么是强化学习以及它的应用"
+  "query": "What is reinforcement learning and its applications"
 }
 ```
 
-**输出**:
+**Output**:
 ```json
 {
   "dimensions": [
     {
-      "name": "概念定义",
-      "query": "强化学习的基本概念和原理是什么",
-      "explanation": "了解强化学习的核心定义和基础理论"
+      "name": "Concept Definition",
+      "query": "What are the basic concepts and principles of reinforcement learning",
+      "explanation": "Understanding core definitions and fundamental theories of reinforcement learning"
     },
     {
-      "name": "工作机制",
-      "query": "强化学习的工作机制和算法",
-      "explanation": "探索强化学习如何通过奖励机制进行学习"
+      "name": "Working Mechanism",
+      "query": "How reinforcement learning works and its algorithms",
+      "explanation": "Exploring how reinforcement learning learns through reward mechanisms"
     },
     {
-      "name": "应用领域",
-      "query": "强化学习的实际应用领域和案例",
-      "explanation": "研究强化学习在游戏、机器人、自动驾驶等领域的应用"
+      "name": "Application Areas",
+      "query": "Practical application areas and cases of reinforcement learning",
+      "explanation": "Researching applications of reinforcement learning in games, robotics, autonomous driving, etc."
     }
   ]
 }
 ```
 
-#### 网络搜索
+#### Web Search
 
-**工具名称**: `search_web`
+**Tool Name**: `search_web`
 
-**输入**:
+**Input**:
 ```json
 {
-  "query": "2023年人工智能的最新进展"
+  "query": "Latest advances in artificial intelligence in 2023"
 }
 ```
 
-**输出**:
+**Output**:
 ```json
 [
   {
     "url": "https://example.com/ai-advances-2023",
     "id": "result-1",
-    "title": "2023年人工智能领域的重大突破",
+    "title": "Major Breakthroughs in Artificial Intelligence in 2023",
     "score": 0.95,
     "publishedDate": "2023-03-15",
-    "author": "AI研究团队",
-    "text": "2023年，人工智能领域取得了多项重大突破...(内容省略)",
-    "summary": "本文总结了2023年人工智能领域的主要进展，包括大型语言模型的改进、多模态AI的发展以及AI在医疗和气候科学中的应用突破。"
+    "author": "AI Research Team",
+    "text": "In 2023, the field of artificial intelligence achieved several major breakthroughs...(content omitted)",
+    "summary": "This article summarizes the main advances in artificial intelligence in 2023, including improvements in large language models, the development of multimodal AI, and breakthroughs in AI applications in healthcare and climate science."
   },
   {
     "url": "https://example.org/ai-trends-2023",
     "id": "result-2",
-    "title": "2023年AI趋势分析",
+    "title": "AI Trends Analysis for 2023",
     "score": 0.89,
     "publishedDate": "2023-02-20",
-    "author": "技术分析师",
-    "text": "随着计算能力的不断提升和算法的优化...(内容省略)",
-    "summary": "文章分析了2023年AI的主要趋势，强调了AI民主化、特定领域模型的崛起以及AI伦理标准的发展。"
+    "author": "Technology Analyst",
+    "text": "With the continuous improvement of computing power and algorithm optimization...(content omitted)",
+    "summary": "The article analyzes the main AI trends in 2023, highlighting AI democratization, the rise of domain-specific models, and the development of AI ethical standards."
   }
 ]
 ```
 
-## 内存管理接口
+## Memory Management Interfaces
 
-Sofia系统提供内存管理接口，用于存储、检索和管理用户记忆。
+The Sofia system provides memory management interfaces for storing, retrieving, and managing user memories.
 
-### 添加用户记忆
+### Add User Memory
 
-**方法**: `add_user_memory`
+**Method**: `add_user_memory`
 
-**输入**:
+**Input**:
 ```python
 {
-  "content": "用户喜欢科技相关话题",
+  "content": "User enjoys technology-related topics",
   "user_id": "user-123",
-  "topics": ["兴趣", "偏好", "科技"]
+  "topics": ["interests", "preferences", "technology"]
 }
 ```
 
-**输出**:
+**Output**:
 ```python
-"memory-456" # 记忆ID
+"memory-456" # Memory ID
 ```
 
-### 检索用户记忆
+### Retrieve User Memories
 
-**方法**: `search_user_memories`
+**Method**: `search_user_memories`
 
-**输入**:
+**Input**:
 ```python
 {
-  "query": "用户对什么话题感兴趣",
+  "query": "What topics is the user interested in",
   "user_id": "user-123",
   "limit": 5
 }
 ```
 
-**输出**:
+**Output**:
 ```python
 [
   {
     "id": "memory-456",
-    "memory": "用户喜欢科技相关话题",
-    "topics": ["兴趣", "偏好", "科技"],
+    "memory": "User enjoys technology-related topics",
+    "topics": ["interests", "preferences", "technology"],
     "relevance": 0.95
   },
-  # 更多记忆...
+  # More memories...
 ]
 ```
 
-### 删除用户记忆
+### Delete User Memory
 
-**方法**: `delete_user_memory`
+**Method**: `delete_user_memory`
 
-**输入**:
+**Input**:
 ```python
 {
   "user_id": "user-123",
@@ -348,26 +348,26 @@ Sofia系统提供内存管理接口，用于存储、检索和管理用户记忆
 }
 ```
 
-**输出**:
+**Output**:
 ```python
-True # 删除成功
+True # Deletion successful
 ```
 
-## 错误处理
+## Error Handling
 
-S.O.F.I.A API遵循标准的错误处理机制，特别是遵循JSON-RPC 2.0的错误规范。
+S.O.F.I.A API follows standard error handling mechanisms, especially adhering to the JSON-RPC 2.0 error specification.
 
-### 标准错误代码
+### Standard Error Codes
 
-| 错误代码 | 错误消息 | 说明 |
+| Error Code | Error Message | Description |
 |---------|---------|------|
-| -32700 | Invalid JSON payload | 无效的JSON负载 |
-| -32600 | Request payload validation error | 请求负载验证错误 |
-| -32601 | Method not found | 找不到方法 |
-| -32602 | Invalid parameters | 无效的参数 |
-| -32603 | Internal error | 内部错误 |
+| -32700 | Invalid JSON payload | Invalid JSON payload |
+| -32600 | Request payload validation error | Request payload validation error |
+| -32601 | Method not found | Method not found |
+| -32602 | Invalid parameters | Invalid parameters |
+| -32603 | Internal error | Internal error |
 
-### 错误响应示例
+### Error Response Example
 
 ```json
 {
