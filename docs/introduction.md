@@ -119,3 +119,8 @@ sequenceDiagram
     User->>WebUI: Click on "Platform comparison" node
     WebUI->>User: Expand detailed platform data with source links
 ```
+
+## Algorithm Architecture:
+
+![SOFIA Algorithm Architecture](./algorithm.png)
+
