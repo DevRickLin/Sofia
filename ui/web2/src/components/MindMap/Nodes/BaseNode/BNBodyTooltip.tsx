@@ -2,7 +2,7 @@ import type React from "react";
 import { forwardRef, useContext } from "react";
 import { BaseNodeContext } from "./context";
 import { LabeledIcon } from "./LabeledIcon";
-import { CornersIn, CornersOut, Trash } from "@phosphor-icons/react";
+import { CornersIn, CornersOut, Trash, PencilSimple } from "@phosphor-icons/react";
 
 export type BNBodyTooltipType = {
     icon: React.ReactElement;
@@ -16,12 +16,14 @@ export type BNBodyTooltipProps = {
     tools?: BNBodyTooltipType[];
     enableExpand?: boolean;
     enableDelete?: boolean;
+    enableEdit?: boolean;
     nodeId?: string;
     onDelete?: (id: string) => void;
+    onEdit?: (id: string) => void;
 };
 
 export const BNBodyTooltip = forwardRef<HTMLDivElement, BNBodyTooltipProps>(
-    ({ tools, enableExpand, enableDelete, nodeId, onDelete, ...props }, ref) => {
+    ({ tools, enableExpand, enableDelete, enableEdit, nodeId, onDelete, onEdit, ...props }, ref) => {
         const { showTooltip, hideTooltip, isDetailExpanded, setIsDetailExpanded } =
             useContext(BaseNodeContext);
 
@@ -44,6 +46,23 @@ export const BNBodyTooltip = forwardRef<HTMLDivElement, BNBodyTooltipProps>(
                                 event.stopPropagation();
                                 event.preventDefault();
                                 setIsDetailExpanded(!isDetailExpanded);
+                            }}
+                            onMouseEnter={showTooltip}
+                            onMouseLeave={hideTooltip}
+                        />
+                    )}
+                    {enableEdit && onEdit && (
+                        <LabeledIcon
+                            key={2}
+                            icon={<PencilSimple className="text-gray-400 hover:text-blue-600" />}
+                            label="Edit"
+                            forceVisible={false}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                event.preventDefault();
+                                if (nodeId) {
+                                    onEdit(nodeId);
+                                }
                             }}
                             onMouseEnter={showTooltip}
                             onMouseLeave={hideTooltip}

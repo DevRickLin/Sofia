@@ -20,7 +20,6 @@ import { BreakthroughNode } from "./Nodes/BreakthroughNode";
 import Sidebar from "./Sidebar";
 import SidePanel from "./SidePanel";
 import type { NodeChildData } from "./SidePanel";
-import { useTheme } from "../../context/ThemeContext";
 import { useAutoFocus } from "../../context/AutoFocusContext";
 import { useCanvasStore } from "../../store/canvasStore";
 import type { KeyInsight, NodeData } from "./types";
@@ -106,7 +105,6 @@ function useFocusNodeWithScale() {
 }
 
 export const MindMap = () => {
-  const { theme } = useTheme();
   const { isAutoFocusEnabled } = useAutoFocus();
   const { canvases, currentCanvasId, addCanvas, updateCanvas } =
     useCanvasStore();
@@ -209,6 +207,35 @@ export const MindMap = () => {
     [edges, setNodes]
   );
 
+  // 添加新的处理函数，用于处理节点编辑
+  const handleNodeEdit = useCallback(
+    (nodeId: string, updatedData: Partial<NodeData>) => {
+      // 更新节点
+      setNodes((nds) => {
+        const updatedNodes = nds.map((node) => {
+          if (node.id === nodeId) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                ...updatedData,
+              },
+            };
+          }
+          return node;
+        });
+        
+        // 在回调内部更新画布，确保使用最新的节点状态
+        if (currentCanvas) {
+          updateCanvas(currentCanvasId, updatedNodes, edges);
+        }
+        
+        return updatedNodes;
+      });
+    },
+    [currentCanvasId, edges, updateCanvas, currentCanvas, setNodes]
+  );
+
   useEffect(() => {
     if (currentCanvas) {
       // Add expand handler and notification data to nodes
@@ -269,6 +296,7 @@ export const MindMap = () => {
           data: {
             ...(node.data as CategoryNodeData),
             expandNode: expandNode,
+            onNodeEdit: handleNodeEdit, // 添加节点编辑处理函数
             ...notificationData,
           },
         };
@@ -276,7 +304,7 @@ export const MindMap = () => {
       setNodes(nodesWithHandlers);
       setEdges(currentCanvas.edges);
     }
-  }, [currentCanvas, setNodes, setEdges, expandNode]);
+  }, [currentCanvas, setNodes, setEdges, expandNode, handleNodeEdit]);
 
   // Effect to check if any nodes are outside viewport and fit view when needed
   useEffect(() => {

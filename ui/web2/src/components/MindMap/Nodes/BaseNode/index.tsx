@@ -5,3 +5,4 @@ export * from "./BNHandle";
 export * from "./SubNodesHandle";
 export * from "./BNBodyTooltip";
 export * from "./BNExpandButton";
+export * from "./EditButton";

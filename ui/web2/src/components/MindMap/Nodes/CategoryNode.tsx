@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import {
     BaseNode,
     BNBody,
@@ -15,11 +15,13 @@ import { useEdges } from "@xyflow/react";
 import { getColor } from "./utils";
 import { NotificationBadge } from "./NotificationBadge";
 import type { NotificationStatus } from "../types";
+import { NodeEditModal } from "../Editor";
 
 export interface CategoryNodeData {
     id: string;
     title: string;
     summary: string;
+    details?: string;
     position: { x: number; y: number };
     color: Color;
     isDetailExpanded?: boolean;
@@ -31,6 +33,14 @@ export interface CategoryNodeData {
         onNotificationClick?: () => Promise<void>;
     };
     parentId?: string;
+    keyInsights?: Array<{
+        id: string;
+        content: string;
+        implications: string;
+        relatedTechnologies?: string[];
+        visible?: boolean;
+    }>;
+    onNodeEdit?: (nodeId: string, updatedData: Partial<CategoryNodeData>) => void;
     [key: string]: unknown;
 }
 
@@ -49,10 +59,17 @@ export const CategoryNode = memo((props: CategoryNodeProps) => {
     const colors: ColorPattern = getColor(data.color);
     const edges = useEdges();
     const hasChildren = edges.some(edge => edge.source === id);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const handleExpandNode = (nodeId: string) => {
         if (data.expandNode) {
             data.expandNode(nodeId);
+        }
+    };
+
+    const handleNodeEdit = (updatedData: Partial<CategoryNodeData>) => {
+        if (data.onNodeEdit) {
+            data.onNodeEdit(id, updatedData);
         }
     };
 
@@ -89,57 +106,71 @@ export const CategoryNode = memo((props: CategoryNodeProps) => {
     ];
 
     return (
-        <BaseNode
-            colors={colors}
-            selected={selected}
-            nodeId={id}
-            expandNode={handleExpandNode}
-            toggleDetailExpanded={toggleDetailExpanded}
-            onDelete={props.onDelete}
-            isDetailExpanded={isDetailExpanded}
-            isChildrenExpanded={isChildrenExpanded}
-            onNodeContextMenu={props.onNodeContextMenu}
-        >
-            <BNBody>
-                <BNBodyContent>
-                    <div>
-                        <h3
-                            className="text-lg font-semibold"
-                            style={{
-                                color: colors.title_color,
-                            }}
-                        >
-                            {data.title}
-                        </h3>
-                        <div className="p-[2px]">
-                            <div
-                                className="mt-1 pl-3 border-l-2 border-[#bdbdbd]/30 text-sm text-[#757575]"
+        <>
+            <BaseNode
+                colors={colors}
+                selected={selected}
+                nodeId={id}
+                expandNode={handleExpandNode}
+                toggleDetailExpanded={toggleDetailExpanded}
+                onDelete={props.onDelete}
+                isDetailExpanded={isDetailExpanded}
+                isChildrenExpanded={isChildrenExpanded}
+                onNodeContextMenu={props.onNodeContextMenu}
+            >
+                <BNBody>
+                    <BNBodyContent>
+                        <div>
+                            <h3
+                                className="text-lg font-semibold"
+                                style={{
+                                    color: colors.title_color,
+                                }}
                             >
-                                {data.summary}
+                                {data.title}
+                            </h3>
+                            <div className="p-[2px]">
+                                <div
+                                    className="mt-1 pl-3 border-l-2 border-[#bdbdbd]/30 text-sm text-[#757575]"
+                                >
+                                    {data.summary}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </BNBodyContent>
-                <BNBodyTooltip 
-                    enableExpand 
-                    enableDelete 
-                    nodeId={id}
-                    tools={tools}
-                    onDelete={props.onDelete}
-                />
-            </BNBody>
-            <BNHandle colors={colors} enableSourceHandle enableTargetHandle />
-            <BNExpandContent>
-                <div className="border-t border-dashed border-gray-400 mt-4 mb-2 mx-4" />
-                <div className="text-[#757575] p-2">{data.summary}</div>
-            </BNExpandContent>
-            {hasChildren && data.expandNode && (
-                <SubNodesHandle 
-                    expandNode={handleExpandNode} 
-                    nodeId={id} 
-                    isExpanded={isChildrenExpanded}
+                    </BNBodyContent>
+                    <BNBodyTooltip 
+                        enableExpand 
+                        enableDelete
+                        enableEdit
+                        nodeId={id}
+                        tools={tools}
+                        onDelete={props.onDelete}
+                        onEdit={() => setIsEditModalOpen(true)}
+                    />
+                </BNBody>
+                <BNHandle colors={colors} enableSourceHandle enableTargetHandle />
+                <BNExpandContent>
+                    <div className="border-t border-dashed border-gray-400 mt-4 mb-2 mx-4" />
+                    <div className="text-[#757575] p-2">{data.summary}</div>
+                </BNExpandContent>
+                {hasChildren && data.expandNode && (
+                    <SubNodesHandle 
+                        expandNode={handleExpandNode} 
+                        nodeId={id} 
+                        isExpanded={isChildrenExpanded}
+                    />
+                )}
+            </BaseNode>
+
+            {/* 编辑弹窗 */}
+            {isEditModalOpen && (
+                <NodeEditModal
+                    nodeData={data}
+                    onSave={handleNodeEdit}
+                    onClose={() => setIsEditModalOpen(false)}
+                    isOpen={isEditModalOpen}
                 />
             )}
-        </BaseNode>
+        </>
     );
 });
