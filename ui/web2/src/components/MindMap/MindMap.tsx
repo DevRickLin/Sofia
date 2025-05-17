@@ -934,47 +934,60 @@ export const MindMap = () => {
           <Background />
           <Controls className="m-2 text-gray-500" />
           {contextMenu && (
-            <ContextMenu
-              x={contextMenu.x}
-              y={contextMenu.y}
-              onClose={() => setContextMenu(null)}
-              items={
-                (() => {
-                  const node = nodes.find((n) => n.id === contextMenu.nodeId);
-                  if (!node) return [];
-                  return [
-                    {
-                      label: node.data.isDetailExpanded
-                        ? "Collapse details"
-                        : "Expand details",
-                      onClick: () => {
-                        console.log("toggleDetailExpanded", node.id);
-                        toggleDetailExpanded(
-                          node.id,
-                          !node.data.isDetailExpanded
-                        );
+            <>
+              <button 
+                type="button"
+                className="fixed inset-0 z-40 w-full h-full bg-transparent border-0 cursor-default focus:outline-none"
+                onClick={() => setContextMenu(null)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setContextMenu(null);
+                  }
+                }}
+                aria-label="Close menu overlay"
+              />
+              <ContextMenu
+                x={contextMenu.x}
+                y={contextMenu.y}
+                onClose={() => setContextMenu(null)}
+                items={
+                  (() => {
+                    const node = nodes.find((n) => n.id === contextMenu.nodeId);
+                    if (!node) return [];
+                    return [
+                      {
+                        label: node.data.isDetailExpanded
+                          ? "Collapse details"
+                          : "Expand details",
+                        onClick: () => {
+                          console.log("toggleDetailExpanded", node.id);
+                          toggleDetailExpanded(
+                            node.id,
+                            !node.data.isDetailExpanded
+                          );
+                        },
                       },
-                    },
-                    {
-                      label: node.data.isChildrenExpanded
-                        ? "Collapse child nodes"
-                        : "Expand child nodes",
-                      onClick: () => {
-                        console.log("expandNode", node.id);
-                        expandNode(node.id);
+                      {
+                        label: node.data.isChildrenExpanded
+                          ? "Collapse child nodes"
+                          : "Expand child nodes",
+                        onClick: () => {
+                          console.log("expandNode", node.id);
+                          expandNode(node.id);
+                        },
                       },
-                    },
-                    {
-                      label: "Delete node",
-                      onClick: () => {
-                        console.log("handleDeleteNode", node.id);
-                        handleDeleteNode(node.id);
+                      {
+                        label: "Delete node",
+                        onClick: () => {
+                          console.log("handleDeleteNode", node.id);
+                          handleDeleteNode(node.id);
+                        },
                       },
-                    },
-                  ];
-                })() as ContextMenuItemType[]
-              }
-            />
+                    ];
+                  })() as ContextMenuItemType[]
+                }
+              />
+            </>
           )}
         </ReactFlow>
       </div>
