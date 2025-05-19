@@ -10,14 +10,20 @@ import {
     SignOut,
     Gear,
     Target,
+    UsersThree,
+    CheckCircle,
+    XCircle,
 } from "@phosphor-icons/react";
 import SofiaLogo from "../../imgs/sofia_logo.png";
 import { useAutoFocus } from "../context/AutoFocusContext";
+import InviteCollaboratorModal from "./InviteCollaboratorModal";
 
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showShareError, setShowShareError] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
+    const [showInviteModal, setShowInviteModal] = useState(false);
+    const [inviteStatus, setInviteStatus] = useState<null | "success" | "error" | "sending">(null);
     const profileRef = useRef<HTMLDivElement>(null);
     const { isAutoFocusEnabled, toggleAutoFocus } = useAutoFocus();
 
@@ -99,6 +105,16 @@ const Header: React.FC = () => {
                             aria-label="Share"
                         >
                             <Share2 className="h-5 w-5" />
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setShowInviteModal(true)}
+                            className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            aria-label="邀请协作者"
+                            title="邀请协作者"
+                        >
+                            <UsersThree className="h-5 w-5" />
                         </button>
 
                         <div className="relative" ref={profileRef}>
@@ -210,6 +226,26 @@ const Header: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            <InviteCollaboratorModal
+                isOpen={showInviteModal}
+                onClose={() => {
+                    setShowInviteModal(false);
+                    setInviteStatus(null);
+                }}
+                onInvite={async (email, role) => {
+                    setInviteStatus("sending");
+                    // TODO: 调用后端 API 发送邀请
+                    // 这里用 setTimeout 模拟
+                    await new Promise(r => setTimeout(r, 1200));
+                    if (email && email.includes("@")) {
+                        setInviteStatus("success");
+                    } else {
+                        setInviteStatus("error");
+                    }
+                }}
+                status={inviteStatus}
+            />
         </header>
     );
 };

@@ -51,7 +51,6 @@ const responseIterator = responseGenerator();
 export const generateChatResponse = async (
   client: A2AClient,
   nodeData: NodeData,
-  userQuestion: string,
   setChatHistory?: Dispatch<SetStateAction<Array<{ type: "user" | "assistant"; content: string; id: string }>>>
 ): Promise<MockResponse> => {
   // Simulate network delay

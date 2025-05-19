@@ -15,7 +15,7 @@
     "@tailwindcss/vite": "^4.1.4",
     "@types/dagre": "^0.7.52",
     "@uiw/react-md-editor": "^4.0.6",
-    "@xyflow/react": "^12.6.0",
+    "@xyflow/react": "^12.6.4",
     "a2a-client": "file:../../common/js/release/a2a-client-1.0.1.tgz",
     "motion": "^12.8.0",
     "react": "^19.0.0",

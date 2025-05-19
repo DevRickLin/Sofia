@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { useEffect, useRef, useState } from 'react';
+import { Handle, Position } from '@xyflow/react';
 
 interface NodeData {
     label?: string;

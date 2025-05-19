@@ -97,7 +97,7 @@ export const generateChatResponse = async (
   nodeData: NodeData,
   userQuestion: string,
   setHistory: (history: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void
-): Promise<void> => {
+): Promise<{ type: 'text' | 'mindmap'; content: string }> => {
   // 获取 nodeId
   const nodeId = typeof nodeData.id === 'string' ? nodeData.id : 'default-node';
   // 获取或创建 generator
@@ -169,6 +169,12 @@ export const generateChatResponse = async (
       }
     ]);
   }
+
+  // Return a response object for component use
+  return { 
+    type: 'text', 
+    content: value?.content || 'I processed your request.' 
+  };
 };
 
 // Helper function to generate a contextual answer based on the query
@@ -209,17 +215,15 @@ Let me know which areas you'd like me to dig into.
 
 // Helper function to generate cards from answer content
 function generateResponseCards(answerContent: string): ResponseCard[] {
-  // Split the answer into sections for different card types
-  const contentLength = answerContent.length;
-  const firstThird = Math.floor(contentLength / 3);
-  const secondThird = Math.floor(contentLength * 2 / 3);
+  // Use the answerContent parameter to create a summary from the first 100 characters
+  const summary = answerContent.substring(0, 100) + (answerContent.length > 100 ? '...' : '');
   
   return [
     {
       id: `card-summary-${Date.now()}`,
       type: 'summary',
       title: '',
-      content: `Great, I'll gather comprehensive information on Technical implementation details and Limitations and risks of Claude 3.5 'Computer Use' feature. Would yould like me to sumarise in key insight boxes or share a report?`
+      content: summary
     },
   ];
 }
