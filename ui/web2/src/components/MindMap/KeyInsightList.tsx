@@ -1,14 +1,16 @@
 import React from "react";
 import type { KeyInsight } from "./types";
+import { Trash } from "@phosphor-icons/react";
 
 interface KeyInsightListProps {
   keyInsights: KeyInsight[];
   isAdded?: boolean;
-  onAddKeyInsight?: (insight: KeyInsight, e: React.MouseEvent) => void;
-  onRemoveKeyInsight?: (insight: KeyInsight, e: React.MouseEvent) => void;
+  onAddKeyInsight?: (insight: KeyInsight, e?: React.MouseEvent) => void;
+  onRemoveKeyInsight?: (insight: KeyInsight, e?: React.MouseEvent) => void;
+  onDeleteKeyInsight?: (insight: KeyInsight) => void;
 }
 
-const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyInsight, onRemoveKeyInsight }) => {
+const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyInsight, onRemoveKeyInsight, onDeleteKeyInsight }) => {
   const [hoveredInsightId, setHoveredInsightId] = React.useState<string | null>(null);
 
   return (
@@ -53,6 +55,17 @@ const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyIn
               <span className="h-3 w-3 font-bold flex items-center justify-center">-</span>
             </button>
           </div>
+          {onDeleteKeyInsight && (
+            <button
+              type="button"
+              className="absolute right-2 bottom-2 p-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 z-10"
+              style={{ opacity: hoveredInsightId === insight.id ? 1 : 0, transition: 'opacity 0.15s ease-in-out' }}
+              onClick={() => onDeleteKeyInsight(insight)}
+              title="Delete insight"
+            >
+              <Trash className="h-4 w-4" />
+            </button>
+          )}
           
           {/* Content */}
           <div className="flex justify-between items-start">

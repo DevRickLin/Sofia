@@ -147,6 +147,22 @@ export default function SidePanel({
     }
   };
 
+  // 完全删除 insight
+  const handleDeleteKeyInsight = (insight: KeyInsight) => {
+    if (!node) return;
+    if (!insight.id) return;
+    // 找到 index
+    const idx = node.data.keyInsights?.findIndex(i => i.id === insight.id);
+    if (idx === undefined || idx < 0) return;
+    if (onAddKeyInsight && onRemoveKeyInsight) {
+      // 这里直接调用 onRemoveKeyInsight 只会隐藏，需要 MindMap 支持彻底删除
+      // 这里直接抛出事件，MindMap 需实现彻底删除
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('deleteKeyInsight', { detail: { nodeId: node.id, insightId: insight.id } }));
+      }
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -279,6 +295,7 @@ export default function SidePanel({
                       const idx = data.keyInsights?.findIndex(i => i.id === insight.id);
                       if (idx !== undefined && idx >= 0) handleRemoveKeyInsight(idx);
                     }}
+                    onDeleteKeyInsight={handleDeleteKeyInsight}
                   />
                 </div>
               )}

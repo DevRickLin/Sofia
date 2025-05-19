@@ -888,6 +888,38 @@ export const MindMap = () => {
     handleNodeSelect(newNode, false);
   }, [reactFlowInstance, setNodes, handleNodeSelect]);
 
+  // 彻底删除 insight
+  const handleDeleteKeyInsight = useCallback((nodeId: string, insightId: string) => {
+    setNodes((nds) => nds.map((node) => {
+      if (node.id === nodeId) {
+        const keyInsights: KeyInsight[] = Array.isArray(node.data.keyInsights)
+          ? node.data.keyInsights
+          : [];
+        const updatedInsights = keyInsights.filter(i => i.id !== insightId);
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            keyInsights: updatedInsights,
+          },
+        };
+      }
+      return node;
+    }));
+  }, [setNodes]);
+
+  // 监听 deleteKeyInsight 事件
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.nodeId && detail?.insightId) {
+        handleDeleteKeyInsight(detail.nodeId, detail.insightId);
+      }
+    };
+    window.addEventListener('deleteKeyInsight', handler);
+    return () => window.removeEventListener('deleteKeyInsight', handler);
+  }, [handleDeleteKeyInsight]);
+
   return (
     <div className="flex flex-col md:flex-row h-full relative">
       <Sidebar

@@ -72,15 +72,16 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }) => {
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 bg-white border border-gray-200 rounded shadow-lg min-w-[140px] py-1"
-      style={{ left: position.x, top: position.y }}
+      className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-xl inline-block py-0.5"
+      style={{ left: position.x, top: position.y, padding: 0, minWidth: 0, width: 'auto', maxWidth: '100vw' }}
       onContextMenu={e => e.preventDefault()}
     >
       {items.map((item) => (
         <button
           key={item.label}
           type="button"
-          className="w-full text-left px-4 py-2 text-sm text-black hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+          className="text-left px-3 py-1 text-[13px] text-black hover:bg-blue-50 hover:font-semibold focus:bg-blue-100 focus:font-semibold focus:outline-none leading-tight block rounded-md transition-all duration-150"
+          style={{ minHeight: 0, height: '24px', lineHeight: '1.2', minWidth: 0, width: '100%' }}
           onClick={e => {
             e.stopPropagation();
             item.onClick();
