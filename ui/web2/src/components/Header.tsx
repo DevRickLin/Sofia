@@ -11,8 +11,6 @@ import {
     Gear,
     Target,
     UsersThree,
-    CheckCircle,
-    XCircle,
 } from "@phosphor-icons/react";
 import SofiaLogo from "../../imgs/sofia_logo.png";
 import { useAutoFocus } from "../context/AutoFocusContext";
@@ -111,8 +109,8 @@ const Header: React.FC = () => {
                             type="button"
                             onClick={() => setShowInviteModal(true)}
                             className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            aria-label="邀请协作者"
-                            title="邀请协作者"
+                            aria-label="Invite Collaborator"
+                            title="Invite Collaborator"
                         >
                             <UsersThree className="h-5 w-5" />
                         </button>
@@ -233,12 +231,12 @@ const Header: React.FC = () => {
                     setShowInviteModal(false);
                     setInviteStatus(null);
                 }}
-                onInvite={async (email, role) => {
+                onInvite={async (email: string) => {
                     setInviteStatus("sending");
                     // TODO: 调用后端 API 发送邀请
                     // 这里用 setTimeout 模拟
                     await new Promise(r => setTimeout(r, 1200));
-                    if (email && email.includes("@")) {
+                    if (email?.includes("@")) {
                         setInviteStatus("success");
                     } else {
                         setInviteStatus("error");

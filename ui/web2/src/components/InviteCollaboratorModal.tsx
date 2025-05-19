@@ -10,9 +10,9 @@ interface InviteCollaboratorModalProps {
 }
 
 const roles = [
-  { value: "editor", label: "可编辑" },
-  { value: "viewer", label: "只读" },
-  { value: "admin", label: "管理员" },
+  { value: "editor", label: "Editor" },
+  { value: "viewer", label: "Viewer" },
+  { value: "admin", label: "Admin" },
 ];
 
 const InviteCollaboratorModal = ({
@@ -36,7 +36,7 @@ const InviteCollaboratorModal = ({
   const handleInvite = async () => {
     setError("");
     if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      setError("请输入有效的邮箱地址");
+      setError("Please enter a valid email address");
       return;
     }
     await onInvite(email, role);
@@ -67,12 +67,12 @@ const InviteCollaboratorModal = ({
         >
           {/* 头部 */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-bold text-black">邀请协作者</h2>
+            <h2 className="text-lg font-bold text-black">Invite Collaborator</h2>
             <button
               type="button"
               onClick={onClose}
               className="text-gray-600 hover:text-gray-900 focus:outline-none"
-              aria-label="关闭"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
@@ -81,19 +81,19 @@ const InviteCollaboratorModal = ({
           {/* 内容区域 */}
           <div className="flex-1 p-4 space-y-4">
             <div>
-              <label htmlFor="invite-email" className="block text-sm font-medium text-gray-900 mb-1">协作者邮箱</label>
+              <label htmlFor="invite-email" className="block text-sm font-medium text-gray-900 mb-1">Collaborator Email</label>
               <input
                 id="invite-email"
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="w-full p-2 border text-black border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                placeholder="请输入协作者邮箱"
+                placeholder="Enter collaborator email"
                 disabled={status === "sending" || status === "success"}
               />
             </div>
             <div>
-              <label htmlFor="invite-role" className="block text-sm font-medium text-gray-900 mb-1">权限</label>
+              <label htmlFor="invite-role" className="block text-sm font-medium text-gray-900 mb-1">Role</label>
               <select
                 id="invite-role"
                 value={role}
@@ -109,12 +109,12 @@ const InviteCollaboratorModal = ({
             {error && <div className="text-red-500 text-sm">{error}</div>}
             {status === "success" && (
               <div className="flex items-center text-emerald-600 text-sm">
-                <CheckCircle className="w-5 h-5 mr-1" />邀请已发送！
+                <CheckCircle className="w-5 h-5 mr-1" />Invitation sent!
               </div>
             )}
             {status === "error" && (
               <div className="flex items-center text-red-500 text-sm">
-                <XCircle className="w-5 h-5 mr-1" />邀请失败，请重试。
+                <XCircle className="w-5 h-5 mr-1" />Invitation failed, please try again.
               </div>
             )}
           </div>
@@ -127,7 +127,7 @@ const InviteCollaboratorModal = ({
               className="px-4 py-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none"
               disabled={status === "sending"}
             >
-              取消
+              Cancel
             </button>
             <button
               type="button"
@@ -135,7 +135,7 @@ const InviteCollaboratorModal = ({
               className={`px-4 py-2 rounded-md font-semibold text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${status === "sending" || status === "success" ? "opacity-60 cursor-not-allowed" : ""}`}
               disabled={status === "sending" || status === "success"}
             >
-              {status === "sending" ? "发送中..." : "发送邀请"}
+              {status === "sending" ? "Sending..." : "Send Invitation"}
             </button>
           </div>
         </motion.div>
