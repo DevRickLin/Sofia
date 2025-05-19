@@ -106,7 +106,7 @@ const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyIn
                   onClick={() => handleEditClick(insight)}
                   title="Edit"
                 >
-                  <PencilSimple className="h-4 w-4" />
+                  <PencilSimple className="h-3 w-3 flex items-center justify-center" />
                 </button>
               )}
               <button
@@ -118,7 +118,7 @@ const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyIn
                 title="Show in mindmap"
                 disabled={isEditing}
               >
-                <span className="h-3 w-3 font-bold flex items-center justify-center">+</span>
+                <span className="h-3 w-3 font-bold flex items-center justify-center leading-none text-center">+</span>
               </button>
               <button
                 type="button"
@@ -129,7 +129,7 @@ const KeyInsightList: React.FC<KeyInsightListProps> = ({ keyInsights, onAddKeyIn
                 title="Hide from mindmap"
                 disabled={isEditing}
               >
-                <span className="h-3 w-3 font-bold flex items-center justify-center">-</span>
+                <span className="h-3 w-3 font-bold flex items-center justify-center leading-none text-center">-</span>
               </button>
             </div>
             {onDeleteKeyInsight && !isEditing && (
